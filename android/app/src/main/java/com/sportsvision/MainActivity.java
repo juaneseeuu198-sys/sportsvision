@@ -10,7 +10,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     // Cambia esta URL por la de Railway cuando la tengas
-    private static final String APP_URL = "https://sportsvision.up.railway.app";
+    private static final String APP_URL = "https://web-production-f0f4b.up.railway.app";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
