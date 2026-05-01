@@ -1,0 +1,82 @@
+{% extends 'base/base.html' %}
+{% block title %}Nueva Rutina — Ejercicios{% endblock %}
+
+{% block content %}
+<div class="sv-page-content">
+  {% include 'routines/step_header.html' with paso_actual=3 %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3 px-1">
+      <input type="text" name="nombre" class="form-control sv-input"
+             placeholder="Nombre de tu rutina (ej: Piernas Lunes)" value="Mi Rutina">
+    </div>
+
+    <div class="exercises-list-wrap">
+      {% for ejercicio in ejercicios %}
+      <label class="exercise-row-label" for="ej_{{ ejercicio.id }}">
+        <div class="exercise-row">
+          <input type="checkbox" name="ejercicios" value="{{ ejercicio.id }}"
+                 id="ej_{{ ejercicio.id }}" class="exercise-check" hidden>
+          <div class="ex-thumb">
+            {% if ejercicio.gif %}
+              <img src="{{ ejercicio.gif.url }}" alt="{{ ejercicio.nombre }}">
+            {% elif ejercicio.imagen %}
+              <img src="{{ ejercicio.imagen.url }}" alt="{{ ejercicio.nombre }}">
+            {% else %}
+              <div class="img-slot-sm"><i class="bi bi-image"></i><span>GIF</span></div>
+            {% endif %}
+          </div>
+          <div class="ex-p-badge">P</div>
+          <div class="ex-name">{{ ejercicio.nombre }}</div>
+          {% if ejercicio.grupo_muscular %}
+          <span class="ex-muscle-tag">{{ ejercicio.grupo_muscular.nombre }}</span>
+          {% endif %}
+          <button type="button" class="btn-mezclar" onclick="mezclarEjercicio({{ ejercicio.id }}, this)">
+            <i class="bi bi-shuffle"></i> Mezclar
+          </button>
+          <span class="ex-check-icon"><i class="bi bi-check-circle-fill"></i></span>
+          <span class="ex-trash" onclick="deseleccionarEjercicio(this)"><i class="bi bi-trash-fill"></i></span>
+        </div>
+      </label>
+      {% empty %}
+      <div class="text-center py-5">
+        <p class="text-muted">No hay ejercicios para los filtros seleccionados.</p>
+        <a href="{% url 'paso1_equipo' %}" class="btn-sv-outline">← Cambiar equipo</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="step-nav-footer">
+      <a href="{% url 'paso2_musculos' %}" class="btn-sv-back"><i class="bi bi-arrow-left"></i></a>
+      <button type="submit" class="btn-sv-green px-5">
+        <i class="bi bi-play-fill"></i> Crear Rutina
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.exercise-check').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const row = cb.closest('.exercise-row');
+      row.classList.toggle('selected', cb.checked);
+    });
+  });
+
+  function deseleccionarEjercicio(btn) {
+    const row = btn.closest('.exercise-row-label');
+    const cb = row.querySelector('.exercise-check');
+    cb.checked = false;
+    row.querySelector('.exercise-row').classList.remove('selected');
+  }
+
+  function mezclarEjercicio(id, btn) {
+    // Future: call API to swap exercise
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i>';
+    setTimeout(() => { btn.innerHTML = '<i class="bi bi-shuffle"></i> Mezclar'; }, 800);
+  }
+</script>
+{% endblock %}

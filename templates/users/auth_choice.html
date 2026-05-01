@@ -1,0 +1,24 @@
+{% extends 'base/base.html' %}
+{% block title %}SportsVision — Acceso{% endblock %}
+
+{% block public_content %}
+<div class="auth-choice-page">
+  <div class="auth-half">
+    <div class="auth-bg-placeholder">
+      <div class="img-slot"><i class="bi bi-image"></i><p>IMAGEN<br><small>Foto de barbell / disco</small></p></div>
+    </div>
+    <h2 class="auth-big-title">CREATE<br>ACOUNT</h2>
+    <a href="{% url 'registro' %}" class="btn-sv-outline">CREATE YOUR ACOUNT</a>
+  </div>
+
+  <div class="auth-divider"></div>
+
+  <div class="auth-half">
+    <div class="auth-bg-placeholder">
+      <div class="img-slot"><i class="bi bi-image"></i><p>IMAGEN<br><small>Foto de dumbbells en gym oscuro</small></p></div>
+    </div>
+    <h2 class="auth-big-title">LOGIN</h2>
+    <a href="{% url 'login' %}" class="btn-sv-outline">LOGIN</a>
+  </div>
+</div>
+{% endblock %}

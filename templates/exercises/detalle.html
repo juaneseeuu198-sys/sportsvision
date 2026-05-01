@@ -1,0 +1,79 @@
+{% extends 'base/base.html' %}
+{% block title %}{{ ejercicio.nombre }} — SportsVision{% endblock %}
+
+{% block content %}
+<div class="sv-page-content">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <a class="btn-sv" href="{% url 'ejercicios_lista' %}">
+      <i class="bi bi-arrow-left"></i> Volver
+    </a>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if ejercicio.grupo_muscular %}
+        <span class="sv-chip"><i class="bi bi-bullseye"></i>{{ ejercicio.grupo_muscular.nombre }}</span>
+      {% endif %}
+      <span class="sv-badge sv-badge-level-{{ ejercicio.nivel }}">{{ ejercicio.get_nivel_display }}</span>
+    </div>
+  </div>
+
+  <div class="sv-detail-hero">
+    <div class="sv-detail-media">
+      {% if ejercicio.gif %}
+        <video controls playsinline preload="metadata">
+          <source src="{{ ejercicio.gif.url }}">
+        </video>
+      {% elif ejercicio.imagen %}
+        <img src="{{ ejercicio.imagen.url }}" alt="{{ ejercicio.nombre }}">
+      {% else %}
+        <div class="sv-ex-fallback" style="height:100%;">
+          <i class="bi bi-image"></i>
+          <span>Sin media</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="sv-detail-panel">
+      <h1 class="sv-detail-title">{{ ejercicio.nombre }}</h1>
+
+      {% if ejercicio.descripcion %}
+        <p class="sv-ex-desc">{{ ejercicio.descripcion }}</p>
+      {% endif %}
+
+      <div class="sv-kv">
+        <div class="sv-k">Equipos</div>
+        <div class="sv-v">
+          {% if ejercicio.equipos.all %}
+            {% for e in ejercicio.equipos.all %}
+              <span class="sv-chip" style="margin:2px 4px 2px 0;">
+                <i class="bi bi-tools"></i>{{ e.get_nombre_display }}
+              </span>
+            {% empty %}
+              <span class="sv-badge sv-badge-muted">Peso corporal / sin equipo</span>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="sv-kv">
+        <div class="sv-k">Creado</div>
+        <div class="sv-v">{{ ejercicio.creado_en|date:"d/m/Y H:i" }}</div>
+      </div>
+
+      <div class="sv-detail-actions">
+        <a class="btn-sv btn-sv-primary" href="{% url 'ejercicios_lista' %}">
+          <i class="bi bi-collection-play-fill"></i> Explorar más
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sv-panel mt-3">
+    <h3 class="sv-panel-title">Instrucciones</h3>
+    {% if ejercicio.instrucciones %}
+      <div style="color:#cfd6ee; font-weight:600; line-height:1.7; white-space:pre-wrap;">{{ ejercicio.instrucciones }}</div>
+    {% else %}
+      <div style="color:var(--sv-muted); font-weight:700;">Sin instrucciones todavía.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

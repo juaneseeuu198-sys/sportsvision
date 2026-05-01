@@ -1,0 +1,413 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}SportsVision — Crear Cuenta{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Pasos ──────────────────────────────────── */
+.reg-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 28px;
+}
+.reg-step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.2);
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: rgba(255,255,255,.3);
+  transition: all .3s;
+  position: relative; z-index: 1;
+}
+.reg-step-dot.active {
+  border-color: var(--sv-purple);
+  background: var(--sv-purple);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(123,47,247,.5);
+}
+.reg-step-dot.done {
+  border-color: var(--sv-green);
+  background: var(--sv-green);
+  color: #fff;
+}
+.reg-step-line {
+  width: 60px; height: 2px;
+  background: rgba(255,255,255,.12);
+  transition: background .3s;
+}
+.reg-step-line.done { background: var(--sv-green); }
+
+/* ── Paneles ─────────────────────────────────── */
+.reg-panel { display: none; }
+.reg-panel.active { display: block; }
+
+/* ── Labels de sección ───────────────────────── */
+.reg-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.reg-section-label::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: rgba(255,255,255,.08);
+}
+
+/* ── Input con unidad ────────────────────────── */
+.input-unit-wrap { position: relative; }
+.input-unit-wrap .sv-input {
+  padding-right: 52px;
+  text-align: left !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+/* Paso 2: nombre y género no van en mayúsculas */
+#panel2 .sv-input {
+  text-align: left !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.input-unit-badge {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,.3);
+  pointer-events: none;
+}
+
+/* ── Género pills ────────────────────────────── */
+.genero-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.genero-label {
+  display: block;
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+  font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  transition: all .2s;
+}
+.genero-label:hover { border-color: rgba(255,255,255,.3); color: #fff; }
+
+/* Masculino — azul */
+#gen_M:checked + .genero-label {
+  border-color: #4361ee;
+  background: rgba(67,97,238,.25);
+  color: #7b9ffb;
+  box-shadow: 0 0 0 3px rgba(67,97,238,.2);
+}
+/* Femenino — rosado */
+#gen_F:checked + .genero-label {
+  border-color: #ec4899;
+  background: rgba(236,72,153,.2);
+  color: #f9a8d4;
+  box-shadow: 0 0 0 3px rgba(236,72,153,.2);
+}
+/* Otro — morado */
+#gen_O:checked + .genero-label {
+  border-color: var(--sv-purple);
+  background: rgba(123,47,247,.2);
+  color: #c084fc;
+  box-shadow: 0 0 0 3px rgba(123,47,247,.15);
+}
+
+/* ── Animación entre pasos ───────────────────── */
+.reg-panel { animation: fadeSlide .3s ease; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Botones ─────────────────────────────────── */
+.reg-btn-row {
+  display: flex; gap: 10px; margin-top: 24px;
+}
+.btn-reg-back {
+  width: 44px; height: 44px; flex-shrink: 0;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,.15);
+  background: transparent;
+  color: rgba(255,255,255,.6);
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-reg-back:hover { border-color: rgba(255,255,255,.4); color: #fff; }
+
+/* ── Error inline ────────────────────────────── */
+.field-error { font-size: 12px; color: #f87171; margin-top: 4px; }
+</style>
+{% endblock %}
+
+{% block public_content %}
+<div class="auth-form-page">
+
+  <img src="{% static 'images/registro_bg.jpg' %}" alt=""
+       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0.45;">
+
+  <div class="auth-form-box" style="max-width:460px;position:relative;z-index:2;padding:36px 32px;background:rgba(8,10,22,0.88);backdrop-filter:blur(12px);border-radius:24px;border:1.5px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.7);">
+
+    <h1 class="auth-form-title" style="font-size:52px;line-height:1;margin-bottom:8px;">CREAR<br>CUENTA</h1>
+    <p style="color:rgba(255,255,255,.35);font-size:13px;margin-bottom:24px;text-align:center;">
+      Únete a SportsVision
+    </p>
+
+    <!-- Indicador de pasos -->
+    <div class="reg-steps">
+      <div class="reg-step-dot active" id="dot1">1</div>
+      <div class="reg-step-line" id="line1"></div>
+      <div class="reg-step-dot" id="dot2">2</div>
+    </div>
+
+    <form method="post" id="reg-form" novalidate>
+      {% csrf_token %}
+
+      <!-- ═══════ PASO 1: Tu cuenta ═══════ -->
+      <div class="reg-panel active" id="panel1">
+        <p class="reg-section-label"><i class="bi bi-shield-lock-fill"></i> Tu cuenta</p>
+
+        <div class="mb-3">
+          <label class="sv-label">Nombre de usuario</label>
+          <input type="text" name="username" id="id_username"
+                 class="form-control sv-input" placeholder="Ej: juanfit99" required
+                 autocomplete="username"
+                 value="{{ form.username.value|default:'' }}">
+          {% if form.username.errors %}
+            <div class="field-error">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="sv-label">Correo electrónico</label>
+          <input type="email" name="email" id="id_email"
+                 class="form-control sv-input" placeholder="tu@correo.com" required
+                 autocomplete="email"
+                 value="{{ form.email.value|default:'' }}">
+          {% if form.email.errors %}
+            <div class="field-error">{{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="sv-label">Contraseña</label>
+          <input type="password" name="password1" id="id_password1"
+                 class="form-control sv-input" placeholder="Mínimo 8 caracteres" required
+                 autocomplete="new-password">
+          {% if form.password1.errors %}
+            <div class="field-error">{{ form.password1.errors.0 }}</div>
+          {% endif %}
+          <small style="color:rgba(255,255,255,.3);font-size:11px;margin-top:4px;display:block;">
+            Mínimo 8 caracteres, no puede ser solo números.
+          </small>
+        </div>
+
+        <div class="mb-3">
+          <label class="sv-label">Confirmar contraseña</label>
+          <input type="password" name="password2" id="id_password2"
+                 class="form-control sv-input" placeholder="Repite tu contraseña" required
+                 autocomplete="new-password">
+          <div id="pass-mismatch" style="display:none;font-size:12px;color:#f87171;margin-top:6px;">
+            <i class="bi bi-exclamation-circle-fill me-1"></i>Las contraseñas no coinciden.
+          </div>
+          {% if form.password2.errors %}
+            <div class="field-error">{{ form.password2.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2 mb-3" style="font-size:13px;">
+          {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        <button type="button" class="btn-sv-outline w-100 py-3" id="btn-next">
+          Siguiente <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </div>
+
+      <!-- ═══════ PASO 2: Tu perfil ═══════ -->
+      <div class="reg-panel" id="panel2">
+        <p class="reg-section-label"><i class="bi bi-person-fill"></i> Cuéntanos sobre ti</p>
+
+        <div class="mb-4">
+          <label class="sv-label" style="font-size:15px;">
+            ¿Cómo te gustaría que te llamemos?
+          </label>
+          <input type="text" name="first_name" id="id_first_name"
+                 class="form-control sv-input" placeholder="Tu nombre o apodo" required
+                 value="{{ form.first_name.value|default:'' }}">
+          <small style="color:rgba(255,255,255,.3);font-size:11px;margin-top:4px;display:block;">
+            Así aparecerá en tu bienvenida y perfil.
+          </small>
+          {% if form.first_name.errors %}
+            <div class="field-error">{{ form.first_name.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="sv-label">Género <span style="color:rgba(255,255,255,.3);">(opcional)</span></label>
+          <div class="genero-group">
+            {% for val, label in form.genero.field.choices %}
+            {% if val %}
+            <div>
+              <input type="radio" name="genero" value="{{ val }}" id="gen_{{ val }}"
+                     class="genero-radio" style="display:none;"
+                     {% if form.genero.value == val %}checked{% endif %}>
+              <label for="gen_{{ val }}" class="genero-label">
+                {% if val == 'M' %}<i class="bi bi-gender-male d-block mb-1"></i>{% endif %}
+                {% if val == 'F' %}<i class="bi bi-gender-female d-block mb-1"></i>{% endif %}
+                {% if val == 'O' %}<i class="bi bi-gender-ambiguous d-block mb-1"></i>{% endif %}
+                {{ label }}
+              </label>
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-4">
+            <label class="sv-label">Edad</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="edad" class="form-control sv-input"
+                     placeholder="25" min="10" max="100"
+                     value="{{ form.edad.value|default:'' }}">
+              <span class="input-unit-badge">años</span>
+            </div>
+          </div>
+          <div class="col-4">
+            <label class="sv-label">Peso</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="peso" class="form-control sv-input"
+                     placeholder="70" min="20" max="300" step="0.1"
+                     value="{{ form.peso.value|default:'' }}">
+              <span class="input-unit-badge">kg</span>
+            </div>
+          </div>
+          <div class="col-4">
+            <label class="sv-label">Altura</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="altura" class="form-control sv-input"
+                     placeholder="175" min="100" max="250"
+                     value="{{ form.altura.value|default:'' }}">
+              <span class="input-unit-badge">cm</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="reg-btn-row">
+          <button type="button" class="btn-reg-back" id="btn-back">
+            <i class="bi bi-arrow-left"></i>
+          </button>
+          <button type="submit" class="btn-sv-outline py-3" style="flex:1;">
+            <i class="bi bi-check-lg me-1"></i> Crear cuenta
+          </button>
+        </div>
+      </div>
+
+    </form>
+
+    <p class="mt-3 text-center" style="color:rgba(255,255,255,.4);font-size:13px;">
+      ¿Ya tienes cuenta?
+      <a href="{% url 'login' %}" style="color:var(--sv-purple-light);">Inicia sesión</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const panel1  = document.getElementById('panel1');
+  const panel2  = document.getElementById('panel2');
+  const dot1    = document.getElementById('dot1');
+  const dot2    = document.getElementById('dot2');
+  const line1   = document.getElementById('line1');
+  const btnNext = document.getElementById('btn-next');
+  const btnBack = document.getElementById('btn-back');
+
+  // Si hay errores del servidor en campos del paso 2, ir directo al paso 2
+  const paso2Fields = ['id_first_name'];
+  const hasStep2Errors = paso2Fields.some(id => {
+    const el = document.getElementById(id);
+    return el && el.closest('.mb-4, .mb-3')?.querySelector('.field-error');
+  });
+
+  {% if form.errors and not form.username.errors and not form.email.errors and not form.password1.errors and not form.password2.errors %}
+  goToStep2();
+  {% endif %}
+
+  function goToStep2() {
+    panel1.classList.remove('active');
+    panel2.classList.add('active');
+    dot1.classList.remove('active');
+    dot1.classList.add('done');
+    dot1.innerHTML = '<i class="bi bi-check-lg" style="font-size:12px;"></i>';
+    dot2.classList.add('active');
+    line1.classList.add('done');
+  }
+
+  function goToStep1() {
+    panel2.classList.remove('active');
+    panel1.classList.add('active');
+    dot2.classList.remove('active');
+    dot1.classList.remove('done');
+    dot1.classList.add('active');
+    dot1.innerHTML = '1';
+    line1.classList.remove('done');
+  }
+
+  // Validación en tiempo real de contraseñas
+  const p1Input      = document.getElementById('id_password1');
+  const p2Input      = document.getElementById('id_password2');
+  const mismatchMsg  = document.getElementById('pass-mismatch');
+
+  function checkPasswords() {
+    if (!p2Input.value) {
+      mismatchMsg.style.display = 'none';
+      p2Input.style.borderColor = '';
+      return true;
+    }
+    const match = p1Input.value === p2Input.value;
+    mismatchMsg.style.display  = match ? 'none' : 'block';
+    p2Input.style.borderColor  = match ? '#00d4aa' : '#f87171';
+    return match;
+  }
+
+  p2Input.addEventListener('input', checkPasswords);
+  p1Input.addEventListener('input', () => { if (p2Input.value) checkPasswords(); });
+
+  btnNext.addEventListener('click', () => {
+    const fields = ['id_username', 'id_email', 'id_password1', 'id_password2'];
+    let valid = true;
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.value.trim()) {
+        el.style.borderColor = '#f87171';
+        valid = false;
+      } else if (el) {
+        el.style.borderColor = '';
+      }
+    });
+    if (!checkPasswords()) valid = false;
+    if (valid) goToStep2();
+  });
+
+  btnBack.addEventListener('click', goToStep1);
+})();
+</script>
+{% endblock %}

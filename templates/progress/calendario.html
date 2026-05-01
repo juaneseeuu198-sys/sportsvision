@@ -1,0 +1,388 @@
+{% extends 'base/base.html' %}
+{% block title %}Tu Progreso — SportsVision{% endblock %}
+
+{% block content %}
+<style>
+  /* ── Legend ── */
+  .cal-legend {
+    display: flex;
+    gap: 1.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: #aaa;
+  }
+  .cal-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .legend-dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .ld-workout   { background: var(--sv-purple-light, #a78bfa); }
+  .ld-rest      { background: #34d399; }
+  .ld-missed    { background: #f87171; }
+  .ld-planned   { background: #60a5fa; }
+  .ld-empty     { background: transparent; border: 1.5px solid #555; }
+
+  /* ── Mode toolbar ── */
+  .cal-mode-bar {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    color: #bbb;
+    transition: all 0.18s ease;
+    letter-spacing: 0.02em;
+  }
+  .mode-btn:hover { filter: brightness(1.2); }
+  .mode-btn.active {
+    color: #fff;
+  }
+  .mode-btn[data-mode="rest"].active {
+    background: rgba(52,211,153,0.18);
+    border-color: #34d399;
+    color: #34d399;
+  }
+  .mode-btn[data-mode="planned"].active {
+    background: rgba(96,165,250,0.18);
+    border-color: #60a5fa;
+    color: #60a5fa;
+  }
+  .mode-btn[data-mode="clear"].active,
+  .mode-btn[data-mode="clear"]:hover {
+    background: rgba(248,113,113,0.15);
+    border-color: #f87171;
+    color: #f87171;
+  }
+  .mode-hint {
+    font-size: 0.75rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  /* ── Calendar cell overrides ── */
+  .cal-cell {
+    position: relative;
+    transition: background 0.15s ease, transform 0.1s ease;
+    user-select: none;
+  }
+  .cal-cell.day-rest {
+    background: rgba(52,211,153,0.10) !important;
+  }
+  .cal-cell.day-rest .cal-number { color: #34d399; }
+
+  .cal-cell.day-planned {
+    background: rgba(96,165,250,0.10) !important;
+  }
+  .cal-cell.day-planned .cal-number { color: #60a5fa; }
+
+  .cal-cell.day-missed {
+    background: rgba(248,113,113,0.08) !important;
+  }
+  .cal-cell.day-missed .cal-number { color: #f87171; }
+
+  /* dot overrides for rest/planned/missed */
+  .cal-cell.day-rest .cal-dot,
+  .cal-cell.day-planned .cal-dot,
+  .cal-cell.day-missed .cal-dot {
+    display: none; /* hide default dot; use corner badge instead */
+  }
+
+  .day-badge {
+    position: absolute;
+    top: 5px; right: 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+  .cal-cell.day-rest    .day-badge { color: #34d399; content: 'DSC'; }
+  .cal-cell.day-planned .day-badge { color: #60a5fa; }
+  .cal-cell.day-missed  .day-badge { color: #f87171; }
+
+  /* click ripple */
+  .cal-cell.clicking { transform: scale(0.95); }
+</style>
+
+<div class="sv-page-content">
+
+  <!-- Header -->
+  <div class="calendar-header">
+    <a href="?year={{ prev_year }}&month={{ prev_month }}" class="cal-nav-btn">
+      &lt;&lt;&lt; {{ prev_year }}/{{ prev_month }}
+    </a>
+    <h1 class="calendar-title">{{ mes_nombre }} {{ year }}</h1>
+    <a href="?year={{ next_year }}&month={{ next_month }}" class="cal-nav-btn">
+      {{ next_year }}/{{ next_month }} &gt;&gt;&gt;
+    </a>
+  </div>
+
+  <!-- Mode toolbar -->
+  <div class="cal-mode-bar">
+    <button class="mode-btn active" data-mode="rest">
+      <span style="width:9px;height:9px;border-radius:50%;background:#34d399;display:inline-block;"></span>
+      Descanso
+    </button>
+    <button class="mode-btn" data-mode="planned">
+      <span style="width:9px;height:9px;border-radius:50%;background:#60a5fa;display:inline-block;"></span>
+      Día de trabajo
+    </button>
+    <button class="mode-btn" data-mode="clear">
+      <span style="width:9px;height:9px;border-radius:50%;background:#f87171;display:inline-block;"></span>
+      Borrar
+    </button>
+    <span class="mode-hint">← Selecciona un modo y haz clic en los días</span>
+  </div>
+
+  <!-- Legend -->
+  <div class="cal-legend">
+    <div class="cal-legend-item">
+      <span class="legend-dot ld-workout"></span> Entrenamiento registrado
+    </div>
+    <div class="cal-legend-item">
+      <span class="legend-dot ld-rest"></span> Descanso
+    </div>
+    <div class="cal-legend-item">
+      <span class="legend-dot ld-planned"></span> Día de trabajo planeado
+    </div>
+    <div class="cal-legend-item">
+      <span class="legend-dot ld-missed"></span> No entrenado (pasado)
+    </div>
+    <div class="cal-legend-item">
+      <span class="legend-dot ld-empty"></span> Sin asignar
+    </div>
+  </div>
+
+  <!-- Calendar grid -->
+  <div class="calendar-grid">
+    <div class="cal-days-header">
+      <div class="cal-day-name">Lunes</div>
+      <div class="cal-day-name">Martes</div>
+      <div class="cal-day-name">Miercoles</div>
+      <div class="cal-day-name">Jueves</div>
+      <div class="cal-day-name">Viernes</div>
+      <div class="cal-day-name">Sabado</div>
+      <div class="cal-day-name">Domingo</div>
+    </div>
+
+    <div class="cal-body" id="calBody">
+      {% for week in calendario %}
+        {% for day in week %}
+        <div class="cal-cell {% if day > 0 and day in dias_con_entrenamiento %}has-workout{% endif %} {% if day == dia_sel %}selected-day{% endif %}"
+             data-day="{{ day }}"
+             data-year="{{ year }}"
+             data-month="{{ month }}"
+             {% if day > 0 %}
+             onclick="handleDayClick(this, {{ day }}, {{ year }}, {{ month }})"
+             {% endif %}>
+          {% if day > 0 %}
+            {% if day in dias_con_entrenamiento %}
+              <span class="cal-dot dot-purple"></span>
+            {% else %}
+              <span class="cal-dot dot-outline"></span>
+            {% endif %}
+            <span class="cal-number">{{ day }}</span>
+            <span class="day-badge" data-badge></span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Day detail popup -->
+  {% if dia_sel %}
+  <div class="day-detail-panel mt-4">
+    <h5 class="sv-panel-title">{{ dia_sel }} de {{ mes_nombre }}</h5>
+    {% if entrenamientos_dia %}
+      {% for ent in entrenamientos_dia %}
+      <div class="day-workout-card mb-3">
+        <h6 style="color:var(--sv-purple-light);">Ejercicios Realizados</h6>
+        {% regroup ent.series.all by ejercicio as series_by_ex %}
+        {% for group in series_by_ex %}
+        <div class="day-exercise mb-2">
+          <strong>{{ group.grouper.nombre }}</strong>
+          {% if group.grouper.grupo_muscular %}
+          <span class="muscle-tag">{{ group.grouper.grupo_muscular.nombre }}</span>
+          {% endif %}
+          <br>
+          <small style="color:#888;">series: {{ group.list|length }}</small>
+          {% for serie in group.list %}
+          <div class="day-serie">
+            Serie {{ serie.numero_serie }}:
+            {% if serie.repeticiones %}{{ serie.repeticiones }} reps{% endif %}
+            {% if serie.peso %}× {{ serie.peso }} kg{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-workout-msg">No has hecho nada este dia</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+(function () {
+  // ── Storage key includes year+month so each month is independent ──
+  const YEAR  = {{ year }};
+  const MONTH = {{ month }};
+  const TODAY_ISO = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+  const STORAGE_KEY = `sv_day_types_${YEAR}_${MONTH}`;
+
+  // Days that already have a registered workout (from Django context)
+  const workoutDays = new Set([{% for d in dias_con_entrenamiento %}{{ d }},{% endfor %}]);
+
+  // ── State ──
+  const MODE_KEY = 'sv_active_mode';
+  let currentMode = 'rest';   // 'rest' | 'planned' | 'clear'
+  let dayTypes = {};           // { "5": "rest" | "planned" }
+
+  // Load persisted state
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) dayTypes = JSON.parse(saved);
+  } catch(e) {}
+
+  // Load persisted mode
+  try {
+    const savedMode = localStorage.getItem(MODE_KEY);
+    if (savedMode) currentMode = savedMode;
+  } catch(e) {}
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(dayTypes)); } catch(e) {}
+  }
+
+  function saveMode(mode) {
+    try { localStorage.setItem(MODE_KEY, mode); } catch(e) {}
+  }
+
+  // ── Mode buttons — apply active state on load ──
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    if (btn.dataset.mode === currentMode) btn.classList.add('active');
+    else btn.classList.remove('active');
+
+    btn.addEventListener('click', () => {
+      currentMode = btn.dataset.mode;
+      saveMode(currentMode);
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // ── Determine if a day is "in the past" relative to today ──
+  function isPast(day) {
+    const cellDate = new Date(YEAR, MONTH - 1, day);
+    const today    = new Date();
+    today.setHours(0,0,0,0);
+    return cellDate < today;
+  }
+
+  // ── Apply visual state to a cell ──
+  function applyCell(cell, day) {
+    if (!day || day <= 0) return;
+
+    // Remove all managed classes
+    cell.classList.remove('day-rest', 'day-planned', 'day-missed');
+
+    const badge = cell.querySelector('[data-badge]');
+    if (badge) badge.textContent = '';
+
+    const hasWorkout = workoutDays.has(day);
+    const type = dayTypes[String(day)];
+
+    if (hasWorkout) {
+      // Workout recorded — keep existing purple dot, no overlay
+      return;
+    }
+
+    if (type === 'rest') {
+      cell.classList.add('day-rest');
+      if (badge) badge.textContent = 'DSC';
+    } else if (type === 'planned') {
+      // Planned + past + no workout = missed
+      if (isPast(day)) {
+        cell.classList.add('day-missed');
+        if (badge) badge.textContent = 'NO';
+      } else {
+        cell.classList.add('day-planned');
+        if (badge) badge.textContent = 'TRB';
+      }
+    } else {
+      // No type assigned
+      if (isPast(day)) {
+        cell.classList.add('day-missed');
+        if (badge) badge.textContent = 'NO';
+      }
+      // Future unassigned: leave neutral
+    }
+  }
+
+  // ── Click handler (called from inline onclick) ──
+  window.handleDayClick = function(cell, day, year, month) {
+    // Navigate to detail view AND apply type
+    const key = String(day);
+
+    if (currentMode === 'clear') {
+      delete dayTypes[key];
+    } else {
+      // Toggle: clicking same mode twice clears it
+      if (dayTypes[key] === currentMode) {
+        delete dayTypes[key];
+      } else {
+        dayTypes[key] = currentMode;
+      }
+    }
+
+    save();
+    applyCell(cell, day);
+
+    // Brief scale feedback
+    cell.classList.add('clicking');
+    setTimeout(() => cell.classList.remove('clicking'), 120);
+
+    // Navigate to day detail (original behaviour) — slight delay so animation shows
+    setTimeout(() => {
+      window.location = `?year=${year}&month=${month}&dia=${day}`;
+    }, 150);
+  };
+
+  // ── Initial render for all cells ──
+  document.querySelectorAll('.cal-cell[data-day]').forEach(cell => {
+    const day = parseInt(cell.dataset.day, 10);
+    if (day > 0) applyCell(cell, day);
+  });
+
+})();
+</script>
+{% endblock %}

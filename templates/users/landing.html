@@ -1,0 +1,231 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}SportsVision — Más que un entrenamiento{% endblock %}
+
+{% block public_content %}
+<div class="landing-page">
+
+  <!-- NAVBAR -->
+  <nav class="landing-nav">
+    <div class="nav-links">
+      <a href="{% url 'landing' %}">Home</a>
+      <a href="{% url 'login' %}">Login</a>
+      <a href="{% url 'registro' %}">Lets work</a>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-socials">
+      <span><i class="bi bi-instagram"></i></span>
+      <span><i class="bi bi-twitter-x"></i></span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="landing-hero" id="hero">
+    <img src="{% static 'images/gym_bg.jpg' %}"
+         alt="Gym background"
+         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0.45;">
+
+    <div class="hero-content">
+      <h1 class="hero-title">SPORTS<br>VISION</h1>
+      <p class="hero-subtitle">
+        más que un entrenamiento, una visión de disciplina,
+        fuerza y superación que te transforma a una mejor versión.
+      </p>
+      <a href="#info" class="btn-sv-outline" id="btnMasInfo">MÁS INFORMACIÓN</a>
+    </div>
+
+    <!-- LOGO: más grande y perfectamente circular -->
+    <div class="hero-logo">
+      <img src="{% static 'images/logo.png' %}"
+           alt="Logo SportsVision"
+           style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+    </div>
+  </section>
+
+  <!-- SECCIÓN MÁS INFORMACIÓN -->
+  <section class="landing-info" id="info">
+
+    <div class="info-intro">
+      <div class="info-badge">NUESTRO PROYECTO</div>
+      <h2 class="info-title">¿Qué es <span class="text-purple">SportsVision</span>?</h2>
+      <p class="info-desc">
+        SportsVision es una plataforma digital accesible diseñada para ofrecer rutinas de
+        entrenamiento personalizadas, herramientas de seguimiento y recursos que apoyen el
+        desarrollo físico de cualquier persona, ya sea que entrene en casa, en una institución
+        educativa o en un gimnasio completo.
+      </p>
+      <p class="info-desc">
+        No está dirigida únicamente a entrenadores o profesores, sino a <strong>cualquier persona
+        interesada en comenzar a ejercitarse</strong> y que necesite orientación para crear
+        una rutina adecuada según el espacio y los recursos disponibles.
+      </p>
+    </div>
+
+    <div class="mision-vision-grid">
+      <div class="mv-card mv-card-mision">
+        <div class="mv-icon"><i class="bi bi-bullseye"></i></div>
+        <h3>Misión</h3>
+        <p>Ofrecer una plataforma digital accesible y funcional que proporcione rutinas de entrenamiento personalizadas, herramientas de seguimiento y recursos visuales que apoyen el desarrollo físico de los usuarios. Facilitar el aprendizaje, mejorar el rendimiento y promover hábitos saludables mediante una experiencia moderna e intuitiva.</p>
+      </div>
+      <div class="mv-card mv-card-vision">
+        <div class="mv-icon"><i class="bi bi-eye-fill"></i></div>
+        <h3>Visión</h3>
+        <p>Convertirnos en un referente educativo y deportivo dentro del entorno escolar, destacándonos por nuestra innovación, calidad y capacidad para integrar tecnología, bienestar y aprendizaje. A largo plazo, aspiramos a expandirnos como una herramienta que inspire a más personas a adoptar estilos de vida activos y responsables.</p>
+      </div>
+    </div>
+
+    <div class="info-features">
+      <h2 class="info-title text-center mb-4">¿Qué puedes hacer en <span class="text-purple">SportsVision</span>?</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feat-icon" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)"><i class="bi bi-trophy-fill"></i></div>
+          <h4>Rutinas Personalizadas</h4>
+          <p>Crea tu propia rutina en 3 pasos: elige tu equipo disponible, los músculos a trabajar y los ejercicios.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feat-icon" style="background:linear-gradient(135deg,#065f46,#10b981)"><i class="bi bi-lightning-fill"></i></div>
+          <h4>Generador Automático</h4>
+          <p>¿No sabes por dónde empezar? Dinos tu nivel y equipo disponible y generamos tu rutina al instante.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feat-icon" style="background:linear-gradient(135deg,#7f1d1d,#ef4444)"><i class="bi bi-calendar-check-fill"></i></div>
+          <h4>Seguimiento de Progreso</h4>
+          <p>Registra cada entrenamiento y revisa tu historial en un calendario visual mes a mes.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feat-icon" style="background:linear-gradient(135deg,#4c1d95,#8b5cf6)"><i class="bi bi-calculator-fill"></i></div>
+          <h4>Calculadoras Fitness</h4>
+          <p>Calcula tus calorías con la fórmula Mifflin-St Jeor y tu Índice de Masa Corporal (IMC).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-team">
+      <h2 class="info-title text-center">Nuestro <span class="text-purple">Equipo</span></h2>
+      <p class="text-center mb-4" style="color:#888;">Estudiantes apasionados por la tecnología y el deporte</p>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar"><i class="bi bi-person-fill"></i></div>
+          <h5>Samuel Orejuela</h5>
+          <span class="team-role">Desarrollador</span>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar"><i class="bi bi-person-fill"></i></div>
+          <h5>Tomas Amaya</h5>
+          <span class="team-role">Diseñador</span>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar"><i class="bi bi-person-fill"></i></div>
+          <h5>Juan Esteban Salazar</h5>
+          <span class="team-role">Desarrollador</span>
+        </div>
+      </div>
+      <p class="text-center mt-3" style="color:#666;font-size:13px;">
+        Tutor: <strong style="color:#888;">Pedro Antonio Pérez</strong>
+      </p>
+    </div>
+
+    <div class="info-cta">
+      <h2>¿Listo para empezar?</h2>
+      <p>Crea tu cuenta gratis y comienza tu transformación hoy.</p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="{% url 'registro' %}" class="btn-sv-green px-5 py-3" style="font-size:16px;text-decoration:none;">
+          <i class="bi bi-person-plus-fill"></i> Crear Cuenta Gratis
+        </a>
+        <a href="{% url 'login' %}" class="btn-sv-outline py-3 px-5" style="text-decoration:none;">
+          Iniciar Sesión
+        </a>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<style>
+/* ---- HERO LOGO (más grande y circular) ---- */
+.hero-logo {
+  position: relative;
+  z-index: 2;
+  width: 480px;
+  height: 480px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  /* Sombra para que resalte sobre el fondo */
+  box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 0 3px rgba(255,255,255,0.1);
+}
+
+/* ---- INFO SECTION ---- */
+.landing-info { background: #111118; padding: 80px 40px; }
+.info-intro { max-width: 800px; margin: 0 auto 70px; text-align: center; }
+.info-badge { display: inline-block; padding: 6px 20px; border: 1.5px solid #7b2ff7; border-radius: 20px; color: #9d5cf6; font-size: 13px; font-weight: 700; letter-spacing: 2px; margin-bottom: 20px; }
+.info-title { font-family: 'Bebas Neue', sans-serif; font-size: 52px; line-height: 1.1; margin-bottom: 20px; color: #fff; }
+.text-purple { color: #9d5cf6; }
+.info-desc { color: #aaa; font-size: 16px; line-height: 1.8; margin-bottom: 14px; }
+
+.mision-vision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1000px; margin: 0 auto 80px; }
+.mv-card { border-radius: 20px; padding: 36px; }
+.mv-card-mision { background: linear-gradient(135deg, rgba(123,47,247,0.15), rgba(123,47,247,0.05)); border: 1.5px solid rgba(123,47,247,0.4); }
+.mv-card-vision  { background: linear-gradient(135deg, rgba(0,212,170,0.1),   rgba(0,212,170,0.03));  border: 1.5px solid rgba(0,212,170,0.3); }
+.mv-icon { font-size: 36px; margin-bottom: 16px; }
+.mv-card-mision .mv-icon { color: #9d5cf6; }
+.mv-card-vision  .mv-icon { color: #00d4aa; }
+.mv-card h3 { font-family: 'Bebas Neue', sans-serif; font-size: 36px; margin-bottom: 14px; }
+.mv-card-mision h3 { color: #9d5cf6; }
+.mv-card-vision  h3 { color: #00d4aa; }
+.mv-card p { color: #bbb; line-height: 1.8; font-size: 15px; margin: 0; }
+
+.info-features { max-width: 1000px; margin: 0 auto 80px; }
+.features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.feature-item { background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 24px; text-align: center; transition: border-color 0.2s, transform 0.2s; }
+.feature-item:hover { border-color: #7b2ff7; transform: translateY(-4px); }
+.feat-icon { width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px; }
+.feature-item h4 { font-size: 15px; font-weight: 900; margin-bottom: 10px; color: #fff; }
+.feature-item p  { color: #888; font-size: 13px; line-height: 1.6; margin: 0; }
+
+.info-team { max-width: 700px; margin: 0 auto 80px; }
+.team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }
+.team-card { background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 28px 16px; text-align: center; transition: border-color 0.2s; }
+.team-card:hover { border-color: #7b2ff7; }
+.team-avatar { width: 64px; height: 64px; border-radius: 50%; background: rgba(123,47,247,0.2); border: 2px solid #7b2ff7; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #9d5cf6; margin: 0 auto 14px; }
+.team-card h5 { font-weight: 900; font-size: 15px; margin-bottom: 6px; color: #fff; }
+.team-role { font-size: 12px; color: #9d5cf6; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+
+.info-cta { text-align: center; padding: 60px 20px; background: rgba(123,47,247,0.07); border: 1.5px solid rgba(123,47,247,0.2); border-radius: 24px; max-width: 700px; margin: 0 auto; }
+.info-cta h2 { font-family: 'Bebas Neue', sans-serif; font-size: 56px; margin-bottom: 12px; color: #fff; }
+.info-cta p  { color: #888; font-size: 17px; margin-bottom: 28px; }
+
+@media (max-width: 900px) {
+  .hero-logo { width: 280px; height: 280px; }
+  .mision-vision-grid { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .hero-logo { width: 180px; height: 180px; }
+  .mision-vision-grid { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .team-grid { grid-template-columns: 1fr 1fr; }
+  .landing-info { padding: 50px 16px; }
+  .info-title { font-size: 36px; }
+  .info-desc { font-size: 14px; }
+  .info-cta h2 { font-size: 40px; }
+  .info-cta { padding: 40px 16px; }
+  .mv-card { padding: 24px; }
+}
+@media (max-width: 480px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .team-grid { grid-template-columns: 1fr; }
+  .hero-logo { width: 130px; height: 130px; }
+  .info-title { font-size: 30px; }
+  .info-cta .d-flex { flex-direction: column; align-items: center; }
+  .info-cta .d-flex a { width: 100%; text-align: center; }
+}
+</style>
+
+<script>
+  document.getElementById('btnMasInfo').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('info').scrollIntoView({ behavior: 'smooth' });
+  });
+</script>
+{% endblock %}

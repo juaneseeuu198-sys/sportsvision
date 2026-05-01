@@ -1,0 +1,184 @@
+{% extends 'base/base.html' %}
+{% block title %}Calculadora de Calorías{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+
+    <div class="page-top-nav">
+      <a href="{% url 'herramientas' %}" class="page-back-btn">
+        <i class="bi bi-arrow-left"></i> Volver
+      </a>
+      <div class="page-breadcrumb">
+        <a href="{% url 'herramientas' %}"><i class="bi bi-wrench-adjustable-circle-fill"></i> Herramientas</a>
+        <span class="sep"><i class="bi bi-chevron-right"></i></span>
+        <span class="current">Calculadora de Calorías</span>
+      </div>
+    </div>
+
+    <h1 class="sv-page-title">Calculadora de Calorias</h1>
+
+    <div class="sv-panel mb-4">
+      <h4>Calculadora Mifflin-St Jeor</h4>
+      <p style="color:#aaa;font-size:14px;margin:8px 0;">La fórmula Mifflin-St Jeor calcula la Tasa Metabólica Basal (TMB), la cantidad de calorías que el cuerpo necesita en reposo. Considera peso, altura, edad y sexo.</p>
+      <ul style="color:#aaa;font-size:13px;padding-left:20px;">
+        <li>Hombres: TMB = (10 × peso) + (6.25 × altura) − (5 × edad) + 5</li>
+        <li>Mujeres: TMB = (10 × peso) + (6.25 × altura) − (5 × edad) − 161</li>
+      </ul>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Género -->
+      <div class="sv-panel mb-3">
+        <label class="sv-label mb-3">Genero</label>
+        <div class="gender-select">
+          <label class="gender-btn-label" for="id_genero_0">
+            <input type="radio" name="genero" value="M" id="id_genero_0" hidden class="gender-radio"
+                   {% if not resultado %}checked{% elif resultado.genero == 'M' %}checked{% endif %}>
+            <span class="gender-btn">Masculino</span>
+          </label>
+          <label class="gender-btn-label" for="id_genero_1">
+            <input type="radio" name="genero" value="F" id="id_genero_1" hidden class="gender-radio"
+                   {% if resultado and resultado.genero == 'F' %}checked{% endif %}>
+            <span class="gender-btn">Femenino</span>
+          </label>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-4">
+            <label class="sv-label">Edad</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="edad" class="form-control sv-input"
+                     value="{{ resultado.edad|default:'25' }}" min="10" max="120">
+              <span class="input-unit-badge">Años</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="sv-label">Peso</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="peso" class="form-control sv-input" step="0.1"
+                     value="{{ resultado.peso|default:'70' }}" min="30" max="300">
+              <span class="input-unit-badge">kg</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="sv-label">Altura</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="altura" class="form-control sv-input"
+                     value="{{ resultado.altura|default:'175' }}" min="100" max="250">
+              <span class="input-unit-badge">cm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actividad -->
+      <div class="sv-panel mb-3">
+        <label class="sv-label mb-3">Nivel de Actividad diaria</label>
+        <div class="activity-list">
+          {% for val, label in form.fields.nivel_actividad.choices %}
+          <label class="activity-item" for="act_{{ val }}">
+            <input type="radio" name="nivel_actividad" value="{{ val }}" id="act_{{ val }}" hidden class="activity-radio"
+                   {% if resultado and resultado.nivel_actividad == val %}checked{% elif val == 'activo' and not resultado %}checked{% endif %}>
+            <div class="activity-icon">
+              {% if val == 'sedentario' %}😴
+              {% elif val == 'poca' %}🚶
+              {% elif val == 'activo' %}❤️
+              {% elif val == 'diario' %}🏃
+              {% else %}⚡{% endif %}
+            </div>
+            <div class="activity-text"><h5>{{ label }}</h5></div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Objetivo -->
+      <div class="sv-panel mb-3">
+        <label class="sv-label mb-3">Objetivo</label>
+        <div class="activity-list">
+          {% for val, label in form.fields.objetivo.choices %}
+          <label class="activity-item" for="obj_{{ val }}">
+            <input type="radio" name="objetivo" value="{{ val }}" id="obj_{{ val }}" hidden class="activity-radio"
+                   {% if resultado and resultado.objetivo == val %}checked{% elif val == 'mantener' and not resultado %}checked{% endif %}>
+            <div class="activity-icon">
+              {% if val == 'perder_rapido' %}📉
+              {% elif val == 'perder' %}↘️
+              {% elif val == 'mantener' %}⚖️
+              {% elif val == 'ganar' %}↗️
+              {% else %}📈{% endif %}
+            </div>
+            <div class="activity-text"><h5>{{ label }}</h5></div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn-calcular w-100 mb-4">Calcular</button>
+    </form>
+
+    <!-- Resultados -->
+    {% if resultado %}
+    <div class="sv-panel">
+      <h4 class="sv-panel-title">Resultados</h4>
+      <div class="results-grid mt-3">
+        <div class="result-card">
+          <div class="r-label">🔥 TMB <span class="info-badge">ℹ</span></div>
+          <div class="r-value">{{ resultado.tmb|floatformat:0 }}</div>
+          <div class="r-unit">kcal</div>
+        </div>
+        <div class="result-card">
+          <div class="r-label">⚡ GETD <span class="info-badge">ℹ</span></div>
+          <div class="r-value">{{ resultado.getd|floatformat:0 }}</div>
+          <div class="r-unit">kcal</div>
+        </div>
+      </div>
+
+      <h5 class="sv-panel-title mt-4">Consumo Recomendado</h5>
+      <div class="macros-grid mt-3">
+        <div class="macro-card">
+          <div class="m-label">🥩 Proteinas</div>
+          <div class="m-val">{{ resultado.proteinas_g }}g</div>
+          <div class="m-kcal">{{ resultado.proteinas_g|floatformat:0|add:0 }} kcal</div>
+        </div>
+        <div class="macro-card">
+          <div class="m-label">🍞 Carbohidatos</div>
+          <div class="m-val">{{ resultado.carbos_g }}g</div>
+          <div class="m-kcal">kcal</div>
+        </div>
+        <div class="macro-card">
+          <div class="m-label">💧 Grasas</div>
+          <div class="m-val">{{ resultado.grasas_g }}g</div>
+          <div class="m-kcal">kcal</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function activateRadioStyle(name, activeClass) {
+    document.querySelectorAll(`[name="${name}"]`).forEach(r => {
+      r.addEventListener('change', () => {
+        document.querySelectorAll(`[name="${name}"]`).forEach(rb => {
+          const label = rb.nextElementSibling;
+          if (label) label.classList.remove('active');
+        });
+        const active = r.nextElementSibling;
+        if (active) active.classList.add('active');
+      });
+      if (r.checked) {
+        const label = r.nextElementSibling;
+        if (label) label.classList.add('active');
+      }
+    });
+  }
+  activateRadioStyle('genero');
+  activateRadioStyle('nivel_actividad');
+  activateRadioStyle('objetivo');
+</script>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SportsVision{% endblock %}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/sportsvision.css' %}">
+
+  <style>
+    .btn-sidebar-open {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 12px;
+      z-index: 1100;
+      background: var(--sv-sidebar-bg, #1e1e2e);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 22px;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-sidebar-open:hover { background: rgba(123,47,247,0.3); }
+
+    .sv-main { transition: margin-left 0.3s ease; }
+    .sv-layout.sidebar-collapsed .sv-main { margin-left: 0 !important; }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body class="sv-body">
+
+{% if user.is_authenticated %}
+<div class="sv-layout" id="svLayout">
+
+  <button class="btn-sidebar-open" id="btnOpenSidebar">
+    <i class="bi bi-list"></i>
+  </button>
+
+  <nav class="sv-sidebar" id="svSidebar">
+    <div class="sidebar-top">
+      <button class="btn-menu" id="btnToggleSidebar"><i class="bi bi-list"></i></button>
+      <a href="{% url 'perfil' %}" class="sidebar-logo" title="Mi perfil" style="text-decoration:none;">
+        {% if user.profile.avatar %}
+          <img src="{{ user.profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+        {% else %}
+          <div class="logo-placeholder"><i class="bi bi-person-circle"></i></div>
+        {% endif %}
+      </a>
+    </div>
+
+    <ul class="sidebar-nav">
+
+      <li>
+        <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          <i class="bi bi-house-fill"></i><span>Home</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'paso1_equipo' %}"
+           class="{% if '/rutinas/' in request.path and request.resolver_match.url_name != 'auto_generador' %}active{% endif %}">
+          <i class="bi bi-trophy-fill"></i><span>Nueva Rutina</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'auto_generador' %}"
+           class="{% if request.resolver_match.url_name == 'auto_generador' %}active{% endif %}">
+          <i class="bi bi-lightning-fill"></i><span>Rutina Auto</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'calendario_progreso' %}"
+           class="{% if '/progreso/' in request.path %}active{% endif %}">
+          <i class="bi bi-calendar-check-fill"></i><span>Progreso</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'herramientas' %}"
+           class="{% if '/herramientas/' in request.path %}active{% endif %}">
+          <i class="bi bi-wrench-adjustable-circle-fill"></i><span>Herramientas</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'perfil' %}"
+           class="{% if '/usuarios/perfil' in request.path %}active{% endif %}">
+          <i class="bi bi-person-fill"></i><span>Mi Perfil</span>
+        </a>
+      </li>
+
+
+    </ul>
+
+    <div class="sidebar-bottom">
+      <a href="{% url 'logout' %}" class="sidebar-logout">
+        <i class="bi bi-power"></i><span>Cerrar Sesión</span>
+      </a>
+    </div>
+  </nav>
+
+  <main class="sv-main" id="svMain">
+
+    <div class="fitness-bg-deco" aria-hidden="true">
+      <i class="bi bi-fire"></i>
+      <i class="bi bi-heart-pulse-fill"></i>
+      <i class="bi bi-trophy-fill"></i>
+      <i class="bi bi-lightning-fill"></i>
+      <i class="bi bi-bicycle"></i>
+      <i class="bi bi-egg-fried"></i>
+    </div>
+
+    <div class="sv-topbar d-md-none">
+      <button class="btn-menu" id="btnToggleMobile"><i class="bi bi-list"></i></button>
+    </div>
+
+    <div class="sv-main-content">
+      {% block content %}{% endblock %}
+    </div>
+
+  </main>
+
+</div>
+
+{% else %}
+  {% block public_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/sportsvision.js' %}"></script>
+
+<script>
+(function () {
+  var layout  = document.getElementById('svLayout');
+  var sidebar = document.getElementById('svSidebar');
+  var btnOpen = document.getElementById('btnOpenSidebar');
+
+  function isMobile() { return window.innerWidth <= 768; }
+
+  function closeSidebar() {
+    sidebar.classList.add('collapsed');
+    layout.classList.add('sidebar-collapsed');
+    if (btnOpen) btnOpen.style.display = 'flex';
+  }
+
+  function openSidebar() {
+    sidebar.classList.remove('collapsed');
+    layout.classList.remove('sidebar-collapsed');
+    if (btnOpen) btnOpen.style.display = 'none';
+  }
+
+  function toggleSidebar() {
+    if (isMobile()) {
+      sidebar.classList.toggle('open');
+    } else {
+      sidebar.classList.contains('collapsed') ? openSidebar() : closeSidebar();
+    }
+  }
+
+  document.getElementById('btnToggleSidebar')?.addEventListener('click', toggleSidebar);
+  document.getElementById('btnToggleMobile')?.addEventListener('click', toggleSidebar);
+  btnOpen?.addEventListener('click', openSidebar);
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

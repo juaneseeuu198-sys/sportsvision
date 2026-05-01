@@ -1,0 +1,97 @@
+{% extends 'base/base.html' %}
+{% block title %}Rutina Inteligente — SportsVision{% endblock %}
+
+{% block content %}
+<div class="sv-page-content">
+  <div class="sv-page-head">
+    <div>
+      <h1 class="sv-title">Rutina Inteligente</h1>
+      <p class="sv-sub">Genera una rutina usando tu catálogo (sin depender de IA).</p>
+    </div>
+  </div>
+
+  <div class="sv-panel">
+    <form method="post" class="d-flex flex-column gap-3">
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="sv-label">Nombre</label>
+          <input class="sv-input" name="nombre" placeholder="Ej: Full Body Express" value="Rutina Inteligente">
+        </div>
+        <div class="col-md-3">
+          <label class="sv-label">Nivel</label>
+          <select class="sv-select" name="nivel">
+            <option value="principiante">Principiante</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="sv-label">Objetivo</label>
+          <select class="sv-select" name="objetivo">
+            <option value="hipertrofia">Hipertrofia</option>
+            <option value="fuerza">Fuerza</option>
+            <option value="resistencia">Resistencia</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="sv-label">Nº ejercicios</label>
+          <input class="sv-input" type="number" min="3" max="12" name="num_ejercicios" value="6">
+        </div>
+        <div class="col-md-9" style="color:var(--sv-muted);font-weight:700;font-size:13px;display:flex;align-items:end;">
+          Tip: si no eliges equipo o músculos, usará todo tu catálogo.
+        </div>
+      </div>
+
+      <div>
+        <label class="sv-label">Equipo (opcional)</label>
+        <div class="equipment-grid" style="grid-template-columns: repeat(6, 1fr);">
+          {% for equipo in equipos %}
+            <label class="equip-card" for="eq_ai_{{ equipo.id }}" style="aspect-ratio:auto; height:110px;">
+              <input type="checkbox" name="equipos" value="{{ equipo.id }}" id="eq_ai_{{ equipo.id }}" class="equip-checkbox" hidden>
+              <span class="sel-dot"></span>
+              <div class="equip-img" style="bottom:28px;">
+                {% if equipo.imagen %}
+                  <img src="{{ equipo.imagen.url }}" alt="{{ equipo }}">
+                {% else %}
+                  <div class="img-slot">
+                    <i class="bi bi-tools"></i>
+                    <p>{{ equipo.icono }} {{ equipo }}</p>
+                  </div>
+                {% endif %}
+              </div>
+              <span class="equip-label">{{ equipo }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <label class="sv-label">Músculos (opcional)</label>
+        <div class="d-flex flex-wrap gap-2">
+          {% for grupo in grupos %}
+            <label class="muscle-btn-label" for="gm_ai_{{ grupo.id }}">
+              <input type="checkbox" name="grupos" value="{{ grupo.id }}" id="gm_ai_{{ grupo.id }}" hidden class="muscle-check">
+              <span class="muscle-btn">{{ grupo.nombre }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn-sv btn-sv-primary" type="submit">
+          <i class="bi bi-lightning-charge-fill"></i> Generar y empezar
+        </button>
+        <a class="btn-sv" href="{% url 'paso1_equipo' %}">
+          <i class="bi bi-trophy-fill"></i> Flujo paso a paso
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,346 @@
+{% extends 'base/base.html' %}
+{% block title %}Mi Perfil — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+  .perfil-header {
+    background: linear-gradient(135deg, rgba(123,47,247,0.2), rgba(67,97,238,0.15));
+    border: 1.5px solid rgba(123,47,247,0.3);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .perfil-avatar {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--sv-purple);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: rgba(123,47,247,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; color: var(--sv-purple-light);
+    overflow: hidden;
+  }
+  .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .perfil-info { flex: 1; }
+  .perfil-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 38px; line-height: 1; margin-bottom: 4px; }
+  .perfil-username { color: var(--sv-purple-light); font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .perfil-meta { color: #888; font-size: 13px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--sv-bg-card);
+    border: 1.5px solid var(--sv-border);
+    border-radius: 16px;
+    padding: 22px 18px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--sv-purple); }
+  .stat-card .stat-icon { font-size: 28px; margin-bottom: 10px; }
+  .stat-card .stat-val  { font-family: 'Bebas Neue', sans-serif; font-size: 42px; line-height: 1; margin-bottom: 4px; }
+  .stat-card .stat-lbl  { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .datos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .dato-item {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--sv-border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .dato-item .dato-val { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--sv-purple-light); line-height: 1; }
+  .dato-item .dato-lbl { font-size: 12px; color: #888; font-weight: 700; margin-top: 4px; }
+  .dato-item .dato-unit { font-size: 13px; color: #aaa; }
+
+  .entreno-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--sv-border);
+  }
+  .entreno-item:last-child { border-bottom: none; }
+  .entreno-dot {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: rgba(123,47,247,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .entreno-info { flex: 1; }
+  .entreno-nombre { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .entreno-fecha  { font-size: 12px; color: #888; }
+  .entreno-dur    { font-size: 12px; font-weight: 700; color: var(--sv-green); }
+
+  .cal-meta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .cal-pill {
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+  }
+  .cp-p   { background: rgba(67,97,238,0.2); color: #4361ee; }
+  .cp-c   { background: rgba(244,162,97,0.2); color: var(--sv-gold); }
+  .cp-f   { background: rgba(230,57,70,0.2);  color: var(--sv-red); }
+
+  .pn-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 1px;
+    color: var(--sv-purple-light);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* IMC box */
+  .imc-box {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .imc-box-label { font-size: 11px; font-weight: 700; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .imc-box-val   { font-family: 'Bebas Neue', sans-serif; font-size: 52px; line-height: 1; margin-bottom: 2px; }
+  .imc-box-cat   { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+
+  .imc-bar-track {
+    position: relative;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #4361ee 0%, #00d4aa 46%, #f4a261 62%, #e63946 100%);
+    margin-bottom: 4px;
+  }
+  .imc-marker {
+    position: absolute;
+    top: -4px;
+    transform: translateX(-50%);
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #fff;
+    box-shadow: 0 0 6px rgba(0,0,0,0.5);
+  }
+  .imc-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #555;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid  { grid-template-columns: repeat(2, 1fr); }
+    .datos-grid  { grid-template-columns: repeat(2, 1fr); }
+    .perfil-header { flex-direction: column; text-align: center; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+
+  <!-- Mensajes -->
+  {% for msg in messages %}
+  <div class="alert alert-{{ msg.tags }} mb-3">{{ msg }}</div>
+  {% endfor %}
+
+  <!-- Header del perfil -->
+  <div class="perfil-header">
+    <div class="perfil-avatar">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar">
+      {% else %}
+        <i class="bi bi-person-fill"></i>
+      {% endif %}
+    </div>
+    <div class="perfil-info">
+      <div class="perfil-nombre">
+        {% if user.first_name or user.last_name %}
+          {{ user.first_name }} {{ user.last_name }}
+        {% else %}
+          {{ user.username }}
+        {% endif %}
+      </div>
+      <div class="perfil-username">@{{ user.username }}</div>
+      <div class="perfil-meta">
+        <i class="bi bi-envelope-fill me-1"></i>{{ user.email|default:"Sin email" }}
+        &nbsp;·&nbsp;
+        <i class="bi bi-calendar3 me-1"></i>Miembro desde {{ profile.fecha_registro|date:"M Y" }}
+      </div>
+    </div>
+    <a href="{% url 'editar_perfil' %}" class="page-back-btn" style="border-color:rgba(0,212,170,0.4);color:var(--sv-green);background:rgba(0,212,170,0.1);">
+      <i class="bi bi-pencil-fill"></i> Editar perfil
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🏋️</div>
+      <div class="stat-val" style="color:var(--sv-purple-light);">{{ total_entrenamientos }}</div>
+      <div class="stat-lbl">Entrenamientos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📋</div>
+      <div class="stat-val" style="color:var(--sv-blue);">{{ total_rutinas }}</div>
+      <div class="stat-lbl">Rutinas creadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔁</div>
+      <div class="stat-val" style="color:var(--sv-gold);">{{ total_series }}</div>
+      <div class="stat-lbl">Series completadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-val" style="color:var(--sv-green);">{{ kg_totales }}</div>
+      <div class="stat-lbl">Kg levantados</div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Datos personales -->
+    <div class="col-md-5">
+      <div class="sv-panel h-100">
+        <div class="pn-section-title"><i class="bi bi-person-vcard-fill"></i> Datos personales</div>
+        <div class="datos-grid">
+          <div class="dato-item">
+            <div class="dato-val">{{ profile.edad|default:"—" }}</div>
+            <div class="dato-unit">años</div>
+            <div class="dato-lbl">Edad</div>
+          </div>
+          <div class="dato-item">
+            <div class="dato-val">{{ profile.peso|default:"—" }}</div>
+            <div class="dato-unit">kg</div>
+            <div class="dato-lbl">Peso</div>
+          </div>
+          <div class="dato-item">
+            <div class="dato-val">{{ profile.altura|default:"—" }}</div>
+            <div class="dato-unit">cm</div>
+            <div class="dato-lbl">Altura</div>
+          </div>
+        </div>
+
+        {% if imc %}
+        <div class="imc-box mt-4">
+          <div class="imc-box-label">Índice de Masa Corporal</div>
+          <div class="imc-box-val" style="color:{{ imc_color }};">{{ imc }}</div>
+          <div class="imc-box-cat" style="color:{{ imc_color }};">{{ imc_categoria }}</div>
+          <div class="imc-bar-track mt-2">
+            <div class="imc-bar-fill" style="left:{% widthratio imc 40 100 %}%;background:{{ imc_color }};"></div>
+            <span class="imc-marker" style="left:{% widthratio imc 40 100 %}%;"></span>
+          </div>
+          <div class="imc-bar-labels">
+            <span>Bajo</span><span>Normal</span><span>Sobre</span><span>Obesidad</span>
+          </div>
+        </div>
+        {% else %}
+        <div class="mt-4" style="background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;text-align:center;border:1.5px dashed rgba(255,255,255,0.1);">
+          <div style="color:#555;font-size:13px;">Agrega tu peso y altura para ver el IMC</div>
+          <a href="{% url 'editar_perfil' %}" style="color:var(--sv-purple-light);font-size:13px;font-weight:700;">Completar datos →</a>
+        </div>
+        {% endif %}
+
+        <a href="{% url 'editar_perfil' %}" class="btn-calcular w-100 mt-4" style="text-decoration:none;display:block;text-align:center;">
+          <i class="bi bi-pencil-fill me-2"></i>Actualizar datos
+        </a>
+      </div>
+    </div>
+
+    <!-- Actividad reciente -->
+    <div class="col-md-7">
+      <div class="sv-panel h-100">
+        <div class="pn-section-title"><i class="bi bi-activity"></i> Actividad reciente</div>
+        {% if entrenamientos_recientes %}
+          {% for e in entrenamientos_recientes %}
+          <div class="entreno-item">
+            <div class="entreno-dot">🏋️</div>
+            <div class="entreno-info">
+              <div class="entreno-nombre">{{ e.nombre }}</div>
+              <div class="entreno-fecha">
+                {{ e.terminado_en|date:"d M Y, H:i" }}
+              </div>
+            </div>
+            <div class="entreno-dur">
+              {% if e.duracion %}{{ e.duracion }}{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:32px 0;color:#555;">
+            <div style="font-size:48px;margin-bottom:12px;">💪</div>
+            <div style="font-weight:700;">Aún no hay entrenamientos registrados</div>
+            <div style="font-size:13px;color:#444;margin-top:6px;">¡Completa tu primer entrenamiento para ver tu historial!</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Meta calórica -->
+  {% if ultimo_calculo %}
+  <div class="sv-panel mt-4">
+    <div class="pn-section-title"><i class="bi bi-fire" style="color:var(--sv-orange);"></i> Meta calórica activa</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div>
+        <div style="color:#888;font-size:12px;font-weight:700;">CALORÍAS DIARIAS</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--sv-green);line-height:1;">{{ ultimo_calculo.getd|floatformat:0 }}</div>
+        <div style="color:#888;font-size:12px;">kcal / día · {{ ultimo_calculo.get_objetivo_display }}</div>
+      </div>
+      <div class="cal-meta-row">
+        <span class="cal-pill cp-p">🥩 {{ ultimo_calculo.proteinas_g }}g proteína</span>
+        <span class="cal-pill cp-c">🌾 {{ ultimo_calculo.carbos_g }}g carbos</span>
+        <span class="cal-pill cp-f">🥑 {{ ultimo_calculo.grasas_g }}g grasas</span>
+      </div>
+      <a href="{% url 'calculadora_calorias' %}" class="page-back-btn ms-auto">
+        <i class="bi bi-arrow-repeat"></i> Recalcular
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Historial de peso -->
+  {% if pesos %}
+  <div class="sv-panel mt-4">
+    <div class="pn-section-title"><i class="bi bi-graph-up-arrow" style="color:var(--sv-blue);"></i> Historial de peso</div>
+    <div style="display:flex;align-items:flex-end;gap:8px;height:80px;margin-top:8px;" id="peso-chart">
+      {% for r in pesos %}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="font-size:10px;color:#888;">{{ r.peso }}kg</div>
+        <div class="peso-bar" data-peso="{{ r.peso }}" style="width:100%;background:var(--sv-purple);border-radius:4px 4px 0 0;min-height:4px;"></div>
+        <div style="font-size:9px;color:#666;">{{ r.fecha|date:"d/m" }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <script>
+      (function(){
+        var bars = document.querySelectorAll('.peso-bar');
+        var vals = Array.from(bars).map(b => parseFloat(b.dataset.peso));
+        var mn = Math.min(...vals), mx = Math.max(...vals);
+        bars.forEach(b => {
+          var v = parseFloat(b.dataset.peso);
+          var pct = mx === mn ? 60 : 20 + ((v - mn) / (mx - mn)) * 50;
+          b.style.height = pct + 'px';
+        });
+      })();
+    </script>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

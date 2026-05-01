@@ -1,0 +1,356 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Dashboard — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Hero ───────────────────────────────────────────── */
+.dash-hero {
+  text-align: center;
+  padding: 8px 0 32px;
+}
+.dash-greeting {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+  margin-bottom: 6px;
+}
+.dash-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(42px, 7vw, 72px);
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 30%, var(--sv-purple-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.dash-subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,.38);
+  margin: 0;
+}
+
+/* ── Stats rápidas ──────────────────────────────────── */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.dash-stat {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 18px 16px;
+  text-align: center;
+  transition: border-color .2s, transform .2s;
+}
+.dash-stat:hover { border-color: rgba(123,47,247,.4); transform: translateY(-2px); }
+.dash-stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--sv-purple-light);
+}
+.dash-stat-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: rgba(255,255,255,.35);
+  margin-top: 4px;
+}
+
+/* ── Action cards ───────────────────────────────────── */
+.action-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.action-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 28px 16px 22px;
+  text-align: center;
+  text-decoration: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: transform .22s, box-shadow .22s;
+  border: 1.5px solid transparent;
+}
+.action-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .15;
+  transition: opacity .22s;
+}
+.action-card:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,.45); }
+.action-card:hover::before { opacity: .28; }
+
+.card-blue  { background: linear-gradient(145deg,#1a2a6c,#1a2050); border-color: rgba(67,97,238,.35); }
+.card-blue::before { background: #4361ee; }
+.card-green { background: linear-gradient(145deg,#0a3a2e,#0a2820); border-color: rgba(0,212,170,.35); }
+.card-green::before { background: #00d4aa; }
+.card-red   { background: linear-gradient(145deg,#3a1a1a,#2a1010); border-color: rgba(230,57,70,.35); }
+.card-red::before { background: #e63946; }
+.card-purple{ background: linear-gradient(145deg,#2a1a4a,#1e1035); border-color: rgba(123,47,247,.35); }
+.card-purple::before { background: #7b2ff7; }
+
+.ac-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  position: relative; z-index: 1;
+}
+.card-blue .ac-icon   { background: rgba(67,97,238,.22);  color: #7b9ffb; }
+.card-green .ac-icon  { background: rgba(0,212,170,.18);  color: #00d4aa; }
+.card-red .ac-icon    { background: rgba(230,57,70,.18);  color: #f87171; }
+.card-purple .ac-icon { background: rgba(123,47,247,.2);  color: #c084fc; }
+
+.ac-title {
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  position: relative; z-index: 1;
+  line-height: 1.2;
+}
+.ac-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,.45);
+  position: relative; z-index: 1;
+}
+
+/* ── Rutinas section ────────────────────────────────── */
+.dash-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.dash-section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: .5px;
+  color: #fff;
+}
+.dash-section-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sv-purple-light);
+  text-decoration: none;
+  opacity: .8;
+}
+.dash-section-link:hover { opacity: 1; }
+
+.rutinas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.rutina-card2 {
+  background: var(--sv-bg-card);
+  border: 1.5px solid rgba(255,255,255,.07);
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .2s, transform .2s;
+  position: relative;
+  overflow: hidden;
+}
+.rutina-card2::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 18px 18px 0 0;
+}
+.rutina-card2:hover { border-color: rgba(123,47,247,.35); transform: translateY(-3px); }
+
+.rutina-card2.nivel-principiante::before { background: linear-gradient(90deg,#00d4aa,#4361ee); }
+.rutina-card2.nivel-intermedio::before   { background: linear-gradient(90deg,#f97316,#f59e0b); }
+.rutina-card2.nivel-avanzado::before     { background: linear-gradient(90deg,#e63946,#7b2ff7); }
+
+.rcard-name {
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  line-height: 1.3;
+}
+.rcard-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: rgba(255,255,255,.4);
+  flex-wrap: wrap;
+}
+.rcard-meta i { color: var(--sv-purple-light); }
+.rcard-auto {
+  color: var(--sv-green);
+  font-weight: 700;
+  font-size: 10px;
+}
+.rcard-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.btn-rcard {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: opacity .2s, transform .1s;
+}
+.btn-rcard:hover { opacity: .88; transform: translateY(-1px); }
+.btn-rcard-play {
+  background: linear-gradient(135deg, var(--sv-purple), #4361ee);
+  color: #fff;
+}
+.btn-rcard-del {
+  background: rgba(230,57,70,.12);
+  color: #f87171;
+  border: 1.5px solid rgba(230,57,70,.2);
+  flex: 0 0 36px;
+  padding: 8px;
+}
+
+/* Estado vacío */
+.dash-empty {
+  text-align: center;
+  padding: 48px 24px;
+  background: rgba(255,255,255,.02);
+  border: 1.5px dashed rgba(255,255,255,.1);
+  border-radius: 20px;
+}
+.dash-empty i { font-size: 48px; color: rgba(255,255,255,.15); margin-bottom: 16px; }
+.dash-empty p { color: rgba(255,255,255,.3); font-size: 14px; margin-bottom: 20px; }
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 900px) {
+  .action-cards   { grid-template-columns: repeat(2,1fr); }
+  .rutinas-grid   { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 580px) {
+  .action-cards   { grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .rutinas-grid   { grid-template-columns: 1fr; }
+  .dash-stats     { grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .dash-stat-val  { font-size: 30px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content" style="max-width:1000px;">
+
+  <!-- HERO -->
+  <div class="dash-hero">
+    <p class="dash-greeting">Bienvenido de vuelta</p>
+    <h1 class="dash-name">{{ display_name }}</h1>
+    <p class="dash-subtitle">¿Con qué iniciamos hoy?</p>
+  </div>
+
+  <!-- STATS RÁPIDAS -->
+  <div class="dash-stats">
+    <div class="dash-stat">
+      <div class="dash-stat-val">{{ total_entrenamientos }}</div>
+      <div class="dash-stat-lbl">Entrenamientos</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-val">{{ total_rutinas }}</div>
+      <div class="dash-stat-lbl">Rutinas</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-val">{{ total_series }}</div>
+      <div class="dash-stat-lbl">Series completadas</div>
+    </div>
+  </div>
+
+  <!-- ACTION CARDS -->
+  <div class="action-cards">
+    <a href="{% url 'paso1_equipo' %}" class="action-card card-blue">
+      <div class="ac-icon"><i class="bi bi-trophy-fill"></i></div>
+      <div class="ac-title">Nueva Rutina</div>
+      <div class="ac-sub">Crea tu propia rutina</div>
+    </a>
+    <a href="{% url 'auto_generador' %}" class="action-card card-green">
+      <div class="ac-icon"><i class="bi bi-lightning-fill"></i></div>
+      <div class="ac-title">Rutina Auto</div>
+      <div class="ac-sub">Genera tu rutina automática</div>
+    </a>
+    <a href="{% url 'calendario_progreso' %}" class="action-card card-red">
+      <div class="ac-icon"><i class="bi bi-calendar-check-fill"></i></div>
+      <div class="ac-title">Tu progreso</div>
+      <div class="ac-sub">Historial de entrenamientos</div>
+    </a>
+    <a href="{% url 'herramientas' %}" class="action-card card-purple">
+      <div class="ac-icon"><i class="bi bi-wrench-adjustable-circle-fill"></i></div>
+      <div class="ac-title">Herramientas</div>
+      <div class="ac-sub">Calculadoras fitness</div>
+    </a>
+  </div>
+
+  <!-- MIS RUTINAS -->
+  <div class="dash-section-header">
+    <span class="dash-section-title">Tus rutinas</span>
+    <a href="{% url 'paso1_equipo' %}" class="dash-section-link">
+      <i class="bi bi-plus-circle me-1"></i>Nueva
+    </a>
+  </div>
+
+  {% if rutinas %}
+  <div class="rutinas-grid">
+    {% for rutina in rutinas %}
+    <div class="rutina-card2 nivel-{{ rutina.nivel }}">
+      <div class="rcard-name">{{ rutina.nombre }}</div>
+      <div class="rcard-meta">
+        <span><i class="bi bi-list-check"></i> {{ rutina.total_ejercicios }} ejercicio{{ rutina.total_ejercicios|pluralize }}</span>
+        <span><i class="bi bi-clock"></i> {{ rutina.creada_en|date:"d/m/Y" }}</span>
+        {% if rutina.es_auto_generada %}
+        <span class="rcard-auto"><i class="bi bi-lightning-fill"></i> Auto</span>
+        {% endif %}
+      </div>
+      <div class="rcard-actions">
+        <a href="{% url 'iniciar_entrenamiento' rutina.id %}" class="btn-rcard btn-rcard-play">
+          <i class="bi bi-play-fill"></i> Iniciar
+        </a>
+        <a href="{% url 'eliminar_rutina' rutina.id %}" class="btn-rcard btn-rcard-del"
+           onclick="return confirm('¿Eliminar esta rutina?')">
+          <i class="bi bi-trash3"></i>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="dash-empty">
+    <i class="bi bi-journal-x d-block"></i>
+    <p>Aún no tienes rutinas guardadas.</p>
+    <a href="{% url 'paso1_equipo' %}" class="btn-sv-green" style="padding:10px 28px;border-radius:12px;font-size:14px;">
+      <i class="bi bi-plus-lg me-1"></i> Crear primera rutina
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

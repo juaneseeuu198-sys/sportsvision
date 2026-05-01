@@ -1,0 +1,707 @@
+{% extends 'base/base.html' %}
+{% block title %}Plan Nutricional — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+  #btn-fem.active { border-color: #ec4899 !important; color: #f472b6 !important; }
+
+  .gender-btn {
+    padding: 10px 6px;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .gender-btn i { font-size: 20px; }
+
+  .pn-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--sv-purple-light);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pn-section-title i { font-size: 20px; }
+
+  .objetivo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .objetivo-btn {
+    padding: 18px 12px;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.12);
+    background: var(--sv-bg-panel);
+    color: #ccc;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .objetivo-btn i { display: block; font-size: 28px; margin-bottom: 8px; }
+  .objetivo-btn:hover { border-color: var(--sv-purple); color: #fff; background: rgba(123,47,247,0.12); }
+  .objetivo-btn.selected { border-color: var(--sv-purple); background: rgba(123,47,247,0.25); color: #fff; }
+
+  .restriction-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .restriction-pill {
+    padding: 9px 18px;
+    border-radius: 30px;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: var(--sv-bg-panel);
+    color: #aaa;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .restriction-pill:hover { border-color: var(--sv-green); color: var(--sv-green); }
+  .restriction-pill.selected { border-color: var(--sv-green); background: rgba(0,212,170,0.15); color: var(--sv-green); }
+
+  .macro-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .macro-card { background: var(--sv-bg-panel); border-radius: 16px; border: 1.5px solid var(--sv-border); padding: 20px 16px; text-align: center; }
+  .macro-circle {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; line-height: 1;
+  }
+  .macro-circle .macro-unit { font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .macro-protein { border: 3px solid var(--sv-blue); }
+  .macro-carbs   { border: 3px solid var(--sv-gold); }
+  .macro-fat     { border: 3px solid var(--sv-red); }
+  .macro-label   { font-size: 13px; font-weight: 700; color: #ccc; }
+  .macro-pct     { font-size: 11px; color: #888; margin-top: 3px; }
+
+  .day-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 20px; }
+  .day-tab {
+    padding: 8px 18px; border-radius: 30px;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: var(--sv-bg-panel); color: #888;
+    cursor: pointer; font-size: 13px; font-weight: 700;
+    white-space: nowrap; transition: all 0.18s;
+  }
+  .day-tab.active { background: var(--sv-purple); border-color: var(--sv-purple); color: #fff; }
+
+  .meal-list { display: flex; flex-direction: column; gap: 12px; }
+  .meal-item {
+    background: var(--sv-bg-panel); border: 1.5px solid var(--sv-border);
+    border-radius: 14px; padding: 16px 20px;
+    display: flex; align-items: flex-start; gap: 16px;
+    transition: border-color 0.2s;
+  }
+  .meal-item:hover { border-color: var(--sv-purple); }
+  .meal-time-badge {
+    background: rgba(123,47,247,0.2); color: var(--sv-purple-light);
+    border-radius: 10px; padding: 6px 12px;
+    font-size: 12px; font-weight: 700;
+    white-space: nowrap; min-width: 80px; text-align: center;
+  }
+  .meal-body { flex: 1; }
+  .meal-name  { font-weight: 900; font-size: 15px; margin-bottom: 4px; }
+  .meal-desc  { color: #888; font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
+  .meal-macros { display: flex; gap: 10px; flex-wrap: wrap; }
+  .meal-macro-pill { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .pill-p   { background: rgba(67,97,238,0.2); color: #4361ee; }
+  .pill-c   { background: rgba(244,162,97,0.2); color: var(--sv-gold); }
+  .pill-f   { background: rgba(230,57,70,0.2); color: var(--sv-red); }
+  .pill-cal { background: rgba(0,212,170,0.2); color: var(--sv-green); }
+
+  .cal-summary {
+    background: linear-gradient(135deg, rgba(123,47,247,0.2), rgba(67,97,238,0.2));
+    border: 1.5px solid rgba(123,47,247,0.4);
+    border-radius: 16px; padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
+  }
+  .cal-main   { font-family: 'Bebas Neue', sans-serif; font-size: 52px; line-height: 1; color: var(--sv-green); }
+  .cal-label  { font-size: 13px; color: #888; font-weight: 600; }
+  .cal-detail { font-size: 15px; font-weight: 700; }
+
+  .macro-bar-row { margin-bottom: 14px; }
+  .macro-bar-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .macro-bar-track { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .macro-bar-fill  { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .bar-blue { background: var(--sv-blue); }
+  .bar-gold { background: var(--sv-gold); }
+  .bar-red  { background: var(--sv-red); }
+
+  .tip-card {
+    background: var(--sv-bg-panel); border-left: 3px solid var(--sv-purple);
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 12px;
+    font-size: 13px; color: #ccc; line-height: 1.6;
+  }
+  .tip-card strong { color: #fff; }
+
+  .water-tracker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .water-glass { font-size: 24px; cursor: pointer; transition: transform 0.1s; filter: grayscale(1); opacity: 0.35; }
+  .water-glass.filled { filter: none; opacity: 1; }
+  .water-glass:hover  { transform: scale(1.2); }
+
+  .pn-loading { text-align: center; padding: 60px 20px; }
+  .pn-spinner {
+    width: 56px; height: 56px;
+    border: 4px solid rgba(123,47,247,0.2);
+    border-top-color: var(--sv-purple);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .day-panel { display: none; }
+  .day-panel.active { display: flex; flex-direction: column; gap: 12px; }
+
+  .activity-select {
+    width: 100%; background: var(--sv-bg-panel);
+    border: 1.5px solid rgba(255,255,255,0.12); border-radius: 10px;
+    color: #fff; padding: 12px 16px;
+    font-size: 15px; font-family: 'Barlow', sans-serif;
+    appearance: none; cursor: pointer;
+  }
+  .activity-select:focus { outline: none; border-color: var(--sv-purple); }
+
+  .pn-disclaimer {
+    background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #aaa; margin-top: 20px;
+  }
+  .pn-disclaimer i { color: var(--sv-orange); }
+
+  @media (max-width: 768px) {
+    .objetivo-grid { grid-template-columns: repeat(2, 1fr); }
+    .macro-row     { grid-template-columns: 1fr 1fr; }
+    .cal-summary   { flex-direction: column; text-align: center; }
+    .meal-item     { flex-direction: column; gap: 10px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+
+    <!-- Top nav: back button + breadcrumb -->
+    <div class="page-top-nav">
+      <a href="{% url 'herramientas' %}" class="page-back-btn">
+        <i class="bi bi-arrow-left"></i> Volver
+      </a>
+      <div class="page-breadcrumb">
+        <a href="{% url 'herramientas' %}"><i class="bi bi-wrench-adjustable-circle-fill"></i> Herramientas</a>
+        <span class="sep"><i class="bi bi-chevron-right"></i></span>
+        <span class="current">Plan Nutricional</span>
+      </div>
+    </div>
+
+  <h1 class="sv-page-title">Plan Nutricional</h1>
+  <p class="text-center mb-4" style="color:#888;max-width:700px;margin:0 auto 32px;">
+    Genera un plan de alimentación personalizado con distribución de macros, comidas por día y consejos según tu objetivo y estilo de vida.
+  </p>
+
+  <!-- FORM -->
+  <div id="pn-form-section">
+
+    <div class="sv-panel mb-4">
+      <div class="pn-section-title"><i class="bi bi-person-fill"></i> Tus datos</div>
+      <div class="row g-3">
+        <div class="col-md-3 col-6">
+          <label class="sv-label">Edad</label>
+          <div class="input-unit-wrap">
+            <input type="number" id="pn-edad" class="sv-input" placeholder="25" min="14" max="90">
+            <span class="input-unit-badge">años</span>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="sv-label">Peso</label>
+          <div class="input-unit-wrap">
+            <input type="number" id="pn-peso" class="sv-input" placeholder="70" min="30" max="300">
+            <span class="input-unit-badge">kg</span>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="sv-label">Altura</label>
+          <div class="input-unit-wrap">
+            <input type="number" id="pn-altura" class="sv-input" placeholder="170" min="100" max="250">
+            <span class="input-unit-badge">cm</span>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="sv-label">Sexo biológico</label>
+          <div class="gender-select">
+            <button class="gender-btn active" id="btn-masc" onclick="setSexo('M')"><i class="bi bi-gender-male"></i>Masculino</button>
+            <button class="gender-btn" id="btn-fem" onclick="setSexo('F')"><i class="bi bi-gender-female"></i>Femenino</button>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3">
+        <label class="sv-label">Nivel de actividad física</label>
+        <select id="pn-actividad" class="activity-select">
+          <option value="sedentario">Sedentario — poco o ningún ejercicio</option>
+          <option value="ligero">Ligero — 1-3 días/semana</option>
+          <option value="moderado" selected>Moderado — 3-5 días/semana</option>
+          <option value="activo">Muy activo — 6-7 días/semana</option>
+          <option value="extremo">Extremo — atleta / trabajo físico intenso</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sv-panel mb-4">
+      <div class="pn-section-title"><i class="bi bi-trophy-fill"></i> Objetivo principal</div>
+      <div class="objetivo-grid">
+        <button class="objetivo-btn" data-obj="perder_grasa" onclick="setObjetivo(this)">
+          <i class="bi bi-arrow-down-circle-fill" style="color:#ef4444;"></i>Perder grasa
+        </button>
+        <button class="objetivo-btn" data-obj="ganar_musculo" onclick="setObjetivo(this)">
+          <i class="bi bi-lightning-fill" style="color:#f4a261;"></i>Ganar músculo
+        </button>
+        <button class="objetivo-btn selected" data-obj="mantener" onclick="setObjetivo(this)">
+          <i class="bi bi-bar-chart-fill" style="color:#00d4aa;"></i>Mantenerse
+        </button>
+        <button class="objetivo-btn" data-obj="definicion" onclick="setObjetivo(this)">
+          <i class="bi bi-person-fill" style="color:#9d5cf6;"></i>Definición
+        </button>
+        <button class="objetivo-btn" data-obj="volumen" onclick="setObjetivo(this)">
+          <i class="bi bi-graph-up-arrow" style="color:#4361ee;"></i>Volumen máximo
+        </button>
+        <button class="objetivo-btn" data-obj="resistencia" onclick="setObjetivo(this)">
+          <i class="bi bi-heart-pulse-fill" style="color:#ef4444;"></i>Resistencia
+        </button>
+      </div>
+    </div>
+
+    <div class="sv-panel mb-4">
+      <div class="pn-section-title"><i class="bi bi-funnel-fill"></i> Restricciones dietéticas</div>
+      <div class="restriction-grid">
+        <button class="restriction-pill selected" data-rest="ninguna" onclick="toggleRestriction(this)">Sin restricciones</button>
+        <button class="restriction-pill" data-rest="vegetariano" onclick="toggleRestriction(this)">🥦 Vegetariano</button>
+        <button class="restriction-pill" data-rest="vegano" onclick="toggleRestriction(this)">🌱 Vegano</button>
+        <button class="restriction-pill" data-rest="sin_gluten" onclick="toggleRestriction(this)">🌾 Sin gluten</button>
+        <button class="restriction-pill" data-rest="sin_lactosa" onclick="toggleRestriction(this)">🥛 Sin lactosa</button>
+        <button class="restriction-pill" data-rest="keto" onclick="toggleRestriction(this)">🥑 Cetogénico</button>
+        <button class="restriction-pill" data-rest="bajo_sodio" onclick="toggleRestriction(this)">🧂 Bajo en sodio</button>
+        <button class="restriction-pill" data-rest="halal" onclick="toggleRestriction(this)">☪️ Halal</button>
+      </div>
+      <div class="mt-3">
+        <label class="sv-label" style="margin-top:16px;">Alimentos que NO te gustan <span style="color:#888;font-weight:400;">(opcional)</span></label>
+        <input type="text" id="pn-evitar" class="sv-input"
+          placeholder="Ej: brócoli, mariscos, nueces..."
+          style="width:100%;border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;background:var(--sv-bg-panel);color:#fff;padding:12px 16px;font-family:'Barlow',sans-serif;font-size:15px;">
+      </div>
+    </div>
+
+    <button class="btn-calcular w-100" onclick="generarPlan()">
+      <i class="bi bi-cpu-fill me-2"></i> Generar Plan Nutricional
+    </button>
+
+    <div class="pn-disclaimer mt-3">
+      <i class="bi bi-info-circle-fill"></i>
+      Este plan es orientativo. Para condiciones médicas específicas o metas profesionales, consulta con un nutricionista certificado.
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="pn-loading" style="display:none;">
+    <div class="pn-loading">
+      <div class="pn-spinner"></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--sv-purple-light);" id="loading-msg">Calculando tus calorías...</div>
+      <div style="color:#888;font-size:13px;margin-top:8px;">Personalizando tu plan semanal</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="pn-results" style="display:none;">
+
+    <div class="cal-summary">
+      <div>
+        <div class="cal-label">Calorías diarias recomendadas</div>
+        <div class="cal-main" id="res-calorias">—</div>
+        <div class="cal-label">kcal / día</div>
+      </div>
+      <div>
+        <div class="cal-detail">TMB: <span id="res-tmb" style="color:var(--sv-green);">—</span> kcal</div>
+        <div class="cal-detail mt-1">Objetivo: <span id="res-objetivo-txt" style="color:#ccc;">—</span></div>
+        <div style="color:#888;font-size:12px;margin-top:4px;" id="res-weeks">—</div>
+      </div>
+      <div>
+        <button class="btn-sv-outline" onclick="resetPlan()" style="font-size:12px;padding:10px 22px;">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>Recalcular
+        </button>
+      </div>
+    </div>
+
+    <div class="sv-panel mb-4">
+      <div class="pn-section-title"><i class="bi bi-pie-chart-fill"></i> Distribución de Macros</div>
+      <div class="macro-row">
+        <div class="macro-card">
+          <div class="macro-circle macro-protein">
+            <span id="res-prot-g">—</span>
+            <span class="macro-unit">g / día</span>
+          </div>
+          <div class="macro-label">Proteína</div>
+          <div class="macro-pct" id="res-prot-pct">— %</div>
+        </div>
+        <div class="macro-card">
+          <div class="macro-circle macro-carbs">
+            <span id="res-carb-g">—</span>
+            <span class="macro-unit">g / día</span>
+          </div>
+          <div class="macro-label">Carbohidratos</div>
+          <div class="macro-pct" id="res-carb-pct">— %</div>
+        </div>
+        <div class="macro-card">
+          <div class="macro-circle macro-fat">
+            <span id="res-fat-g">—</span>
+            <span class="macro-unit">g / día</span>
+          </div>
+          <div class="macro-label">Grasas</div>
+          <div class="macro-pct" id="res-fat-pct">— %</div>
+        </div>
+      </div>
+      <div>
+        <div class="macro-bar-row">
+          <div class="macro-bar-label"><span>🥩 Proteína</span><span id="bar-prot-lbl">—g</span></div>
+          <div class="macro-bar-track"><div class="macro-bar-fill bar-blue" id="bar-prot" style="width:0%"></div></div>
+        </div>
+        <div class="macro-bar-row">
+          <div class="macro-bar-label"><span>🌾 Carbohidratos</span><span id="bar-carb-lbl">—g</span></div>
+          <div class="macro-bar-track"><div class="macro-bar-fill bar-gold" id="bar-carb" style="width:0%"></div></div>
+        </div>
+        <div class="macro-bar-row">
+          <div class="macro-bar-label"><span>🥑 Grasas</span><span id="bar-fat-lbl">—g</span></div>
+          <div class="macro-bar-track"><div class="macro-bar-fill bar-red" id="bar-fat" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sv-panel mb-4">
+      <div class="pn-section-title"><i class="bi bi-calendar3"></i> Plan Semanal de Comidas</div>
+      <div class="day-tabs" id="day-tabs"></div>
+      <div id="day-panels"></div>
+    </div>
+
+    <div class="sv-panel mb-4">
+      <div class="pn-section-title"><i class="bi bi-droplet-fill" style="color:#4361ee;"></i> Hidratación diaria</div>
+      <div style="color:#888;font-size:13px;margin-bottom:14px;">
+        Marca cada vaso (250 ml) consumido. Meta: <strong id="water-goal" style="color:#fff;">8 vasos</strong> = <span id="water-liters" style="color:var(--sv-blue);">2.0 L</span>
+      </div>
+      <div class="water-tracker" id="water-tracker"></div>
+      <div style="color:#888;font-size:13px;margin-top:12px;">
+        Consumido hoy: <strong id="water-count" style="color:var(--sv-blue);">0</strong> vasos
+        (<span id="water-ml">0 ml</span>)
+      </div>
+    </div>
+
+    <div class="sv-panel mb-4">
+      <div class="pn-section-title"><i class="bi bi-lightbulb-fill" style="color:var(--sv-gold);"></i> Consejos personalizados</div>
+      <div id="pn-tips"></div>
+    </div>
+
+    <div class="pn-disclaimer">
+      <i class="bi bi-info-circle-fill"></i>
+      Plan generado con la fórmula Mifflin-St Jeor y guías de nutrición deportiva. No reemplaza asesoría médica o nutricional profesional.
+    </div>
+  </div><!-- /pn-results -->
+</div><!-- /fitness-content -->
+
+<script>
+// STATE
+let sexo = 'M';
+let objetivo = 'mantener';
+let restricciones = [];
+let waterFilled = 0;
+let waterGoal = 8;
+
+const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+function setSexo(s) {
+  sexo = s;
+  document.getElementById('btn-masc').classList.toggle('active', s === 'M');
+  document.getElementById('btn-fem').classList.toggle('active', s === 'F');
+}
+
+function setObjetivo(btn) {
+  document.querySelectorAll('.objetivo-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  objetivo = btn.dataset.obj;
+}
+
+function toggleRestriction(pill) {
+  const val = pill.dataset.rest;
+  if (val === 'ninguna') {
+    document.querySelectorAll('.restriction-pill').forEach(p => p.classList.remove('selected'));
+    pill.classList.add('selected');
+    restricciones = [];
+    return;
+  }
+  document.querySelector('[data-rest="ninguna"]').classList.remove('selected');
+  pill.classList.toggle('selected');
+  restricciones = [...document.querySelectorAll('.restriction-pill.selected')].map(p => p.dataset.rest);
+}
+
+// CALCULATIONS
+function calcTMB(edad, peso, altura, sexo) {
+  const base = 10 * peso + 6.25 * altura - 5 * edad;
+  return sexo === 'M' ? base + 5 : base - 161;
+}
+
+const ACTIVITY = { sedentario:1.2, ligero:1.375, moderado:1.55, activo:1.725, extremo:1.9 };
+
+const OBJ = {
+  perder_grasa:  { cal:-500, p:0.35, c:0.35, f:0.30, label:'Pérdida de grasa',   info:'Déficit de ~500 kcal → ~0.5 kg/semana' },
+  ganar_musculo: { cal:+300, p:0.30, c:0.45, f:0.25, label:'Ganancia muscular',  info:'Superávit de ~300 kcal → crecimiento limpio' },
+  mantener:      { cal:   0, p:0.25, c:0.50, f:0.25, label:'Mantenimiento',      info:'Balance calórico neutro' },
+  definicion:    { cal:-300, p:0.40, c:0.35, f:0.25, label:'Definición',         info:'Déficit moderado, alta proteína' },
+  volumen:       { cal:+500, p:0.28, c:0.50, f:0.22, label:'Volumen máximo',     info:'Superávit agresivo de ~500 kcal' },
+  resistencia:   { cal:+100, p:0.20, c:0.55, f:0.25, label:'Resistencia',        info:'Mayor carga de carbohidratos' },
+};
+
+// MEAL DATABASE
+function buildMeals(restricciones) {
+  const isVegan = restricciones.includes('vegano');
+  const isVeg   = restricciones.includes('vegetariano') || isVegan;
+  const isKeto  = restricciones.includes('keto');
+
+  const db = {
+    desayuno: [
+      isKeto ? {n:'Huevos con aguacate',d:'3 huevos revueltos, ½ aguacate, espinacas salteadas en aceite de oliva.',p:18,c:4,f:22,k:280}
+             : isVegan ? {n:'Batido de proteína vegetal',d:'Leche de avena, plátano, 2 cdas mantequilla de maní, canela.',p:20,c:42,f:10,k:330}
+             : {n:'Avena con proteína y frutas',d:'80g avena, 1 scoop proteína, leche, plátano, fresas.',p:32,c:62,f:8,k:440},
+      isKeto ? {n:'Tortilla de queso y jamón',d:'3 huevos, 40g queso, 50g jamón, hierbas aromáticas.',p:30,c:2,f:24,k:340}
+             : {n:'Yogur griego con granola',d:'200g yogur griego, 40g granola, miel, arándanos frescos.',p:22,c:38,f:6,k:290},
+      {n:'Tostadas con huevo y aguacate',d:'2 tostadas de pan integral, 2 huevos pochados, ¼ aguacate, sal de mar.',p:20,c:36,f:14,k:350},
+      {n:'Smoothie bowl',d:'Açaí, plátano congelado, fresas, granola, coco rallado, semillas de chía.',p:10,c:58,f:8,k:340},
+      {n:'Arepas con huevo y queso',d:'2 arepas integrales, 2 huevos, 30g queso campesino, aguacate.',p:22,c:44,f:12,k:375},
+      isVegan ? {n:'Tostadas de aguacate integral',d:'2 tostadas de pan integral, ½ aguacate, tomate cherry, semillas de chía.',p:10,c:48,f:14,k:350}
+              : {n:'Cereal integral con leche',d:'50g cereal integral, 250ml leche, 1 fruta fresca.',p:14,c:60,f:4,k:330},
+      {n:'Wrap de vegetales con queso',d:'Tortilla integral, espinacas, tomate, queso fresco, huevo revuelto.',p:18,c:40,f:10,k:320},
+    ],
+    media_manana: [
+      {n:'Manzana con mantequilla de maní',d:'1 manzana mediana + 1½ cda de mantequilla de maní natural.',p:6,c:28,f:10,k:220},
+      {n:'Mix de nueces y frutos secos',d:'30g de nueces, almendras y arándanos deshidratados.',p:7,c:14,f:16,k:220},
+      isVegan ? {n:'Batido de proteína vegetal',d:'Leche vegetal, proteína de guisante, plátano.',p:22,c:28,f:3,k:230}
+              : {n:'Yogur griego con fruta',d:'150g yogur griego natural + ½ taza de fresas.',p:14,c:18,f:2,k:148},
+      {n:'Galletas de arroz con hummus',d:'4 galletas de arroz integral, 60g hummus, rodajas de pepino.',p:7,c:30,f:6,k:200},
+      {n:'Edamame',d:'1 taza de edamame cocido con sal marina y un chorrito de limón.',p:17,c:14,f:8,k:189},
+      {n:'Proteína batida',d:'1 scoop proteína whey con 250ml de agua o leche descremada.',p:25,c:6,f:2,k:140},
+      {n:'Fruta de temporada',d:'Porción de melón, papaya o piña con una pizca de chili tajín.',p:2,c:28,f:0,k:120},
+    ],
+    almuerzo: [
+      isVegan ? {n:'Bowl de quinoa y garbanzos',d:'100g quinoa, 150g garbanzos, aguacate, tomate, limón, cilantro.',p:22,c:68,f:12,k:460}
+              : isKeto ? {n:'Pollo con vegetales',d:'200g pollo a la plancha, brócoli, champiñones, aceite de oliva, ajo.',p:48,c:8,f:18,k:380}
+              : {n:'Pollo con arroz integral y ensalada',d:'180g pechuga de pollo, 100g arroz integral, ensalada verde con aceite de oliva.',p:42,c:62,f:10,k:500},
+      isVeg ? {n:'Lentejas estofadas',d:'200g lentejas, zanahoria, cebolla, ajo y especias mediterráneas.',p:24,c:72,f:4,k:420}
+            : {n:'Salmón al horno con vegetales',d:'180g salmón, brócoli, zanahoria, papa dulce, romero y limón.',p:38,c:44,f:16,k:480},
+      {n:'Pasta integral con atún',d:'100g pasta integral, 120g atún en agua, tomate cherry, albahaca, aceite de oliva.',p:36,c:72,f:10,k:510},
+      {n:'Arroz con pollo colombiano',d:'Arroz, muslos de pollo guisados, arveja, zanahoria, papa y hogao criollo.',p:38,c:68,f:10,k:520},
+      {n:'Ensalada de proteína completa',d:'Lechuga, garbanzos, pollo, huevo cocido, aguacate, tomate, aderezo de yogur.',p:36,c:40,f:16,k:450},
+      isVeg ? {n:'Tofu salteado con arroz',d:'200g tofu firme, brócoli, pimiento rojo, arroz basmati, salsa de soya, jengibre.',p:24,c:62,f:14,k:470}
+            : {n:'Tilapia con yuca y patacones',d:'200g tilapia al horno, 100g yuca, 2 patacones, ensalada fresca.',p:40,c:66,f:8,k:500},
+      {n:'Bowl de sushi deconstructuido',d:'Arroz sushi, atún, aguacate, pepino, edamame y semillas de sésamo.',p:30,c:70,f:10,k:490},
+    ],
+    merienda: [
+      {n:'Batido post-entrenamiento',d:'Proteína whey, leche, plátano y mantequilla de maní.',p:30,c:36,f:8,k:330},
+      isVeg ? {n:'Pudín de chía',d:'3 cdas de chía, leche de coco, mango y coco rallado.',p:8,c:38,f:14,k:300}
+            : {n:'Requesón con frutas',d:'150g requesón, duraznos frescos y nuez picada.',p:20,c:24,f:8,k:245},
+      {n:'Hummus con verduras crudas',d:'60g hummus, zanahoria, pepino, apio y pimiento rojo.',p:8,c:22,f:8,k:190},
+      {n:'Tostadas con aguacate y atún',d:'2 tostadas de arroz, ½ aguacate y 60g atún escurrido.',p:18,c:22,f:10,k:248},
+      {n:'Maní y plátano',d:'20g maní natural tostado + 1 plátano maduro.',p:8,c:30,f:10,k:238},
+      {n:'Arroz inflado con proteína',d:'30g arroz inflado, 1 scoop proteína en agua o leche.',p:26,c:32,f:2,k:248},
+      {n:'Gelatina de proteína',d:'Gelatina sin azúcar preparada con 1 scoop proteína. Baja en calorías.',p:22,c:4,f:0,k:104},
+    ],
+    cena: [
+      isKeto ? {n:'Salmón con ensalada verde',d:'180g salmón, espinacas, aguacate, pepino, aderezo de aceite y limón.',p:38,c:6,f:28,k:420}
+             : {n:'Pollo al limón con vegetales',d:'170g pollo, brócoli, zanahoria, arveja, aceite de oliva y especias.',p:36,c:22,f:8,k:310},
+      isVeg ? {n:'Sopa de lentejas y espinacas',d:'Lentejas rojas, espinacas, cúrcuma, comino, tomate y caldo vegetal.',p:20,c:56,f:4,k:340}
+            : {n:'Tortilla española',d:'3 huevos, papa, cebolla, aceite de oliva y ensalada verde.',p:20,c:34,f:14,k:342},
+      {n:'Wrap de pavo y vegetales',d:'Tortilla integral, 120g pavo en lonjas, lechuga, tomate, queso fresco.',p:30,c:38,f:8,k:345},
+      isVeg ? {n:'Curry de garbanzos',d:'Garbanzos, leche de coco, espinacas, curry, cúrcuma y arroz basmati.',p:18,c:62,f:12,k:430}
+            : {n:'Res magra con papa al horno',d:'150g lomo de res, 1 papa mediana horneada y ensalada caprese.',p:34,c:42,f:10,k:396},
+      {n:'Merluza con quinoa y espárragos',d:'180g merluza al horno, 80g quinoa y espárragos con limón.',p:40,c:48,f:6,k:410},
+      isKeto ? {n:'Cerdo con vegetales salteados',d:'180g lomo de cerdo, champiñones, espinacas, ajo, mantequilla ghee.',p:36,c:4,f:22,k:360}
+             : {n:'Ensalada mediterránea',d:'Lechuga, pepino, aceitunas, queso feta, garbanzos, atún y aderezo de limón.',p:28,c:32,f:14,k:365},
+      {n:'Sopa de pollo con fideos',d:'Pechuga de pollo, fideos integrales, zanahoria, apio y caldo casero.',p:32,c:40,f:6,k:340},
+    ],
+  };
+  return db;
+}
+
+function buildWeekPlan(restricciones) {
+  const db = buildMeals(restricciones);
+  return DIAS.map((dia, i) => ({
+    dia,
+    meals: [
+      { time:'7:00 AM',  label:'Desayuno',     ...db.desayuno[i % db.desayuno.length] },
+      { time:'10:30 AM', label:'Media mañana', ...db.media_manana[i % db.media_manana.length] },
+      { time:'1:00 PM',  label:'Almuerzo',     ...db.almuerzo[i % db.almuerzo.length] },
+      { time:'4:30 PM',  label:'Merienda',     ...db.merienda[i % db.merienda.length] },
+      { time:'7:30 PM',  label:'Cena',         ...db.cena[i % db.cena.length] },
+    ]
+  }));
+}
+
+function getTips(obj, restr, peso) {
+  const tips = [
+    { icon:'💧', title:'Hidratación', text:`Bebe al menos <strong>${(peso*0.033).toFixed(1)}L al día</strong> (~${Math.round(peso*0.033/0.25)} vasos de 250ml). Aumenta si hace calor o entrenas fuerte.` },
+    { icon:'🍽️', title:'Frecuencia de comidas', text:'Come cada <strong>3-4 horas</strong> para mantener el metabolismo activo y evitar bajones de energía.' },
+    { icon:'🥗', title:'Fibra', text:'Incluye <strong>25-30g de fibra</strong> al día con verduras, frutas y granos enteros para digestión óptima.' },
+  ];
+  const byObj = {
+    perder_grasa:  [{icon:'⚖️',title:'Déficit calórico',text:'Mantén el déficit de <strong>~500 kcal/día</strong>. Más no es mejor: déficits mayores afectan músculo y energía.'},{icon:'🥩',title:'Alta proteína',text:'Con déficit alto, prioriza proteína (35%) para conservar masa muscular mientras bajas de peso.'}],
+    ganar_musculo: [{icon:'💪',title:'Proteína y timing',text:'Consume proteína <strong>dentro de 30 min post-entrenamiento</strong>. Apunta a 1.6–2.2g por kg de peso.'},{icon:'🌾',title:'Carbos peri-entreno',text:'Come carbohidratos de rápida absorción antes y después del entreno para maximizar energía y recuperación.'}],
+    mantener:      [{icon:'📊',title:'Consistencia',text:'El mantenimiento trata de <strong>consistencia, no de perfección</strong>. Un día de más no arruina el progreso.'}],
+    definicion:    [{icon:'🍗',title:'Variedad proteica',text:'Con 40% de proteína es clave variar fuentes: pollo, huevo, pescado, legumbres, yogur griego.'}],
+    volumen:       [{icon:'🍌',title:'No temas los carbos',text:'Los carbohidratos son tu principal combustible en etapa de volumen. Son esenciales, no el enemigo.'}],
+    resistencia:   [{icon:'⚡',title:'Carga de carbohidratos',text:'El día previo a entrenamientos largos, aumenta los carbos un 20-30% para llenar los depósitos de glucógeno.'}],
+  };
+  if (byObj[obj]) tips.push(...byObj[obj]);
+  if (restr.includes('vegano'))   tips.push({icon:'🌱',title:'Proteína vegana completa',text:'Combina arroz + legumbres, o quinoa + tofu para obtener todos los aminoácidos esenciales.'});
+  if (restr.includes('keto'))     tips.push({icon:'🥑',title:'Electrolitos en Keto',text:'La dieta cetogénica aumenta la excreción de minerales. Asegura sodio, potasio y magnesio adecuados.'});
+  return tips;
+}
+
+function render(tmb, cal, macros, weekPlan, tips, peso) {
+  document.getElementById('res-calorias').textContent = Math.round(cal);
+  document.getElementById('res-tmb').textContent = Math.round(tmb);
+  document.getElementById('res-objetivo-txt').textContent = OBJ[objetivo].label;
+  document.getElementById('res-weeks').textContent = OBJ[objetivo].info;
+
+  const {p, c, f} = macros;
+  const tot = p*4 + c*4 + f*9;
+  const pP = Math.round(p*4/tot*100), cP = Math.round(c*4/tot*100), fP = Math.round(f*9/tot*100);
+
+  document.getElementById('res-prot-g').textContent = Math.round(p);
+  document.getElementById('res-carb-g').textContent = Math.round(c);
+  document.getElementById('res-fat-g').textContent  = Math.round(f);
+  document.getElementById('res-prot-pct').textContent = pP + '%';
+  document.getElementById('res-carb-pct').textContent = cP + '%';
+  document.getElementById('res-fat-pct').textContent  = fP + '%';
+  document.getElementById('bar-prot-lbl').textContent = Math.round(p) + 'g';
+  document.getElementById('bar-carb-lbl').textContent = Math.round(c) + 'g';
+  document.getElementById('bar-fat-lbl').textContent  = Math.round(f) + 'g';
+  setTimeout(() => {
+    document.getElementById('bar-prot').style.width = pP + '%';
+    document.getElementById('bar-carb').style.width = cP + '%';
+    document.getElementById('bar-fat').style.width  = fP + '%';
+  }, 150);
+
+  // Day tabs
+  const tabsEl = document.getElementById('day-tabs');
+  const panelsEl = document.getElementById('day-panels');
+  tabsEl.innerHTML = panelsEl.innerHTML = '';
+  weekPlan.forEach((day, idx) => {
+    const tab = document.createElement('button');
+    tab.className = 'day-tab' + (idx===0?' active':'');
+    tab.textContent = day.dia;
+    tab.onclick = () => {
+      document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.day-panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-'+idx).classList.add('active');
+    };
+    tabsEl.appendChild(tab);
+
+    const panel = document.createElement('div');
+    panel.className = 'day-panel' + (idx===0?' active':'');
+    panel.id = 'panel-'+idx;
+    panel.innerHTML = day.meals.map(m => `
+      <div class="meal-item">
+        <div class="meal-time-badge">${m.time}<br><small style="font-weight:400;color:#aaa;">${m.label}</small></div>
+        <div class="meal-body">
+          <div class="meal-name">${m.n}</div>
+          <div class="meal-desc">${m.d}</div>
+          <div class="meal-macros">
+            <span class="meal-macro-pill pill-p">🥩 ${m.p}g prot</span>
+            <span class="meal-macro-pill pill-c">🌾 ${m.c}g carbs</span>
+            <span class="meal-macro-pill pill-f">🥑 ${m.f}g grasas</span>
+            <span class="meal-macro-pill pill-cal">🔥 ${m.k} kcal</span>
+          </div>
+        </div>
+      </div>`).join('');
+    panelsEl.appendChild(panel);
+  });
+
+  // Water
+  waterGoal = Math.max(6, Math.min(12, Math.round(peso*0.033/0.25)));
+  document.getElementById('water-goal').textContent = waterGoal + ' vasos';
+  document.getElementById('water-liters').textContent = (waterGoal*0.25).toFixed(1) + ' L';
+  const tracker = document.getElementById('water-tracker');
+  tracker.innerHTML = '';
+  waterFilled = 0;
+  for (let i=0; i<waterGoal; i++) {
+    const g = document.createElement('span');
+    g.className='water-glass'; g.id='wg-'+i;
+    g.textContent='💧'; g.title='Vaso '+(i+1);
+    g.onclick = () => {
+      g.classList.toggle('filled');
+      waterFilled = document.querySelectorAll('.water-glass.filled').length;
+      document.getElementById('water-count').textContent = waterFilled;
+      document.getElementById('water-ml').textContent = (waterFilled*250)+'ml';
+    };
+    tracker.appendChild(g);
+  }
+
+  // Tips
+  document.getElementById('pn-tips').innerHTML = tips.map(t =>
+    `<div class="tip-card"><strong>${t.icon} ${t.title}:</strong> ${t.text}</div>`
+  ).join('');
+}
+
+const LOADING_MSGS = [
+  'Calculando tus calorías con Mifflin-St Jeor...',
+  'Distribuyendo macronutrientes óptimos...',
+  'Diseñando tu plan semanal de comidas...',
+  'Añadiendo consejos personalizados...',
+  '¡Casi listo!'
+];
+
+function generarPlan() {
+  const edad    = parseFloat(document.getElementById('pn-edad').value);
+  const peso    = parseFloat(document.getElementById('pn-peso').value);
+  const altura  = parseFloat(document.getElementById('pn-altura').value);
+  const activ   = document.getElementById('pn-actividad').value;
+
+  if (!edad||!peso||!altura||edad<14||peso<30||altura<100) {
+    alert('Por favor completa correctamente edad, peso y altura.');
+    return;
+  }
+
+  document.getElementById('pn-form-section').style.display = 'none';
+  document.getElementById('pn-results').style.display = 'none';
+  document.getElementById('pn-loading').style.display = 'block';
+
+  let mi = 0;
+  const iv = setInterval(() => {
+    mi = (mi+1) % LOADING_MSGS.length;
+    document.getElementById('loading-msg').textContent = LOADING_MSGS[mi];
+  }, 600);
+
+  setTimeout(() => {
+    clearInterval(iv);
+    const tmb = calcTMB(edad, peso, altura, sexo);
+    const tdee = tmb * ACTIVITY[activ];
+    const adj = OBJ[objetivo];
+    const cal = tdee + adj.cal;
+    const macros = { p: (cal*adj.p)/4, c: (cal*adj.c)/4, f: (cal*adj.f)/9 };
+    const weekPlan = buildWeekPlan(restricciones);
+    const tips = getTips(objetivo, restricciones, peso);
+
+    document.getElementById('pn-loading').style.display = 'none';
+    document.getElementById('pn-results').style.display = 'block';
+    render(tmb, cal, macros, weekPlan, tips, peso);
+    document.getElementById('pn-results').scrollIntoView({ behavior:'smooth' });
+  }, 2800);
+}
+
+function resetPlan() {
+  document.getElementById('pn-results').style.display = 'none';
+  document.getElementById('pn-form-section').style.display = 'block';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+{% endblock %}

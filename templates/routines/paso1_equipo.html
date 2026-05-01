@@ -1,0 +1,202 @@
+{% extends 'base/base.html' %}
+{% block title %}Nueva Rutina — Equipo{% endblock %}
+
+{% block extra_css %}
+<style>
+  .eq-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .eq-card {
+    position: relative;
+    border-radius: 20px;
+    border: 2px solid rgba(255,255,255,0.08);
+    background: var(--sv-bg-card);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 16px 22px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    user-select: none;
+  }
+  .eq-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.25s;
+    border-radius: inherit;
+  }
+  .eq-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.35); }
+  .eq-card.selected { border-color: var(--sv-purple); box-shadow: 0 0 0 3px rgba(123,47,247,0.25); }
+  .eq-card.selected::before { opacity: 1; }
+
+  /* color accent per equipo */
+  .eq-banco::before         { background: linear-gradient(135deg,rgba(67,97,238,.25),rgba(67,97,238,.05)); }
+  .eq-peso_corporal::before { background: linear-gradient(135deg,rgba(0,212,170,.22),rgba(0,212,170,.04)); }
+  .eq-disco::before         { background: linear-gradient(135deg,rgba(249,115,22,.22),rgba(249,115,22,.04)); }
+  .eq-mancuernas::before    { background: linear-gradient(135deg,rgba(123,47,247,.25),rgba(123,47,247,.05)); }
+  .eq-barra::before         { background: linear-gradient(135deg,rgba(230,57,70,.22),rgba(230,57,70,.04)); }
+  .eq-barra_dominadas::before { background: linear-gradient(135deg,rgba(0,212,170,.22),rgba(67,97,238,.08)); }
+  .eq-kettlebell::before    { background: linear-gradient(135deg,rgba(244,162,97,.25),rgba(244,162,97,.05)); }
+  .eq-banda::before         { background: linear-gradient(135deg,rgba(236,72,153,.22),rgba(236,72,153,.04)); }
+
+  /* accent border color on hover */
+  .eq-banco:hover         { border-color: #4361ee; }
+  .eq-peso_corporal:hover { border-color: #00d4aa; }
+  .eq-disco:hover         { border-color: #f97316; }
+  .eq-mancuernas:hover    { border-color: var(--sv-purple); }
+  .eq-barra:hover         { border-color: #e63946; }
+  .eq-barra_dominadas:hover { border-color: #00d4aa; }
+  .eq-kettlebell:hover    { border-color: #f4a261; }
+  .eq-banda:hover         { border-color: #ec4899; }
+
+  /* checkmark badge */
+  .eq-check {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--sv-purple);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #fff;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .eq-card.selected .eq-check { opacity: 1; transform: scale(1); }
+
+  /* background decoration number */
+  .eq-bg-num {
+    position: absolute;
+    bottom: -12px; right: -4px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    line-height: 1;
+    opacity: 0.04;
+    pointer-events: none;
+    color: #fff;
+    transition: opacity 0.2s;
+  }
+  .eq-card:hover .eq-bg-num,
+  .eq-card.selected .eq-bg-num { opacity: 0.07; }
+
+  /* icon */
+  .eq-icon {
+    font-size: 52px;
+    margin-bottom: 14px;
+    line-height: 1;
+    transition: transform 0.2s;
+    position: relative; z-index: 1;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  }
+  .eq-card:hover .eq-icon { transform: scale(1.12) translateY(-2px); }
+  .eq-card.selected .eq-icon { transform: scale(1.08); }
+
+  /* label */
+  .eq-label {
+    font-weight: 800;
+    font-size: 13px;
+    text-align: center;
+    color: #ccc;
+    letter-spacing: 0.3px;
+    position: relative; z-index: 1;
+    transition: color 0.2s;
+  }
+  .eq-card.selected .eq-label { color: #fff; }
+
+  /* selected counter badge */
+  .eq-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(123,47,247,0.15);
+    border: 1.5px solid rgba(123,47,247,0.3);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--sv-purple-light);
+    margin-bottom: 20px;
+    transition: all 0.2s;
+  }
+  .eq-counter.has-items { background: rgba(123,47,247,0.25); border-color: var(--sv-purple); color: #fff; }
+  .eq-counter-num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; }
+
+  @media (max-width: 900px) { .eq-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .eq-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } .eq-icon { font-size: 38px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content">
+  {% include 'routines/step_header.html' with paso_actual=1 %}
+
+  <div class="eq-counter" id="eq-counter">
+    <i class="bi bi-check2-circle"></i>
+    <span id="counter-txt">Selecciona el equipo disponible</span>
+    <span class="eq-counter-num" id="counter-num" style="display:none;"></span>
+  </div>
+
+  <form method="post" id="eq-form">
+    {% csrf_token %}
+    <div class="eq-grid">
+      {% for equipo in equipos %}
+      <label class="eq-card eq-{{ equipo.nombre }}" for="eq_{{ equipo.id }}">
+        <input type="checkbox" name="equipos" value="{{ equipo.id }}"
+               id="eq_{{ equipo.id }}" class="equip-checkbox" hidden>
+        <span class="eq-check"><i class="bi bi-check-lg"></i></span>
+        <div class="eq-icon">{{ equipo.icono }}</div>
+        <span class="eq-label">{{ equipo }}</span>
+        <span class="eq-bg-num">{{ forloop.counter }}</span>
+      </label>
+      {% empty %}
+      <div style="grid-column:1/-1;text-align:center;padding:48px;color:#555;">
+        <div style="font-size:48px;margin-bottom:12px;">⚙️</div>
+        <p>No hay equipos. <a href="/admin/exercises/equipo/" style="color:var(--sv-purple-light);">Agregar en el admin</a></p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="step-nav-footer">
+      <a href="{% url 'dashboard' %}" class="btn-sv-back"><i class="bi bi-arrow-left"></i></a>
+      <button type="submit" class="btn-sv-next" id="btn-next"><i class="bi bi-arrow-right"></i></button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const counter    = document.getElementById('eq-counter');
+  const counterTxt = document.getElementById('counter-txt');
+  const counterNum = document.getElementById('counter-num');
+
+  function updateCounter() {
+    const total = document.querySelectorAll('.equip-checkbox:checked').length;
+    if (total === 0) {
+      counterTxt.textContent = 'Selecciona el equipo disponible';
+      counterNum.style.display = 'none';
+      counter.classList.remove('has-items');
+    } else {
+      counterTxt.textContent = total === 1 ? 'equipo seleccionado' : 'equipos seleccionados';
+      counterNum.textContent = total;
+      counterNum.style.display = 'inline';
+      counter.classList.add('has-items');
+    }
+  }
+
+  document.querySelectorAll('.equip-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      cb.closest('.eq-card').classList.toggle('selected', cb.checked);
+      updateCounter();
+    });
+  });
+</script>
+{% endblock %}

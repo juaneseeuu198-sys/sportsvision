@@ -1,0 +1,157 @@
+{% extends 'base/base.html' %}
+{% block title %}Editar Perfil — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+  .avatar-preview-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .avatar-preview {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 3px solid var(--sv-purple);
+    background: rgba(123,47,247,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 46px; color: var(--sv-purple-light);
+    overflow: hidden;
+  }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1.5px solid rgba(123,47,247,0.4);
+    border-radius: 20px;
+    background: rgba(123,47,247,0.1);
+    color: var(--sv-purple-light);
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .avatar-upload-btn:hover { background: rgba(123,47,247,0.25); color: #fff; }
+  #id_avatar { display: none; }
+
+  .form-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 1px;
+    color: var(--sv-purple-light);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--sv-border);
+    padding-bottom: 10px;
+  }
+  .sv-input { width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+
+  <div class="page-top-nav">
+    <a href="{% url 'perfil' %}" class="page-back-btn">
+      <i class="bi bi-arrow-left"></i> Mi Perfil
+    </a>
+    <div class="page-breadcrumb">
+      <a href="{% url 'perfil' %}"><i class="bi bi-person-circle"></i> Perfil</a>
+      <span class="sep"><i class="bi bi-chevron-right"></i></span>
+      <span class="current">Editar</span>
+    </div>
+  </div>
+
+  <h1 class="sv-page-title">Editar Perfil</h1>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Avatar -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-person-circle"></i> Foto de perfil</div>
+      <div class="avatar-preview-wrap">
+        <div class="avatar-preview" id="avatar-preview">
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" id="avatar-img" alt="Avatar">
+          {% else %}
+            <i class="bi bi-person-fill" id="avatar-icon"></i>
+          {% endif %}
+        </div>
+        <label class="avatar-upload-btn" for="id_avatar">
+          <i class="bi bi-camera-fill"></i> Cambiar foto
+        </label>
+        {{ profile_form.avatar }}
+      </div>
+    </div>
+
+    <!-- Datos de cuenta -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-shield-lock-fill"></i> Datos de cuenta</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="sv-label">Nombre</label>
+          {{ user_form.first_name }}
+        </div>
+        <div class="col-md-6">
+          <label class="sv-label">Apellido</label>
+          {{ user_form.last_name }}
+        </div>
+        <div class="col-12">
+          <label class="sv-label">Email</label>
+          {{ user_form.email }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Datos físicos -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-person-fill"></i> Datos físicos</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="sv-label">Edad</label>
+          <div class="input-unit-wrap">
+            {{ profile_form.edad }}
+            <span class="input-unit-badge">años</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="sv-label">Peso</label>
+          <div class="input-unit-wrap">
+            {{ profile_form.peso }}
+            <span class="input-unit-badge">kg</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="sv-label">Altura</label>
+          <div class="input-unit-wrap">
+            {{ profile_form.altura }}
+            <span class="input-unit-badge">cm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-calcular w-100">
+      <i class="bi bi-check-circle-fill me-2"></i> Guardar cambios
+    </button>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('id_avatar').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var preview = document.getElementById('avatar-preview');
+      preview.innerHTML = '<img src="' + ev.target.result + '" style="width:100%;height:100%;object-fit:cover;" alt="preview">';
+    };
+    reader.readAsDataURL(file);
+  });
+</script>
+{% endblock %}

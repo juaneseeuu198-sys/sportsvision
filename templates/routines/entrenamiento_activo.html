@@ -1,0 +1,427 @@
+{% extends 'base/base.html' %}
+{% block title %}Entrenamiento — {{ ejercicio_actual.ejercicio.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Layout ───────────────────────────────────────── */
+  .workout-wrap { max-width: 780px; margin: 0 auto; padding: 0 0 40px; }
+
+  /* ── Top bar ──────────────────────────────────────── */
+  .wk-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--sv-bg-card);
+    border-bottom: 1px solid var(--sv-border);
+    gap: 16px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .wk-live { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; color: var(--sv-green); }
+  .wk-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sv-green); animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .wk-stat { text-align: center; }
+  .wk-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; line-height: 1; }
+  .wk-stat-lbl { font-size: 10px; color: #666; font-weight: 700; text-transform: uppercase; }
+  .wk-abandon { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1.5px solid rgba(230,57,70,0.4); border-radius: 8px; background: transparent; color: var(--sv-red); font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .wk-abandon:hover { background: rgba(230,57,70,0.12); }
+
+  /* ── Progress bar ─────────────────────────────────── */
+  .wk-progress-bar { height: 3px; background: var(--sv-border); }
+  .wk-progress-fill { height: 100%; background: linear-gradient(90deg, var(--sv-purple), var(--sv-green)); transition: width 0.4s ease; }
+
+  /* ── Exercise hero card ───────────────────────────── */
+  .ex-hero {
+    margin: 20px 0 16px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1.5px solid var(--sv-border);
+    background: var(--sv-bg-card);
+  }
+  .ex-hero-banner {
+    position: relative;
+    padding: 28px 24px 24px;
+    display: flex; align-items: center; gap: 20px;
+    overflow: hidden;
+  }
+  .ex-hero-banner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--grup-bg, rgba(123,47,247,0.12));
+    z-index: 0;
+  }
+  .ex-hero-visual {
+    position: relative; z-index: 1;
+    width: 90px; height: 90px;
+    border-radius: 18px;
+    background: var(--grup-bg2, rgba(123,47,247,0.25));
+    border: 2px solid var(--grup-color, var(--sv-purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .ex-hero-visual img { width: 100%; height: 100%; object-fit: cover; }
+  .ex-hero-info { position: relative; z-index: 1; flex: 1; }
+  .ex-hero-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; line-height: 1.1; margin-bottom: 8px; }
+  .ex-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .ex-badge {
+    padding: 3px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .ex-badge-grupo { background: var(--grup-bg2, rgba(123,47,247,0.3)); color: var(--grup-color, var(--sv-purple-light)); }
+  .ex-badge-nivel-principiante { background: rgba(0,212,170,0.2); color: var(--sv-green); }
+  .ex-badge-nivel-intermedio   { background: rgba(244,162,97,0.2); color: var(--sv-gold); }
+  .ex-badge-nivel-avanzado     { background: rgba(230,57,70,0.2);  color: var(--sv-red); }
+  .ex-desc { font-size: 13px; color: #888; line-height: 1.5; }
+  .ex-instructions-link { font-size: 12px; color: var(--sv-purple-light); text-decoration: none; font-weight: 700; }
+  .ex-instructions-link:hover { color: #fff; }
+
+  /* Grupo muscle colors */
+  .grupo-pecho       { --grup-color:#4361ee; --grup-bg:rgba(67,97,238,0.12);  --grup-bg2:rgba(67,97,238,0.25); }
+  .grupo-espalda     { --grup-color:#00d4aa; --grup-bg:rgba(0,212,170,0.1);   --grup-bg2:rgba(0,212,170,0.22); }
+  .grupo-hombros     { --grup-color:#f97316; --grup-bg:rgba(249,115,22,0.1);  --grup-bg2:rgba(249,115,22,0.22); }
+  .grupo-biceps      { --grup-color:#7b2ff7; --grup-bg:rgba(123,47,247,0.12); --grup-bg2:rgba(123,47,247,0.28); }
+  .grupo-triceps     { --grup-color:#e63946; --grup-bg:rgba(230,57,70,0.1);   --grup-bg2:rgba(230,57,70,0.22); }
+  .grupo-piernas     { --grup-color:#00bcd4; --grup-bg:rgba(0,188,212,0.1);   --grup-bg2:rgba(0,188,212,0.22); }
+  .grupo-gluteos     { --grup-color:#ec4899; --grup-bg:rgba(236,72,153,0.1);  --grup-bg2:rgba(236,72,153,0.22); }
+  .grupo-abdomen     { --grup-color:#f4a261; --grup-bg:rgba(244,162,97,0.1);  --grup-bg2:rgba(244,162,97,0.22); }
+  .grupo-core        { --grup-color:#f4a261; --grup-bg:rgba(244,162,97,0.1);  --grup-bg2:rgba(244,162,97,0.22); }
+  .grupo-pantorrillas{ --grup-color:#9d5cf6; --grup-bg:rgba(157,92,246,0.1);  --grup-bg2:rgba(157,92,246,0.22); }
+  .grupo-antebrazos  { --grup-color:#60a5fa; --grup-bg:rgba(96,165,250,0.1);  --grup-bg2:rgba(96,165,250,0.22); }
+  .grupo-cardio      { --grup-color:#e63946; --grup-bg:rgba(230,57,70,0.1);   --grup-bg2:rgba(230,57,70,0.22); }
+  .grupo-movilidad   { --grup-color:#00d4aa; --grup-bg:rgba(0,212,170,0.08);  --grup-bg2:rgba(0,212,170,0.18); }
+
+  /* ── Series completadas ───────────────────────────── */
+  .sets-done { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 24px 16px; }
+  .set-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    background: rgba(0,212,170,0.1); border: 1.5px solid rgba(0,212,170,0.3);
+    font-size: 12px; font-weight: 700; color: var(--sv-green);
+  }
+  .set-chip i { font-size: 11px; }
+
+  /* ── Nuevo set form ───────────────────────────────── */
+  .new-set-card {
+    margin: 0 16px 16px;
+    background: rgba(123,47,247,0.08);
+    border: 1.5px solid rgba(123,47,247,0.25);
+    border-radius: 16px;
+    padding: 18px;
+  }
+  .new-set-title {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+    color: var(--sv-purple-light); margin-bottom: 14px;
+  }
+  .new-set-badge {
+    background: var(--sv-purple); color: #fff;
+    padding: 3px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; font-family: 'Barlow', sans-serif;
+  }
+  .set-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .set-input-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .set-input-lbl { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+  .set-extra-btns { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .btn-extra {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px; border-radius: 20px;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: transparent; color: #888; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-extra:hover { border-color: var(--sv-purple-light); color: var(--sv-purple-light); }
+  .btn-extra.active { border-color: var(--sv-purple); color: var(--sv-purple-light); background: rgba(123,47,247,0.15); }
+  .btn-terminar-serie {
+    width: 100%; padding: 14px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--sv-purple), var(--sv-purple-light));
+    border: none; color: #fff; font-weight: 700; font-size: 15px;
+    cursor: pointer; transition: opacity 0.2s;
+    box-shadow: 0 4px 16px rgba(123,47,247,0.35);
+  }
+  .btn-terminar-serie:hover { opacity: 0.9; }
+
+  /* ── Nav buttons ──────────────────────────────────── */
+  .wk-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 16px 20px; }
+  .btn-add-serie {
+    padding: 14px; border-radius: 12px;
+    background: rgba(123,47,247,0.15); border: 1.5px solid rgba(123,47,247,0.35);
+    color: var(--sv-purple-light); font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-add-serie:hover { background: rgba(123,47,247,0.28); color: #fff; }
+  .btn-siguiente {
+    padding: 14px; border-radius: 12px;
+    background: var(--sv-green); border: none;
+    color: #fff; font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: opacity 0.2s;
+    box-shadow: 0 4px 16px rgba(0,212,170,0.3);
+  }
+  .btn-siguiente:hover { opacity: 0.88; }
+  .btn-terminar-final {
+    width: calc(100% - 32px); margin: 0 16px; padding: 16px;
+    border-radius: 12px; background: var(--sv-green); border: none;
+    color: #fff; font-weight: 700; font-size: 15px;
+    cursor: pointer; transition: opacity 0.2s;
+    box-shadow: 0 4px 16px rgba(0,212,170,0.3);
+  }
+
+  /* ── Exercise queue ───────────────────────────────── */
+  .ex-queue {
+    margin: 8px 16px 0;
+    background: var(--sv-bg-card);
+    border: 1.5px solid var(--sv-border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .ex-queue-title {
+    padding: 12px 18px;
+    font-size: 11px; font-weight: 700; color: #555;
+    text-transform: uppercase; letter-spacing: 1px;
+    border-bottom: 1px solid var(--sv-border);
+  }
+  .ex-queue-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.2s;
+  }
+  .ex-queue-item:last-child { border-bottom: none; }
+  .ex-queue-item.done  { opacity: 0.4; }
+  .ex-queue-item.current { background: rgba(123,47,247,0.08); }
+  .ex-queue-dot {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+    border: 2px solid #333;
+  }
+  .ex-queue-dot.done    { background: var(--sv-green); border-color: var(--sv-green); color: #000; }
+  .ex-queue-dot.current { border-color: var(--sv-purple); color: var(--sv-purple-light); }
+  .ex-queue-dot.pending { color: #444; }
+  .ex-queue-name { font-size: 13px; font-weight: 700; flex: 1; }
+  .ex-queue-item.done .ex-queue-name { color: #555; }
+  .ex-queue-item.current .ex-queue-name { color: #fff; }
+  .ex-queue-item.pending .ex-queue-name { color: #666; }
+  .ex-queue-grupo { font-size: 11px; color: #555; }
+
+  @media (max-width: 600px) {
+    .set-inputs { grid-template-columns: 1fr; }
+    .wk-nav { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+{% with slug=ejercicio_actual.ejercicio.grupo_muscular.slug|default:"core" %}
+<div class="sv-page-content workout-page" style="padding:0;max-width:100%;">
+
+  <!-- TOP BAR -->
+  <div class="wk-topbar">
+    <div class="wk-live">
+      <span class="wk-live-dot"></span>
+      <span>EN VIVO · <span id="wk-timer">00:00</span></span>
+    </div>
+    <div class="wk-stat">
+      <div class="wk-stat-val" style="color:var(--sv-purple-light);">{{ ejercicio_idx }}/{{ ejercicios_list|length }}</div>
+      <div class="wk-stat-lbl">Ejercicios</div>
+    </div>
+    <div class="wk-stat">
+      <div class="wk-stat-val" style="color:var(--sv-green);">{{ progreso_pct }}%</div>
+      <div class="wk-stat-lbl">Progreso</div>
+    </div>
+    <div class="wk-stat">
+      <div class="wk-stat-val" style="color:var(--sv-gold);">{{ peso_total }}</div>
+      <div class="wk-stat-lbl">kg totales</div>
+    </div>
+    <form method="post" style="margin:0;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="terminar_entrenamiento">
+      <button type="submit" class="wk-abandon">
+        <i class="bi bi-x-circle"></i> Abandonar
+      </button>
+    </form>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="wk-progress-bar">
+    <div class="wk-progress-fill" style="width:{{ progreso_pct }}%;"></div>
+  </div>
+
+  <div class="workout-wrap">
+
+    <!-- EXERCISE HERO CARD -->
+    <div class="ex-hero grupo-{{ slug }}">
+      <div class="ex-hero-banner">
+        <div class="ex-hero-visual">
+          {% if ejercicio_actual.ejercicio.gif %}
+            <img src="{{ ejercicio_actual.ejercicio.gif.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
+          {% elif ejercicio_actual.ejercicio.imagen %}
+            <img src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
+          {% else %}
+            {% with s=slug %}
+              {% if s == 'pecho' %}💪{% elif s == 'espalda' %}🏋️{% elif s == 'hombros' %}🔝
+              {% elif s == 'biceps' %}💪{% elif s == 'triceps' %}🦾{% elif s == 'piernas' %}🦵
+              {% elif s == 'gluteos' %}⚡{% elif s == 'abdomen' %}🎯{% elif s == 'core' %}🔥
+              {% elif s == 'cardio' %}❤️{% elif s == 'movilidad' %}🧘{% elif s == 'pantorrillas' %}🦶
+              {% else %}🏋️{% endif %}
+            {% endwith %}
+          {% endif %}
+        </div>
+        <div class="ex-hero-info">
+          <div class="ex-badges">
+            <span class="ex-badge ex-badge-grupo">{{ ejercicio_actual.ejercicio.grupo_muscular }}</span>
+            <span class="ex-badge ex-badge-nivel-{{ ejercicio_actual.ejercicio.nivel }}">
+              {{ ejercicio_actual.ejercicio.get_nivel_display }}
+            </span>
+          </div>
+          <div class="ex-hero-name">{{ ejercicio_actual.ejercicio.nombre }}</div>
+          {% if ejercicio_actual.ejercicio.descripcion %}
+          <div class="ex-desc">{{ ejercicio_actual.ejercicio.descripcion|truncatechars:90 }}</div>
+          {% endif %}
+          <a href="{% url 'ejercicio_detalle' ejercicio_actual.ejercicio.id %}" target="_blank" class="ex-instructions-link mt-1 d-inline-block">
+            <i class="bi bi-info-circle me-1"></i>Ver instrucciones completas
+          </a>
+        </div>
+      </div>
+
+      <!-- SERIES COMPLETADAS -->
+      {% if series %}
+      <div class="sets-done">
+        {% for serie in series %}
+        <div class="set-chip">
+          <i class="bi bi-check-circle-fill"></i>
+          SET{{ serie.numero_serie }}
+          {% if serie.repeticiones %}&nbsp;· {{ serie.repeticiones }}reps{% endif %}
+          {% if serie.peso %}&nbsp;· {{ serie.peso }}kg{% endif %}
+          {% if serie.tiempo_minutos %}&nbsp;· {{ serie.tiempo_minutos }}min{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- NUEVO SET FORM -->
+      <form method="post" id="serieForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="guardar_serie">
+        <div class="new-set-card">
+          <div class="new-set-title">
+            <span class="new-set-badge">SET {{ series|length|add:1 }}</span>
+            Registrar serie
+          </div>
+
+          <div class="set-inputs">
+            <div class="set-input-wrap">
+              <span class="set-input-lbl">Repeticiones</span>
+              {{ form.repeticiones }}
+            </div>
+            <div class="set-input-wrap">
+              <span class="set-input-lbl">Peso (kg)</span>
+              {{ form.peso }}
+            </div>
+          </div>
+
+          <!-- Extras ocultos -->
+          <div id="tiempo-group" style="display:none;margin-bottom:10px;">
+            <div class="set-inputs">
+              <div class="set-input-wrap">
+                <span class="set-input-lbl">Minutos</span>{{ form.tiempo_minutos }}
+              </div>
+              <div class="set-input-wrap">
+                <span class="set-input-lbl">Segundos</span>{{ form.tiempo_segundos }}
+              </div>
+            </div>
+          </div>
+          <div id="pc-group" style="display:none;margin-bottom:10px;">
+            <div class="set-input-wrap">
+              <span class="set-input-lbl">Peso corporal (kg)</span>{{ form.peso_corporal }}
+            </div>
+          </div>
+
+          <div class="set-extra-btns">
+            <button type="button" class="btn-extra" id="btn-tiempo" onclick="toggleExtra('tiempo-group','btn-tiempo')">
+              <i class="bi bi-stopwatch"></i> Tiempo
+            </button>
+            <button type="button" class="btn-extra" id="btn-pc" onclick="toggleExtra('pc-group','btn-pc')">
+              <i class="bi bi-person-fill"></i> Peso corporal
+            </button>
+          </div>
+
+          <button type="submit" class="btn-terminar-serie">
+            <i class="bi bi-check-lg me-2"></i> Terminar Serie
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- NAV BUTTONS -->
+    <div class="wk-nav">
+      <button type="button" class="btn-add-serie" onclick="document.getElementById('serieForm').submit()">
+        <i class="bi bi-plus-circle me-1"></i> Agregar Serie
+      </button>
+      <form method="post" style="margin:0;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="siguiente_ejercicio">
+        {% if es_ultimo %}
+        <button type="submit" class="btn-siguiente w-100" style="background:linear-gradient(135deg,#7b2ff7,var(--sv-green));">
+          <i class="bi bi-trophy-fill me-1"></i> Terminar
+        </button>
+        {% else %}
+        <button type="submit" class="btn-siguiente w-100">
+          Siguiente <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- QUEUE -->
+    <div class="ex-queue">
+      <div class="ex-queue-title"><i class="bi bi-list-ol me-1"></i> Cola de ejercicios</div>
+      {% for ej in ejercicios_list %}
+      {% with estado=forloop.counter0 %}
+      <div class="ex-queue-item {% if estado < ejercicio_idx %}done{% elif estado == ejercicio_idx %}current{% else %}pending{% endif %}">
+        <div class="ex-queue-dot {% if estado < ejercicio_idx %}done{% elif estado == ejercicio_idx %}current{% else %}pending{% endif %}">
+          {% if estado < ejercicio_idx %}<i class="bi bi-check-lg"></i>
+          {% elif estado == ejercicio_idx %}<i class="bi bi-circle-fill" style="font-size:8px;"></i>
+          {% else %}{{ forloop.counter }}{% endif %}
+        </div>
+        <div class="ex-queue-name">{{ ej.ejercicio.nombre }}</div>
+        <div class="ex-queue-grupo">{{ ej.ejercicio.grupo_muscular }}</div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Live timer
+  var start = Date.now() - ({{ entrenamiento.iniciado_en|date:"U" }} * 1000 - Date.now() + Date.now());
+  // Simple elapsed from page load as fallback
+  var elapsed = 0;
+  var timerEl = document.getElementById('wk-timer');
+  setInterval(function() {
+    elapsed++;
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+  }, 1000);
+
+  // Toggle extra fields
+  function toggleExtra(groupId, btnId) {
+    var g = document.getElementById(groupId);
+    var b = document.getElementById(btnId);
+    if (!g) return;
+    var showing = g.style.display !== 'none';
+    g.style.display = showing ? 'none' : 'block';
+    b.classList.toggle('active', !showing);
+  }
+
+  // Style form inputs
+  document.querySelectorAll('#serieForm input[type="number"], #serieForm input[type="text"]').forEach(function(el) {
+    el.classList.add('sv-input');
+    el.style.width = '100%';
+  });
+</script>
+{% endblock %}

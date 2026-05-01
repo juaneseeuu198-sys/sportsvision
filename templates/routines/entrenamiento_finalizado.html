@@ -1,0 +1,43 @@
+{% extends 'base/base.html' %}
+{% block title %}Entrenamiento Completado{% endblock %}
+
+{% block content %}
+<div class="sv-page-content text-center py-5">
+  <div class="finish-trophy"><i class="bi bi-trophy-fill"></i></div>
+  <h1 class="sv-welcome mt-3">¡Entrenamiento Completado!</h1>
+  <p class="text-muted mb-4">{{ entrenamiento.duracion }}</p>
+
+  <div class="results-summary">
+    <div class="result-stat">
+      <div class="rs-value">{{ entrenamiento.peso_total }}</div>
+      <div class="rs-label">kg totales</div>
+    </div>
+    <div class="result-stat">
+      <div class="rs-value">{{ series|length }}</div>
+      <div class="rs-label">series</div>
+    </div>
+  </div>
+
+  <div class="sv-panel mt-4 text-start">
+    <h5 class="sv-panel-title">Resumen de ejercicios</h5>
+    {% regroup series by ejercicio as series_by_exercise %}
+    {% for group in series_by_exercise %}
+    <div class="finish-exercise mb-3">
+      <h6 style="color:var(--sv-purple-light);">{{ group.grouper.nombre }}</h6>
+      {% for serie in group.list %}
+      <div class="finish-serie">
+        <span class="set-badge-sm">SET{{ serie.numero_serie }}</span>
+        {% if serie.repeticiones %}<span>{{ serie.repeticiones }} reps</span>{% endif %}
+        {% if serie.peso %}<span>× {{ serie.peso }} kg</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex gap-3 justify-content-center mt-4">
+    <a href="{% url 'dashboard' %}" class="btn-sv-outline">Volver al inicio</a>
+    <a href="{% url 'calendario_progreso' %}" class="btn-sv-green px-4">Ver Progreso</a>
+  </div>
+</div>
+{% endblock %}

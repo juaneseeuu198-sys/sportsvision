@@ -1,0 +1,44 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Dar permisos a Gradle
+        run: chmod +x android/gradlew
+        continue-on-error: true
+
+      - name: Descargar Gradle wrapper
+        working-directory: android
+        run: |
+          curl -L "https://services.gradle.org/distributions/gradle-8.2-bin.zip" -o gradle.zip
+          unzip -q gradle.zip
+          mv gradle-8.2 gradle-dist
+          export GRADLE_HOME=$PWD/gradle-dist
+          echo "$GRADLE_HOME/bin" >> $GITHUB_PATH
+
+      - name: Compilar APK debug
+        working-directory: android
+        run: gradle assembleDebug --no-daemon
+
+      - name: Subir APK como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: SportsVision-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

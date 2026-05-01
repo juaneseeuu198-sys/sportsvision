@@ -1,0 +1,121 @@
+{% extends 'base/base.html' %}
+{% block title %}Ejercicios — SportsVision{% endblock %}
+
+{% block content %}
+<div class="sv-page-content">
+  <div class="sv-page-head">
+    <div>
+      <h1 class="sv-title">Ejercicios</h1>
+      <p class="sv-sub">Explora y filtra por grupo muscular, equipo y nivel.</p>
+    </div>
+    <span class="sv-badge sv-badge-muted">
+      <i class="bi bi-collection-play-fill"></i>
+      {{ ejercicios|length }} resultado{{ ejercicios|length|pluralize }}
+    </span>
+  </div>
+
+  <form method="get" class="sv-toolbar">
+    <div class="sv-toolbar-grid">
+      <div class="sv-input-group">
+        <div class="sv-input-icon"><i class="bi bi-search"></i></div>
+        <input
+          class="sv-input"
+          style="padding:12px 14px !important;"
+          type="search"
+          name="q"
+          value="{{ request.GET.q }}"
+          placeholder="Buscar ejercicio (ej: press, sentadilla, plancha)..."
+          aria-label="Buscar ejercicios"
+        />
+      </div>
+
+      <select class="sv-select" name="grupo" aria-label="Filtrar por grupo muscular">
+        <option value="">Grupo muscular (todos)</option>
+        {% for g in grupos %}
+          <option value="{{ g.id }}" {% if request.GET.grupo == g.id|stringformat:"s" %}selected{% endif %}>
+            {{ g.nombre }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <select class="sv-select" name="equipo" aria-label="Filtrar por equipo">
+        <option value="">Equipo (todos)</option>
+        {% for e in equipos %}
+          <option value="{{ e.id }}" {% if request.GET.equipo == e.id|stringformat:"s" %}selected{% endif %}>
+            {{ e.get_nombre_display }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <select class="sv-select" name="nivel" aria-label="Filtrar por nivel">
+        <option value="">Nivel (todos)</option>
+        <option value="principiante" {% if request.GET.nivel == "principiante" %}selected{% endif %}>Principiante</option>
+        <option value="intermedio" {% if request.GET.nivel == "intermedio" %}selected{% endif %}>Intermedio</option>
+        <option value="avanzado" {% if request.GET.nivel == "avanzado" %}selected{% endif %}>Avanzado</option>
+      </select>
+
+      <div class="d-flex gap-2 justify-content-end">
+        <button class="btn-sv btn-sv-primary" type="submit">
+          <i class="bi bi-funnel-fill"></i> Aplicar
+        </button>
+        <a class="btn-sv btn-sv-danger" href="{% url 'ejercicios_lista' %}">
+          <i class="bi bi-x-circle"></i> Limpiar
+        </a>
+      </div>
+    </div>
+  </form>
+
+  {% if ejercicios %}
+    <div class="sv-ex-grid">
+      {% for ex in ejercicios %}
+        <a class="sv-ex-card" href="{% url 'ejercicio_detalle' ex.id %}">
+          <div class="sv-ex-media">
+            {% if ex.imagen %}
+              <img src="{{ ex.imagen.url }}" alt="{{ ex.nombre }}">
+            {% else %}
+              <div class="sv-ex-fallback">
+                <i class="bi bi-image"></i>
+                <span>Sin imagen</span>
+              </div>
+            {% endif %}
+          </div>
+          <div class="sv-ex-body">
+            <h3 class="sv-ex-title">{{ ex.nombre }}</h3>
+            <div class="sv-ex-meta">
+              {% if ex.grupo_muscular %}
+                <span class="sv-chip"><i class="bi bi-bullseye"></i>{{ ex.grupo_muscular.nombre }}</span>
+              {% endif %}
+              <span class="sv-badge sv-badge-level-{{ ex.nivel }}">{{ ex.get_nivel_display }}</span>
+            </div>
+            {% if ex.descripcion %}
+              <p class="sv-ex-desc">{{ ex.descripcion|truncatechars:120 }}</p>
+            {% else %}
+              <p class="sv-ex-desc" style="opacity:0.75;">Sin descripción.</p>
+            {% endif %}
+          </div>
+          <div class="sv-ex-footer">
+            <span class="sv-chip">
+              <i class="bi bi-tools"></i>
+              {{ ex.equipos.count }} equipo{{ ex.equipos.count|pluralize }}
+            </span>
+            <span class="btn-sv" style="padding:8px 10px;border-radius:10px;">
+              Ver <i class="bi bi-arrow-right"></i>
+            </span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="sv-empty mt-3">
+      <div style="font-size:34px; margin-bottom:8px;"><i class="bi bi-emoji-frown"></i></div>
+      No encontramos ejercicios con esos filtros.
+      <div class="mt-3">
+        <a class="btn-sv btn-sv-primary" href="{% url 'ejercicios_lista' %}">
+          <i class="bi bi-arrow-counterclockwise"></i> Ver todo el catálogo
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+

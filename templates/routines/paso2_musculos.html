@@ -1,0 +1,275 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Nueva Rutina — Músculos{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Grid de tarjetas de músculos ─────────────────────── */
+.muscle-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.muscle-card {
+  position: relative;
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,0.08);
+  background: var(--sv-bg-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 0 14px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  user-select: none;
+  min-height: 170px;
+}
+
+.muscle-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+}
+
+.muscle-card.selected {
+  border-color: #4361ee;
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.3);
+}
+
+/* imagen que ocupa el área superior de la tarjeta */
+.muscle-card-img {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.muscle-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.25s;
+  filter: brightness(0.82);
+}
+.muscle-card:hover .muscle-card-img img { transform: scale(1.06); }
+.muscle-card.selected .muscle-card-img img { filter: brightness(1); }
+
+/* overlay degradado para que el nombre se lea */
+.muscle-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 60%;
+  background: linear-gradient(to top, rgba(10,12,40,0.92) 0%, transparent 100%);
+  border-radius: 0 0 16px 16px;
+  pointer-events: none;
+}
+
+/* nombre del músculo */
+.muscle-label {
+  position: relative;
+  z-index: 2;
+  font-weight: 800;
+  font-size: 12px;
+  text-align: center;
+  color: #ccc;
+  letter-spacing: 0.3px;
+  transition: color 0.2s;
+  padding: 0 8px;
+}
+.muscle-card.selected .muscle-label { color: #fff; }
+
+/* badge check */
+.muscle-check {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: #4361ee;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: #fff;
+  z-index: 3;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.muscle-card.selected .muscle-check { opacity: 1; transform: scale(1); }
+
+/* pills seleccionados */
+.selected-pills {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 12px 0 4px; min-height: 44px;
+  justify-content: center; align-items: center;
+}
+.muscle-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 20px; padding: 4px 12px 4px 14px;
+  font-size: 12px; font-family: 'Barlow', sans-serif; font-weight: 700;
+  background: rgba(67,97,238,.18); border: 1.5px solid #7b9ffb; color: #7b9ffb;
+}
+.muscle-pill .pill-remove {
+  background: none; border: none; cursor: pointer;
+  padding: 0; line-height: 1; opacity: .7; font-size: 14px; color: inherit;
+}
+.muscle-pill .pill-remove:hover { opacity: 1; }
+.no-sel-hint { color: rgba(255,255,255,.22); font-size: 12px; font-style: italic; }
+
+/* fallback cuando no hay imagen */
+.muscle-card-img.no-img {
+  background: var(--sv-bg-panel);
+  display: flex; align-items: center; justify-content: center;
+}
+.muscle-card-img.no-img::before {
+  content: attr(data-icon);
+  font-size: 52px;
+  line-height: 1;
+}
+
+/* colores de borde por grupo */
+.muscle-pecho.selected         { border-color: #4361ee; box-shadow: 0 0 0 3px rgba(67,97,238,0.3); }
+.muscle-espalda.selected       { border-color: #00d4aa; box-shadow: 0 0 0 3px rgba(0,212,170,0.3); }
+.muscle-hombros.selected       { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.3); }
+.muscle-biceps.selected        { border-color: #7b2ff7; box-shadow: 0 0 0 3px rgba(123,47,247,0.3); }
+.muscle-triceps.selected       { border-color: #e63946; box-shadow: 0 0 0 3px rgba(230,57,70,0.3); }
+.muscle-abdomen.selected       { border-color: #f4a261; box-shadow: 0 0 0 3px rgba(244,162,97,0.3); }
+.muscle-piernas.selected       { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236,72,153,0.3); }
+.muscle-gluteos.selected       { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,0.3); }
+.muscle-pantorrillas.selected  { border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.3); }
+.muscle-antebrazos.selected    { border-color: #86efac; box-shadow: 0 0 0 3px rgba(134,239,172,0.3); }
+.muscle-core.selected          { border-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,0.3); }
+
+.muscle-pecho.selected .muscle-check         { background: #4361ee; }
+.muscle-espalda.selected .muscle-check       { background: #00d4aa; }
+.muscle-hombros.selected .muscle-check       { background: #f97316; }
+.muscle-biceps.selected .muscle-check        { background: #7b2ff7; }
+.muscle-triceps.selected .muscle-check       { background: #e63946; }
+.muscle-abdomen.selected .muscle-check       { background: #f4a261; }
+.muscle-piernas.selected .muscle-check       { background: #ec4899; }
+.muscle-gluteos.selected .muscle-check       { background: #a78bfa; }
+.muscle-pantorrillas.selected .muscle-check  { background: #22d3ee; }
+.muscle-antebrazos.selected .muscle-check    { background: #86efac; }
+.muscle-core.selected .muscle-check          { background: #fbbf24; }
+
+@media (max-width: 900px) { .muscle-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 640px) { .muscle-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; } .muscle-card { min-height: 130px; } }
+@media (max-width: 400px) { .muscle-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content">
+  {% include 'routines/step_header.html' with paso_actual=2 %}
+  <p style="text-align:center;color:rgba(255,255,255,.45);font-size:13px;margin-bottom:20px;">
+    Selecciona los grupos musculares que quieres trabajar
+  </p>
+
+  <form method="post" id="form-musculos">
+    {% csrf_token %}
+
+    <div class="muscle-grid">
+      {% for grupo in grupos %}
+      <label class="muscle-card muscle-{{ grupo.slug }}"
+             for="mg_{{ grupo.id }}"
+             id="card_{{ grupo.slug }}">
+        <input type="checkbox" name="grupos" value="{{ grupo.id }}"
+               id="mg_{{ grupo.id }}" class="muscle-checkbox" hidden>
+
+        <span class="muscle-check"><i class="bi bi-check-lg"></i></span>
+
+        <div class="muscle-card-img"
+             data-icon="{{ grupo.icono|default:'💪' }}">
+          <img src="{% static 'img/muscles/' %}{{ grupo.slug }}.png"
+               alt="{{ grupo.nombre }}"
+               onerror="this.parentElement.classList.add('no-img'); this.style.display='none';">
+        </div>
+
+        <span class="muscle-label">{{ grupo.nombre }}</span>
+      </label>
+      {% endfor %}
+    </div>
+
+    <!-- Pills seleccionados -->
+    <div id="selected-pills" class="selected-pills">
+      {% for grupo in grupos %}
+      <span class="muscle-pill" id="pill_{{ grupo.slug }}" style="display:none">
+        {{ grupo.nombre }}
+        <button type="button" class="pill-remove"
+                data-slug="{{ grupo.slug }}" aria-label="Quitar">&#x2715;</button>
+      </span>
+      {% endfor %}
+      <span id="no-sel-hint" class="no-sel-hint">Ningún músculo seleccionado</span>
+    </div>
+
+    <div class="step-nav-footer">
+      <a href="{% url 'paso1_equipo' %}" class="btn-sv-back">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <button type="submit" class="btn-sv-next">
+        <i class="bi bi-arrow-right"></i>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script type="application/json" id="grupos-data">
+[{% for g in grupos %}{"slug":"{{ g.slug|escapejs }}","id":{{ g.id }},"name":"{{ g.nombre|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const gruposData = JSON.parse(document.getElementById("grupos-data").textContent);
+
+  const groups = {};
+  gruposData.forEach(g => {
+    groups[g.slug] = {
+      cb:   document.getElementById("mg_" + g.id),
+      card: document.getElementById("card_" + g.slug),
+      pill: document.getElementById("pill_" + g.slug),
+    };
+  });
+
+  const noHint = document.getElementById("no-sel-hint");
+
+  function refreshHint() {
+    noHint.style.display =
+      Object.values(groups).some(g => g.cb?.checked) ? "none" : "inline";
+  }
+
+  function select(slug) {
+    const g = groups[slug]; if (!g) return;
+    g.cb.checked = true;
+    g.card?.classList.add("selected");
+    if (g.pill) g.pill.style.display = "inline-flex";
+    refreshHint();
+  }
+  function deselect(slug) {
+    const g = groups[slug]; if (!g) return;
+    g.cb.checked = false;
+    g.card?.classList.remove("selected");
+    if (g.pill) g.pill.style.display = "none";
+    refreshHint();
+  }
+
+  // Cada tarjeta es un <label> → el checkbox se activa solo,
+  // pero sincronizamos el estado visual aquí.
+  document.querySelectorAll(".muscle-checkbox").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const slug = cb.id.replace("mg_", "");
+      const g = Object.entries(groups).find(([s, v]) => v.cb === cb)?.[0];
+      if (g) cb.checked ? select(g) : deselect(g);
+    });
+  });
+
+  document.querySelectorAll(".pill-remove").forEach(btn => {
+    btn.addEventListener("click", () => deselect(btn.dataset.slug));
+  });
+
+  refreshHint();
+})();
+</script>
+{% endblock %}
