@@ -19,12 +19,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build APK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: |
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Create local.properties
+        working-directory: android
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Create Gradle wrapper
         working-directory: android
         run: |
-          gradle wrapper --gradle-version=8.2 --no-daemon
+          gradle wrapper --gradle-version=8.4 --no-daemon
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon --warning-mode=all
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
