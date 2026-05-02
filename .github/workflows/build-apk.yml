@@ -8,27 +8,33 @@ on:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    container:
-      image: alvrme/alpine-android:android-34-jdk17
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Crear local.properties
-        working-directory: android
-        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Permisos gradlew
+      - name: Instalar componentes Android SDK
+        run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+      - name: Preparar proyecto Android
         working-directory: android
         run: |
-          gradle wrapper --gradle-version=8.4 --no-daemon
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          gradle wrapper --gradle-version=8.2 --no-daemon
           chmod +x gradlew
 
-      - name: Build APK
+      - name: Construir APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK
+      - name: Subir APK
         uses: actions/upload-artifact@v4
         with:
           name: SportsVision-APK
