@@ -239,12 +239,18 @@ def editar_perfil(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
+        avatar_b64 = request.POST.get('avatar_cropped', '').strip()
+
         # Guardado rápido de avatar desde la página de perfil (solo foto)
-        if 'avatar' in request.FILES and not request.POST.get('first_name'):
-            if profile.avatar:
-                profile.avatar.delete(save=False)
-            profile.avatar = request.FILES['avatar']
-            profile.save()
+        if (avatar_b64 or 'avatar' in request.FILES) and not request.POST.get('first_name'):
+            if avatar_b64 and avatar_b64.startswith('data:image'):
+                profile.avatar_data = avatar_b64
+                profile.save(update_fields=['avatar_data'])
+            elif 'avatar' in request.FILES:
+                if profile.avatar:
+                    profile.avatar.delete(save=False)
+                profile.avatar = request.FILES['avatar']
+                profile.save(update_fields=['avatar'])
             messages.success(request, 'Foto de perfil actualizada.')
             return redirect('perfil')
 
@@ -253,6 +259,9 @@ def editar_perfil(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            if avatar_b64 and avatar_b64.startswith('data:image'):
+                profile.avatar_data = avatar_b64
+                profile.save(update_fields=['avatar_data'])
             messages.success(request, 'Perfil actualizado correctamente.')
             return redirect('perfil')
     else:
@@ -273,8 +282,9 @@ def eliminar_avatar(request):
         if profile.avatar:
             profile.avatar.delete(save=False)
             profile.avatar = None
-            profile.save()
-            messages.success(request, 'Foto de perfil eliminada.')
+        profile.avatar_data = ''
+        profile.save(update_fields=['avatar', 'avatar_data'])
+        messages.success(request, 'Foto de perfil eliminada.')
     return redirect('perfil')
 
 

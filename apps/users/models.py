@@ -35,6 +35,8 @@ class UserProfile(models.Model):
     peso          = models.FloatField(null=True, blank=True, help_text="Peso en kg")
     altura        = models.FloatField(null=True, blank=True, help_text="Altura en cm")
     avatar        = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    avatar_data   = models.TextField(blank=True, default='',
+                                     help_text="Avatar en base64 (persiste en BD)")
     genero        = models.CharField(max_length=1, choices=GENERO_CHOICES, blank=True, default='')
     objetivo      = models.CharField(max_length=30, choices=OBJETIVO_CHOICES, blank=True, default='')
     nivel         = models.CharField(max_length=15, choices=NIVEL_CHOICES, default='principiante')

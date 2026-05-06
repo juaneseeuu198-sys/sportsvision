@@ -285,7 +285,9 @@
   <!-- Header del perfil -->
   <div class="perfil-header">
     <div class="perfil-avatar" onclick="document.getElementById('avatar-modal').classList.add('open')">
-      {% if profile.avatar %}
+      {% if profile.avatar_data %}
+        <img src="{{ profile.avatar_data }}" alt="Avatar">
+      {% elif profile.avatar %}
         <img src="{{ profile.avatar.url }}" alt="Avatar">
       {% else %}
         <i class="bi bi-person-fill"></i>
@@ -501,7 +503,9 @@
     </div>
 
     <div class="avatar-modal-img-wrap">
-      {% if profile.avatar %}
+      {% if profile.avatar_data %}
+        <img src="{{ profile.avatar_data }}" alt="Avatar" id="modal-avatar-img">
+      {% elif profile.avatar %}
         <img src="{{ profile.avatar.url }}" alt="Avatar" id="modal-avatar-img">
       {% else %}
         <div class="avatar-placeholder-big"><i class="bi bi-person-circle"></i></div>

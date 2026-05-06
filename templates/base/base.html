@@ -175,7 +175,9 @@
 
       <!-- Icono de perfil en la derecha -->
       <a href="{% url 'perfil' %}" class="topbar-avatar-btn" title="{{ user.first_name|default:user.username }}">
-        {% if user.profile.avatar %}
+        {% if user.profile.avatar_data %}
+          <img src="{{ user.profile.avatar_data }}" alt="Avatar">
+        {% elif user.profile.avatar %}
           <img src="{{ user.profile.avatar.url }}" alt="Avatar">
         {% else %}
           <i class="bi bi-person-fill"></i>
