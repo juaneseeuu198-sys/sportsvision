@@ -163,6 +163,31 @@
 
   @media (max-width: 900px) { .eq-grid { grid-template-columns: repeat(2,1fr); } }
   @media (max-width: 480px) { .eq-grid { grid-template-columns: repeat(2,1fr); gap: 10px; } .eq-icon { font-size: 36px; } }
+
+  /* ── Light mode ─────────────────────────────── */
+  html.light-mode .eq-card {
+    background: #ffffff;
+    border-color: rgba(123,47,247,0.18);
+    box-shadow: 0 2px 10px rgba(123,47,247,0.06);
+  }
+  html.light-mode .eq-card:hover {
+    box-shadow: 0 8px 24px rgba(123,47,247,0.14);
+  }
+  html.light-mode .eq-card.selected {
+    background: #fdf8f2;
+    border-color: var(--sv-purple);
+    box-shadow: 0 0 0 3px rgba(123,47,247,0.18), 0 4px 16px rgba(123,47,247,0.12);
+  }
+  html.light-mode .eq-label            { color: #475569; }
+  html.light-mode .eq-card.selected .eq-label { color: var(--sv-purple); }
+  html.light-mode .eq-icon             { filter: drop-shadow(0 3px 6px rgba(0,0,0,0.12)); }
+  html.light-mode .eq-bg-num           { color: var(--sv-purple); opacity: 0.05; }
+  html.light-mode .eq-counter          { background: rgba(123,47,247,0.07); border-color: rgba(123,47,247,0.22); }
+  html.light-mode .level-btn           { background: #f0e8f8; border-color: rgba(123,47,247,0.2); color: #475569; }
+  html.light-mode .level-btn.active    { background: var(--sv-purple); border-color: var(--sv-purple); color: #fff; }
+  html.light-mode .sv-range            { background: rgba(123,47,247,0.15); }
+  html.light-mode .ag-sum-item         { background: #fdf8f2; border-color: rgba(123,47,247,0.18); }
+  html.light-mode .ag-sum-lbl          { color: #64748b; }
 </style>
 {% endblock %}
 

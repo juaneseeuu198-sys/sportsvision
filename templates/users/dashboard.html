@@ -257,6 +257,26 @@
   .dash-stats     { grid-template-columns: repeat(3,1fr); gap: 8px; }
   .dash-stat-val  { font-size: 30px; }
 }
+
+/* ── Light mode overrides ────────────────────────────── */
+html.light-mode .dash-greeting          { color: #64748b; }
+html.light-mode .dash-name              { background: linear-gradient(135deg, #1a1a2e 30%, var(--sv-purple) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+html.light-mode .dash-subtitle          { color: #64748b; }
+
+html.light-mode .dash-stat              { background: #fdf8f2; border-color: rgba(123,47,247,0.22); box-shadow: 0 2px 10px rgba(123,47,247,0.06); }
+html.light-mode .dash-stat-val          { color: var(--sv-purple); }
+html.light-mode .dash-stat-lbl          { color: #64748b; }
+
+html.light-mode .dash-section-title     { color: #1a1a2e; }
+
+html.light-mode .rutina-card2           { background: #fdf8f2; border-color: rgba(123,47,247,0.22); box-shadow: 0 2px 10px rgba(123,47,247,0.05); }
+html.light-mode .rutina-card2:hover     { border-color: var(--sv-purple); box-shadow: 0 4px 18px rgba(123,47,247,0.12); }
+html.light-mode .rcard-name             { color: #1a1a2e; }
+html.light-mode .rcard-meta             { color: #64748b; }
+
+html.light-mode .dash-empty             { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.1); }
+html.light-mode .dash-empty i           { color: rgba(0,0,0,0.15); }
+html.light-mode .dash-empty p           { color: #64748b; }
 </style>
 {% endblock %}
 

@@ -1,0 +1,453 @@
+{% extends 'base/base.html' %}
+{% block title %}Mis Dietas — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.dietas-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 28px;
+}
+.dietas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+.dieta-card {
+  background: var(--sv-bg-card);
+  border: 1.5px solid var(--sv-border);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position: relative;
+}
+.dieta-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,.25); }
+.dieta-card.is-activa { border-color: var(--sv-green); box-shadow: 0 0 0 3px rgba(0,212,170,.15); }
+.dieta-card-top {
+  height: 5px;
+  background: linear-gradient(90deg, var(--sv-purple), var(--sv-green));
+}
+.dieta-card.is-activa .dieta-card-top { background: linear-gradient(90deg, #00d4aa, #4361ee); }
+.dieta-card-body { padding: 20px; }
+.dieta-activa-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(0,212,170,.15); border: 1px solid rgba(0,212,170,.35);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 10px; font-weight: 800; color: #00d4aa;
+  letter-spacing: .5px; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.dieta-nombre {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: .5px;
+  color: var(--sv-text); margin-bottom: 6px;
+}
+.dieta-meta {
+  font-size: 12px; color: var(--sv-muted); margin-bottom: 16px;
+}
+.dieta-macros {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 8px; margin-bottom: 16px;
+}
+.dm-item { text-align: center; }
+.dm-val  {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px; line-height: 1;
+}
+.dm-lbl  { font-size: 9px; font-weight: 700; color: var(--sv-muted); text-transform: uppercase; letter-spacing: .5px; }
+.dieta-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-dieta-activar {
+  flex: 1; padding: 9px; border-radius: 10px; border: none;
+  background: var(--sv-purple); color: #fff;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  text-decoration: none; text-align: center;
+  transition: opacity .2s;
+}
+.btn-dieta-activar:hover { opacity: .85; color: #fff; }
+.btn-dieta-activar.ya-activa {
+  background: rgba(0,212,170,.15); color: #00d4aa;
+  border: 1px solid rgba(0,212,170,.35); cursor: default;
+}
+.btn-dieta-del {
+  padding: 9px 12px; border-radius: 10px;
+  background: rgba(230,57,70,.08); border: 1.5px solid rgba(230,57,70,.2);
+  color: #f87171; font-size: 12px; cursor: pointer;
+  transition: background .2s;
+}
+.btn-dieta-del:hover { background: rgba(230,57,70,.18); }
+
+/* Preview días */
+.plan-dias-preview {
+  font-size: 11px; color: var(--sv-muted);
+  margin-bottom: 10px; line-height: 1.8;
+}
+.plan-dias-preview .dia-label {
+  font-weight: 800; color: var(--sv-text); font-size: 11px;
+}
+
+/* Botón ver plan */
+.btn-ver-plan {
+  display: inline-flex; align-items: center; gap: 5px;
+  width: 100%; justify-content: center;
+  padding: 8px; border-radius: 10px; border: none;
+  background: rgba(0,212,170,.08);
+  border: 1.5px solid rgba(0,212,170,.25);
+  color: #00d4aa; font-size: 12px; font-weight: 700;
+  cursor: pointer; margin-bottom: 10px;
+  transition: background .2s;
+}
+.btn-ver-plan:hover { background: rgba(0,212,170,.18); }
+
+/* Empty state */
+.dietas-empty {
+  text-align: center; padding: 64px 24px;
+  background: var(--sv-bg-card); border: 1.5px dashed var(--sv-border);
+  border-radius: 20px;
+}
+.dietas-empty i { font-size: 56px; color: var(--sv-muted); opacity: .4; margin-bottom: 16px; display: block; }
+
+/* Modal plan completo */
+.plan-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 16px;
+}
+.plan-modal-overlay.open { display: flex; }
+.plan-modal {
+  background: var(--sv-bg-card);
+  border: 1.5px solid var(--sv-border);
+  border-radius: 24px; width: 100%; max-width: 680px;
+  max-height: 85vh; display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.plan-modal-head {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--sv-border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.plan-modal-head h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px; letter-spacing: .5px; margin: 0;
+  color: var(--sv-text);
+}
+.plan-modal-close {
+  background: rgba(255,255,255,.08); border: none;
+  border-radius: 50%; width: 34px; height: 34px;
+  color: var(--sv-muted); font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.plan-modal-close:hover { background: rgba(255,255,255,.16); color: var(--sv-text); }
+.plan-modal-body {
+  overflow-y: auto; padding: 20px 24px;
+  flex: 1;
+}
+
+/* Días del plan */
+.plan-dia-block {
+  margin-bottom: 24px;
+}
+.plan-dia-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 1px;
+  color: #00d4aa; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.plan-dia-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(0,212,170,.2);
+}
+.plan-comida-row {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--sv-border);
+}
+.plan-comida-row:last-child { border-bottom: none; }
+.plan-comida-time {
+  font-size: 11px; font-weight: 800; color: var(--sv-purple-light);
+  min-width: 44px; padding-top: 2px;
+}
+.plan-comida-info { flex: 1; }
+.plan-comida-label {
+  font-size: 13px; font-weight: 800; color: var(--sv-text);
+  margin-bottom: 4px;
+}
+.plan-comida-foods {
+  font-size: 12px; color: var(--sv-muted); line-height: 1.6;
+}
+.plan-comida-kcal {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; color: var(--sv-orange);
+  min-width: 60px; text-align: right; padding-top: 2px;
+}
+
+/* Light mode */
+html.light-mode .dieta-card { background: #fdf8f2; border-color: rgba(123,47,247,.2); }
+html.light-mode .dieta-card.is-activa { border-color: #00d4aa; }
+html.light-mode .dietas-empty { background: #fdf8f2; border-color: rgba(123,47,247,.18); }
+html.light-mode .plan-modal { background: #fdf8f2; border-color: rgba(123,47,247,.2); }
+html.light-mode .plan-modal-close { background: rgba(0,0,0,.06); }
+html.light-mode .plan-modal-close:hover { background: rgba(0,0,0,.12); }
+
+@media (max-width: 600px) {
+  .dieta-macros { grid-template-columns: repeat(2,1fr); }
+  .dm-val { font-size: 22px; }
+  .plan-comida-kcal { display: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content" style="max-width:900px;">
+
+  <div class="page-top-nav">
+    <a href="{% url 'herramientas' %}" class="page-back-btn">
+      <i class="bi bi-arrow-left"></i> Herramientas
+    </a>
+  </div>
+
+  <div class="dietas-header">
+    <div>
+      <h1 class="sv-page-title mb-0" style="text-align:left;font-size:48px;">Mis Dietas</h1>
+      <p style="color:var(--sv-muted);font-size:13px;margin:4px 0 0;">{{ total }} guardada{{ total|pluralize:"s" }}</p>
+    </div>
+    <a href="{% url 'plan_nutricional' %}" class="btn-sv-green" style="padding:12px 24px;border-radius:12px;font-size:14px;">
+      <i class="bi bi-plus-lg me-1"></i> Nueva dieta
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-success mb-3" style="border-radius:12px;font-size:13px;background:rgba(0,212,170,.1);border-color:#00d4aa;color:#00d4aa;">
+      <i class="bi bi-check-circle-fill me-2"></i>{{ msg }}
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  {% if total %}
+
+  <!-- Planes Nutricionales completos -->
+  {% if planes %}
+  <div style="font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--sv-muted);margin-bottom:12px;">
+    <i class="bi bi-journal-medical me-1"></i> Planes Nutricionales
+  </div>
+  <div class="dietas-grid" style="margin-bottom:32px;">
+    {% for p in planes %}
+    <div class="dieta-card {% if p.activa %}is-activa{% endif %}">
+      <div class="dieta-card-top" style="background:linear-gradient(90deg,#00d4aa,#4361ee);"></div>
+      <div class="dieta-card-body">
+        {% if p.activa %}<div class="dieta-activa-badge"><i class="bi bi-check-circle-fill"></i> Activo</div>{% endif %}
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:rgba(0,212,170,.15);border:1px solid rgba(0,212,170,.3);border-radius:6px;
+                       padding:2px 8px;font-size:10px;font-weight:800;color:#00d4aa;letter-spacing:.5px;">
+            PLAN NUTRICIONAL
+          </span>
+        </div>
+        <div class="dieta-nombre">{{ p.nombre|default:"Sin nombre" }}</div>
+        <div class="dieta-meta">
+          <i class="bi bi-calendar3 me-1"></i>{{ p.creado_en|date:"d M Y" }}
+          &nbsp;·&nbsp; {{ p.get_objetivo_display }}
+          &nbsp;·&nbsp; {{ p.comidas_dia }} comidas/día
+          &nbsp;·&nbsp; {{ p.get_restriccion_display }}
+        </div>
+        <div class="dieta-macros">
+          <div class="dm-item">
+            <div class="dm-val" style="color:var(--sv-orange);">{{ p.calorias_dia|floatformat:0 }}</div>
+            <div class="dm-lbl">kcal</div>
+          </div>
+          <div class="dm-item">
+            <div class="dm-val" style="color:#60a5fa;">{{ p.proteinas_g|floatformat:0 }}g</div>
+            <div class="dm-lbl">Proteína</div>
+          </div>
+          <div class="dm-item">
+            <div class="dm-val" style="color:#f59e0b;">{{ p.carbos_g|floatformat:0 }}g</div>
+            <div class="dm-lbl">Carbos</div>
+          </div>
+          <div class="dm-item">
+            <div class="dm-val" style="color:#34d399;">{{ p.grasas_g|floatformat:0 }}g</div>
+            <div class="dm-lbl">Grasas</div>
+          </div>
+        </div>
+
+        {% if p.plan_json %}
+        <!-- Preview: muestra los nombres de comidas del primer día -->
+        <div class="plan-dias-preview">
+          {% with p.plan_json|first as primer_dia %}
+            {% if primer_dia %}
+              {% for meal in primer_dia.meals %}
+                <span><span class="dia-label">{{ meal.label }}:</span> {{ meal.n }}{% if not forloop.last %}<br>{% endif %}</span>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+        <button type="button" class="btn-ver-plan" onclick="abrirPlan('modal-plan-{{ p.id }}')">
+          <i class="bi bi-eye me-1"></i> Ver plan completo
+        </button>
+        {% endif %}
+
+        <div class="dieta-actions">
+          {% if p.activa %}
+          <span class="btn-dieta-activar ya-activa"><i class="bi bi-check-lg me-1"></i>Activo</span>
+          {% else %}
+          <form method="post" action="{% url 'activar_plan' p.id %}" style="flex:1;">
+            {% csrf_token %}
+            <button type="submit" class="btn-dieta-activar w-100"><i class="bi bi-star me-1"></i>Usar este plan</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'eliminar_plan' p.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-dieta-del" onclick="return confirm('¿Eliminar este plan?')"><i class="bi bi-trash3"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Cálculos de calorías -->
+  {% if calculos %}
+  <div style="font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--sv-muted);margin-bottom:12px;">
+    <i class="bi bi-calculator me-1"></i> Cálculos de Calorías
+  </div>
+  <div class="dietas-grid">
+    {% for d in calculos %}
+    <div class="dieta-card {% if d.activa %}is-activa{% endif %}">
+      <div class="dieta-card-top"></div>
+      <div class="dieta-card-body">
+        {% if d.activa %}<div class="dieta-activa-badge"><i class="bi bi-check-circle-fill"></i> Activa</div>{% endif %}
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:rgba(123,47,247,.15);border:1px solid rgba(123,47,247,.3);border-radius:6px;
+                       padding:2px 8px;font-size:10px;font-weight:800;color:var(--sv-purple-light);letter-spacing:.5px;">
+            CALORÍAS
+          </span>
+        </div>
+        <div class="dieta-nombre">{{ d.nombre|default:"Sin nombre" }}</div>
+        <div class="dieta-meta">
+          <i class="bi bi-calendar3 me-1"></i>{{ d.calculado_en|date:"d M Y" }}
+          &nbsp;·&nbsp; {{ d.get_objetivo_display }}
+          &nbsp;·&nbsp; {{ d.peso }}kg · {{ d.altura }}cm
+        </div>
+        <div class="dieta-macros">
+          <div class="dm-item">
+            <div class="dm-val" style="color:var(--sv-orange);">{{ d.getd|floatformat:0 }}</div>
+            <div class="dm-lbl">kcal</div>
+          </div>
+          <div class="dm-item">
+            <div class="dm-val" style="color:#60a5fa;">{{ d.proteinas_g|floatformat:0 }}g</div>
+            <div class="dm-lbl">Proteína</div>
+          </div>
+          <div class="dm-item">
+            <div class="dm-val" style="color:#f59e0b;">{{ d.carbos_g|floatformat:0 }}g</div>
+            <div class="dm-lbl">Carbos</div>
+          </div>
+          <div class="dm-item">
+            <div class="dm-val" style="color:#34d399;">{{ d.grasas_g|floatformat:0 }}g</div>
+            <div class="dm-lbl">Grasas</div>
+          </div>
+        </div>
+        <div class="dieta-actions">
+          {% if d.activa %}
+          <span class="btn-dieta-activar ya-activa"><i class="bi bi-check-lg me-1"></i>Activa</span>
+          {% else %}
+          <form method="post" action="{% url 'activar_dieta' d.id %}" style="flex:1;">
+            {% csrf_token %}
+            <button type="submit" class="btn-dieta-activar w-100"><i class="bi bi-star me-1"></i>Usar esta dieta</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'eliminar_dieta' d.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-dieta-del" onclick="return confirm('¿Eliminar esta dieta?')"><i class="bi bi-trash3"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="dietas-empty">
+    <i class="bi bi-bookmark-heart"></i>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;margin-bottom:10px;">Aún no tienes dietas guardadas</div>
+    <p style="color:var(--sv-muted);font-size:14px;margin-bottom:24px;">
+      Genera tu plan nutricional y guárdalo aquí para consultarlo cuando quieras.
+    </p>
+    <a href="{% url 'plan_nutricional' %}" class="btn-sv-green" style="padding:14px 32px;border-radius:12px;font-size:15px;">
+      <i class="bi bi-journal-medical me-2"></i>Crear mi plan nutricional
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ===== Modales Plan Completo ===== -->
+{% for p in planes %}
+{% if p.plan_json %}
+<div class="plan-modal-overlay" id="modal-plan-{{ p.id }}" onclick="cerrarPlanOutside(event, 'modal-plan-{{ p.id }}')">
+  <div class="plan-modal">
+    <div class="plan-modal-head">
+      <div>
+        <h2>{{ p.nombre|default:"Plan Nutricional" }}</h2>
+        <div style="font-size:12px;color:var(--sv-muted);margin-top:2px;">
+          {{ p.calorias_dia|floatformat:0 }} kcal/día &nbsp;·&nbsp;
+          P: {{ p.proteinas_g|floatformat:0 }}g &nbsp;·&nbsp;
+          C: {{ p.carbos_g|floatformat:0 }}g &nbsp;·&nbsp;
+          G: {{ p.grasas_g|floatformat:0 }}g
+        </div>
+      </div>
+      <button class="plan-modal-close" onclick="cerrarPlan('modal-plan-{{ p.id }}')">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="plan-modal-body">
+      {% for dia_obj in p.plan_json %}
+      <div class="plan-dia-block">
+        <div class="plan-dia-title">
+          <i class="bi bi-calendar-week"></i> {{ dia_obj.dia }}
+        </div>
+        {% for meal in dia_obj.meals %}
+        <div class="plan-comida-row">
+          <div class="plan-comida-time">{{ meal.time }}</div>
+          <div class="plan-comida-info">
+            <div class="plan-comida-label">{{ meal.label }} &mdash; {{ meal.n }}</div>
+            <div class="plan-comida-foods">{{ meal.d }}</div>
+          </div>
+          {% if meal.k %}
+          <div class="plan-comida-kcal">{{ meal.k }}<span style="font-size:10px;font-family:sans-serif;"> kcal</span></div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% block extra_js %}
+<script>
+function abrirPlan(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarPlan(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+function cerrarPlanOutside(e, id) {
+  if (e.target === document.getElementById(id)) cerrarPlan(id);
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.plan-modal-overlay.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+    document.body.style.overflow = '';
+  }
+});
+</script>
+{% endblock %}
+
+{% endblock %}

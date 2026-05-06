@@ -2,6 +2,7 @@
 {% block title %}Editar Perfil — SportsVision{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 <style>
   .avatar-preview-wrap {
     display: flex;
@@ -19,7 +20,7 @@
     font-size: 46px; color: var(--sv-purple-light);
     overflow: hidden;
   }
-  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
   .avatar-upload-btn {
     display: inline-flex;
     align-items: center;
@@ -46,6 +47,99 @@
     padding-bottom: 10px;
   }
   .sv-input { width: 100%; }
+
+  /* ── Modal de recorte ───────────────────────────────── */
+  .crop-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .crop-overlay.open { display: flex; }
+  .crop-modal {
+    background: var(--sv-bg-card);
+    border: 1.5px solid rgba(123,47,247,.35);
+    border-radius: 24px;
+    width: 100%; max-width: 480px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.7);
+  }
+  .crop-modal-head {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--sv-border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .crop-modal-head h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: .5px; margin: 0;
+    color: var(--sv-text);
+  }
+  .crop-close {
+    background: rgba(255,255,255,.08); border: none;
+    border-radius: 50%; width: 32px; height: 32px;
+    color: var(--sv-muted); font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .crop-close:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+  .crop-canvas-wrap {
+    height: 300px;
+    background: #111;
+    position: relative;
+  }
+  .crop-canvas-wrap img { display: block; max-width: 100%; }
+
+  .crop-controls {
+    padding: 16px 22px 20px;
+  }
+  .crop-zoom-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .crop-zoom-row i { color: var(--sv-muted); font-size: 14px; flex-shrink: 0; }
+  .crop-zoom-row input[type=range] {
+    flex: 1; height: 4px;
+    accent-color: var(--sv-purple);
+    cursor: pointer;
+  }
+  .crop-zoom-val {
+    font-size: 12px; font-weight: 800;
+    color: var(--sv-purple-light); min-width: 38px; text-align: right;
+  }
+  .crop-hint {
+    font-size: 11px; color: var(--sv-muted);
+    text-align: center; margin-bottom: 14px;
+  }
+  .crop-btn-row { display: flex; gap: 10px; }
+  .btn-crop-cancel {
+    flex: 1; padding: 12px; border-radius: 12px;
+    background: rgba(255,255,255,.06);
+    border: 1.5px solid var(--sv-border);
+    color: var(--sv-muted); font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-crop-cancel:hover { background: rgba(255,255,255,.12); color: #fff; }
+  .btn-crop-apply {
+    flex: 2; padding: 12px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, var(--sv-purple), var(--sv-purple-light));
+    color: #fff; font-size: 13px; font-weight: 800;
+    cursor: pointer; transition: opacity .2s;
+    box-shadow: 0 4px 16px rgba(123,47,247,.4);
+  }
+  .btn-crop-apply:hover { opacity: .88; }
+
+  /* Vista previa circular pequeña */
+  .crop-preview-label {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--sv-muted); margin-bottom: 6px;
+  }
+  .crop-preview-circle {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--sv-purple);
+    flex-shrink: 0;
+  }
 </style>
 {% endblock %}
 
@@ -65,7 +159,7 @@
 
   <h1 class="sv-page-title">Editar Perfil</h1>
 
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" id="main-form">
     {% csrf_token %}
 
     <!-- Avatar -->
@@ -83,6 +177,8 @@
           <i class="bi bi-camera-fill"></i> Cambiar foto
         </label>
         {{ profile_form.avatar }}
+        <!-- Input oculto que recibirá la imagen recortada como base64 -->
+        <input type="hidden" name="avatar_cropped" id="avatar_cropped">
       </div>
     </div>
 
@@ -139,19 +235,133 @@
   </form>
 
 </div>
+
+<!-- ══ Modal recorte de avatar ══ -->
+<div class="crop-overlay" id="crop-overlay">
+  <div class="crop-modal">
+    <div class="crop-modal-head">
+      <h3><i class="bi bi-crop me-2"></i>Ajustar foto</h3>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div>
+          <div class="crop-preview-label">Vista previa</div>
+          <div class="crop-preview-circle" id="crop-preview-circle"></div>
+        </div>
+        <button type="button" class="crop-close" onclick="cerrarCrop()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="crop-canvas-wrap">
+      <img id="crop-image" src="" alt="Recortar">
+    </div>
+
+    <div class="crop-controls">
+      <div class="crop-zoom-row">
+        <i class="bi bi-zoom-out"></i>
+        <input type="range" id="zoom-slider" min="0" max="3" step="0.01" value="0">
+        <i class="bi bi-zoom-in"></i>
+        <span class="crop-zoom-val" id="zoom-val">1×</span>
+      </div>
+      <div class="crop-hint">
+        <i class="bi bi-arrows-move me-1"></i>Arrastra para reposicionar &nbsp;·&nbsp;
+        <i class="bi bi-search me-1"></i>Desliza para hacer zoom
+      </div>
+      <div class="crop-btn-row">
+        <button type="button" class="btn-crop-cancel" onclick="cerrarCrop()">Cancelar</button>
+        <button type="button" class="btn-crop-apply" onclick="aplicarCrop()">
+          <i class="bi bi-check-lg me-1"></i> Aplicar recorte
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
-  document.getElementById('id_avatar').addEventListener('change', function(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      var preview = document.getElementById('avatar-preview');
-      preview.innerHTML = '<img src="' + ev.target.result + '" style="width:100%;height:100%;object-fit:cover;" alt="preview">';
-    };
-    reader.readAsDataURL(file);
-  });
+var cropper = null;
+
+// Cuando el usuario selecciona una foto → GIF directo, otros al cropper
+document.getElementById('id_avatar').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+
+  if (file.type === 'image/gif') {
+    // GIF: mostrar preview animado y dejar que el form lo suba sin recortar
+    var url = URL.createObjectURL(file);
+    var preview = document.getElementById('avatar-preview');
+    preview.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;object-position:center;" alt="preview">';
+    return; // el input ya tiene el archivo, el form lo enviará tal cual
+  }
+
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var img = document.getElementById('crop-image');
+    img.src = ev.target.result;
+    document.getElementById('crop-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    if (cropper) { cropper.destroy(); cropper = null; }
+
+    cropper = new Cropper(img, {
+      aspectRatio: 1,
+      viewMode: 1,
+      dragMode: 'move',
+      autoCropArea: 1,
+      cropBoxMovable: false,
+      cropBoxResizable: false,
+      toggleDragModeOnDblclick: false,
+      preview: '#crop-preview-circle',
+      ready: function() {
+        document.getElementById('zoom-slider').value = 0;
+        document.getElementById('zoom-val').textContent = '1×';
+      },
+    });
+  };
+  reader.readAsDataURL(file);
+});
+
+// Slider de zoom
+document.getElementById('zoom-slider').addEventListener('input', function() {
+  if (!cropper) return;
+  var val = parseFloat(this.value);
+  cropper.zoomTo(Math.pow(2, val));  // rango exponencial: 0→1× , 1→2× , 2→4× , 3→8×
+  var display = Math.pow(2, val).toFixed(1);
+  document.getElementById('zoom-val').textContent = display + '×';
+});
+
+function aplicarCrop() {
+  if (!cropper) return;
+  var canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+  var dataURL = canvas.toDataURL('image/jpeg', 0.92);
+
+  // Guardar en el input oculto
+  document.getElementById('avatar_cropped').value = dataURL;
+
+  // Actualizar la vista previa en la página
+  var preview = document.getElementById('avatar-preview');
+  preview.innerHTML = '<img src="' + dataURL + '" style="width:100%;height:100%;object-fit:cover;" alt="preview">';
+
+  // Convertir a File y reemplazar en el input original para que se envíe en el form
+  canvas.toBlob(function(blob) {
+    var file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+    var dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('id_avatar').files = dt.files;
+  }, 'image/jpeg', 0.92);
+
+  cerrarCrop();
+}
+
+function cerrarCrop() {
+  document.getElementById('crop-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') cerrarCrop();
+});
 </script>
 {% endblock %}

@@ -1,0 +1,373 @@
+{% extends 'base/base.html' %}
+{% block title %}Panel Admin Pro — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-header {
+  background: linear-gradient(135deg,rgba(67,97,238,.2),rgba(123,47,247,.15));
+  border:2px solid rgba(67,97,238,.4); border-radius:20px;
+  padding:24px 28px; display:flex; align-items:center; gap:20px;
+  margin-bottom:28px; flex-wrap:wrap;
+}
+.admin-badge {
+  background:rgba(67,97,238,.25); border:2px solid rgba(67,97,238,.5);
+  border-radius:50%; width:64px; height:64px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; color:#7b9ffb; flex-shrink:0;
+}
+.admin-title { font-family:'Bebas Neue',sans-serif; font-size:30px; color:var(--sv-text); line-height:1; }
+.admin-sub   { font-size:13px; color:var(--sv-muted); margin-top:4px; }
+
+.stat-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
+.stat-s {
+  background:var(--sv-bg-card); border:1.5px solid var(--sv-border);
+  border-radius:14px; padding:16px; text-align:center;
+}
+.stat-s-val { font-family:'Bebas Neue',sans-serif; font-size:32px; line-height:1; }
+.stat-s-lbl { font-size:11px; font-weight:700; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+
+.section-label {
+  font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase;
+  color:var(--sv-muted); margin-bottom:12px; display:flex; align-items:center; gap:8px;
+}
+
+.sol-card {
+  background:var(--sv-bg-card); border:1.5px solid var(--sv-border);
+  border-radius:16px; padding:20px 22px; margin-bottom:14px;
+}
+.sol-card.pendiente { border-left:4px solid #f4a261; }
+.sol-card-top { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.sol-avatar {
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(67,97,238,.2); border:2px solid rgba(67,97,238,.4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; color:#7b9ffb; overflow:hidden; flex-shrink:0;
+}
+.sol-avatar img { width:100%; height:100%; object-fit:cover; }
+.sol-nombre { font-size:14px; font-weight:800; color:var(--sv-text); }
+.sol-meta   { font-size:12px; color:var(--sv-muted); margin-top:2px; }
+.sol-esp    { display:inline-block; background:rgba(67,97,238,.15); border:1px solid rgba(67,97,238,.3); border-radius:8px; padding:2px 10px; font-size:11px; font-weight:700; color:#7b9ffb; margin-left:auto; }
+
+.sol-field { margin-bottom:10px; }
+.sol-field-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--sv-muted); margin-bottom:3px; }
+.sol-field-val   { font-size:13px; color:var(--sv-text); line-height:1.6; }
+
+.sol-actions { display:flex; gap:8px; margin-top:14px; align-items:flex-start; flex-wrap:wrap; }
+.nota-input {
+  flex:1; min-width:200px; padding:8px 12px;
+  background:rgba(255,255,255,.06); border:1.5px solid var(--sv-border);
+  border-radius:10px; color:var(--sv-text); font-size:12px;
+  resize:none; height:36px;
+}
+.nota-input:focus { outline:none; border-color:rgba(67,97,238,.5); }
+
+.btn-aprobar {
+  padding:9px 18px; border-radius:10px; border:none;
+  background:var(--sv-green); color:#000; font-size:13px; font-weight:800;
+  cursor:pointer; transition:opacity .2s; white-space:nowrap;
+}
+.btn-aprobar:hover { opacity:.85; }
+.btn-rechazar {
+  padding:9px 18px; border-radius:10px;
+  background:rgba(230,57,70,.12); border:1.5px solid rgba(230,57,70,.3);
+  color:#f87171; font-size:13px; font-weight:800;
+  cursor:pointer; transition:background .2s; white-space:nowrap;
+}
+.btn-rechazar:hover { background:rgba(230,57,70,.22); }
+
+.pro-row {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 0; border-bottom:1px solid var(--sv-border);
+}
+.pro-row:last-child { border-bottom:none; }
+.pro-codigo { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:#4361ee; min-width:70px; }
+.chip-estado {
+  padding:2px 10px; border-radius:10px; font-size:10px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.chip-aprobada  { background:rgba(0,212,170,.15); color:#00d4aa; }
+.chip-rechazada { background:rgba(230,57,70,.12); color:#f87171; }
+.chip-pendiente { background:rgba(244,162,97,.15); color:#f4a261; }
+
+@media(max-width:700px){ .stat-strip{grid-template-columns:repeat(2,1fr);} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content" style="max-width:860px;">
+
+  <!-- Header Admin Pro -->
+  <div class="admin-header">
+    <div class="admin-badge"><i class="bi bi-shield-fill-check"></i></div>
+    <div>
+      <div class="admin-title">Panel Profesional Principal</div>
+      <div class="admin-sub">{{ request.user.first_name|default:request.user.username }} · Administrador de profesionales</div>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stat-strip">
+    <div class="stat-s">
+      <div class="stat-s-val" style="color:#f4a261;">{{ pendientes|length }}</div>
+      <div class="stat-s-lbl">Pendientes</div>
+    </div>
+    <div class="stat-s">
+      <div class="stat-s-val" style="color:#4361ee;">{{ todos_profesionales|length }}</div>
+      <div class="stat-s-lbl">Profesionales activos</div>
+    </div>
+    <div class="stat-s">
+      <div class="stat-s-val" style="color:var(--sv-green);">{{ total_usuarios }}</div>
+      <div class="stat-s-lbl">Usuarios registrados</div>
+    </div>
+    <div class="stat-s">
+      <div class="stat-s-val" style="color:#9d5cf6;">{{ historial|length }}</div>
+      <div class="stat-s-lbl">Revisadas (recientes)</div>
+    </div>
+  </div>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div class="alert mb-3" style="border-radius:12px;font-size:13px;
+    {% if 'warning' in msg.tags %}background:rgba(244,162,97,.1);border-color:#f4a261;color:#f4a261;
+    {% else %}background:rgba(0,212,170,.1);border-color:#00d4aa;color:#00d4aa;{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- ── Solicitudes pendientes ── -->
+  {% if pendientes %}
+  <div class="section-label">
+    <i class="bi bi-clock-fill" style="color:#f4a261;"></i>
+    Solicitudes pendientes ({{ pendientes|length }})
+  </div>
+
+  {% for sol in pendientes %}
+  <div class="sol-card pendiente">
+    <div class="sol-card-top">
+      <div class="sol-avatar">
+        {% if sol.usuario.profile.avatar %}
+          <img src="{{ sol.usuario.profile.avatar.url }}" alt="">
+        {% else %}
+          <i class="bi bi-person-fill"></i>
+        {% endif %}
+      </div>
+      <div style="flex:1;">
+        <div class="sol-nombre">{{ sol.usuario.first_name|default:sol.usuario.username }} {{ sol.usuario.last_name }}</div>
+        <div class="sol-meta">
+          @{{ sol.usuario.username }} · Registrado {{ sol.usuario.date_joined|date:"M Y" }}
+          · Enviada {{ sol.fecha_envio|date:"d M Y" }}
+        </div>
+      </div>
+      <span class="sol-esp">{{ sol.especialidad }}</span>
+    </div>
+
+    <div class="sol-field">
+      <div class="sol-field-label">Experiencia y formación</div>
+      <div class="sol-field-val">{{ sol.experiencia }}</div>
+    </div>
+    <div class="sol-field">
+      <div class="sol-field-label">Motivación</div>
+      <div class="sol-field-val">{{ sol.motivo }}</div>
+    </div>
+
+    <!-- Datos del usuario -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      {% if sol.usuario.profile.objetivo %}
+      <span style="background:rgba(123,47,247,.15);border:1px solid rgba(123,47,247,.25);border-radius:8px;padding:2px 10px;font-size:11px;font-weight:700;color:#9d5cf6;">
+        {{ sol.usuario.profile.get_objetivo_display }}
+      </span>
+      {% endif %}
+      {% if sol.usuario.profile.nivel %}
+      <span style="background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.25);border-radius:8px;padding:2px 10px;font-size:11px;font-weight:700;color:#00d4aa;">
+        {{ sol.usuario.profile.get_nivel_display }}
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Acciones: aprobar / rechazar con nota -->
+    <form method="post" action="{% url 'revisar_solicitud' sol.id %}">
+      {% csrf_token %}
+      <div class="sol-actions">
+        <textarea name="nota_admin" class="nota-input" placeholder="Nota opcional para el usuario..."></textarea>
+        <button type="submit" name="accion" value="aprobar" class="btn-aprobar">
+          <i class="bi bi-check-lg me-1"></i> Aprobar
+        </button>
+        <button type="submit" name="accion" value="rechazar" class="btn-rechazar"
+                onclick="return confirm('¿Rechazar la solicitud de {{ sol.usuario.username }}?')">
+          <i class="bi bi-x-lg me-1"></i> Rechazar
+        </button>
+      </div>
+    </form>
+  </div>
+  {% endfor %}
+
+  {% else %}
+  <div style="text-align:center;padding:32px;background:var(--sv-bg-card);border:1.5px dashed var(--sv-border);border-radius:16px;margin-bottom:24px;">
+    <i class="bi bi-check-circle" style="font-size:36px;color:var(--sv-muted);opacity:.4;display:block;margin-bottom:10px;"></i>
+    <div style="font-size:14px;font-weight:700;color:var(--sv-muted);">No hay solicitudes pendientes</div>
+  </div>
+  {% endif %}
+
+  <!-- ── Profesionales activos ── -->
+  {% if todos_profesionales %}
+  <div class="sv-panel mb-4">
+    <div class="section-label" style="margin-bottom:14px;">
+      <i class="bi bi-patch-check-fill" style="color:#4361ee;"></i>
+      Profesionales activos ({{ todos_profesionales|length }})
+    </div>
+    {% for p in todos_profesionales %}
+    <div class="pro-row">
+      <div class="sol-avatar">
+        {% if p.avatar %}
+          <img src="{{ p.avatar.url }}" alt="">
+        {% else %}
+          <i class="bi bi-person-fill"></i>
+        {% endif %}
+      </div>
+      <div style="flex:1;">
+        <div class="sol-nombre">{{ p.user.first_name|default:p.user.username }}</div>
+        <div class="sol-meta">@{{ p.user.username }} · {{ p.especialidad|default:"Sin especialidad" }}</div>
+      </div>
+      <div class="pro-codigo">{{ p.codigo_pro }}</div>
+      <div style="font-size:12px;color:var(--sv-muted);margin:0 12px;">
+        {{ p.user.mis_clientes.filter.count }} clientes
+      </div>
+      <form method="post" action="{% url 'revocar_profesional_admin' p.user.id %}"
+            onsubmit="return confirm('¿Revocar el acceso profesional de {{ p.user.username }}?')">
+        {% csrf_token %}
+        <button type="submit" class="btn-rechazar" style="padding:6px 14px;font-size:11px;">
+          <i class="bi bi-x-circle me-1"></i>Revocar
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── Historial de solicitudes ── -->
+  {% if historial %}
+  <div class="sv-panel">
+    <div class="section-label" style="margin-bottom:14px;">
+      <i class="bi bi-clock-history"></i> Historial reciente
+    </div>
+    {% for sol in historial %}
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--sv-border);">
+      <div class="sol-avatar" style="width:36px;height:36px;font-size:14px;">
+        {% if sol.usuario.profile.avatar %}
+          <img src="{{ sol.usuario.profile.avatar.url }}" alt="">
+        {% else %}
+          <i class="bi bi-person-fill"></i>
+        {% endif %}
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:800;color:var(--sv-text);">{{ sol.usuario.first_name|default:sol.usuario.username }}</div>
+        <div style="font-size:11px;color:var(--sv-muted);">{{ sol.especialidad }} · {{ sol.fecha_respuesta|date:"d M Y"|default:"—" }}</div>
+      </div>
+      <span class="chip-estado chip-{{ sol.estado }}">{{ sol.get_estado_display }}</span>
+      {% if sol.nota_admin %}
+      <span style="font-size:11px;color:var(--sv-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ sol.nota_admin }}">
+        {{ sol.nota_admin|truncatechars:40 }}
+      </span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+
+  <!-- ── Todos los usuarios ── -->
+  <div class="sv-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+      <div class="section-label" style="margin:0;">
+        <i class="bi bi-people-fill" style="color:#4361ee;"></i>
+        Todos los usuarios ({{ total_usuarios }})
+      </div>
+      <!-- Buscador -->
+      <form method="get" style="display:flex;gap:8px;align-items:center;">
+        <div style="position:relative;">
+          <i class="bi bi-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--sv-muted);font-size:13px;pointer-events:none;"></i>
+          <input type="text" name="q" value="{{ busqueda }}"
+                 placeholder="Buscar por nombre, usuario o email..."
+                 style="padding:8px 12px 8px 32px;border-radius:10px;border:1.5px solid var(--sv-border);
+                        background:rgba(255,255,255,.05);color:var(--sv-text);font-size:13px;
+                        outline:none;width:260px;">
+        </div>
+        {% if busqueda %}
+        <a href="{% url 'admin_pro_dashboard' %}" style="font-size:12px;color:var(--sv-muted);text-decoration:none;padding:8px;">
+          <i class="bi bi-x-lg"></i>
+        </a>
+        {% endif %}
+      </form>
+    </div>
+
+    {% if todos_usuarios %}
+    <div style="display:grid;gap:8px;">
+      {% for p in todos_usuarios %}
+      <a href="{% url 'admin_ver_usuario' p.user.id %}"
+         style="display:flex;align-items:center;gap:14px;padding:12px 14px;
+                border-radius:12px;border:1.5px solid var(--sv-border);
+                background:rgba(255,255,255,.03);text-decoration:none;
+                transition:border-color .2s,background .2s;">
+        <!-- Avatar -->
+        <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;
+                    background:rgba(67,97,238,.2);border:2px solid rgba(67,97,238,.3);
+                    display:flex;align-items:center;justify-content:center;font-size:16px;color:#7b9ffb;">
+          {% if p.avatar %}
+            <img src="{{ p.avatar.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+          {% else %}
+            <i class="bi bi-person-fill"></i>
+          {% endif %}
+        </div>
+        <!-- Info principal -->
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:var(--sv-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            {{ p.user.first_name|default:p.user.username }} {{ p.user.last_name }}
+          </div>
+          <div style="font-size:11px;color:var(--sv-muted);">
+            @{{ p.user.username }}
+            {% if p.user.email %} · {{ p.user.email }}{% endif %}
+          </div>
+        </div>
+        <!-- Datos rápidos -->
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          {% if p.objetivo %}
+          <span style="background:rgba(123,47,247,.12);border:1px solid rgba(123,47,247,.25);
+                       border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:#9d5cf6;">
+            {{ p.get_objetivo_display }}
+          </span>
+          {% endif %}
+          {% if p.rol == 'profesional' %}
+          <span style="background:rgba(0,212,170,.12);border:1px solid rgba(0,212,170,.25);
+                       border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:#00d4aa;">
+            <i class="bi bi-patch-check-fill me-1"></i>Pro
+          </span>
+          {% endif %}
+          {% if p.limitaciones %}
+          <span style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);
+                       border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:#f97316;"
+                title="{{ p.limitaciones|join:', ' }}">
+            <i class="bi bi-heart-pulse-fill me-1"></i>{{ p.limitaciones|length }} cond.
+          </span>
+          {% endif %}
+          <div style="font-size:11px;color:var(--sv-muted);white-space:nowrap;">
+            {{ p.fecha_registro|date:"d M Y" }}
+          </div>
+        </div>
+        <i class="bi bi-chevron-right" style="color:var(--sv-muted);font-size:12px;"></i>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:24px;color:var(--sv-muted);font-size:13px;">
+      {% if busqueda %}
+        No se encontraron usuarios para "<strong>{{ busqueda }}</strong>"
+      {% else %}
+        No hay usuarios registrados.
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

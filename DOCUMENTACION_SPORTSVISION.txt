@@ -1,0 +1,1195 @@
+================================================================================
+         SPORTSVISION — DOCUMENTACIÓN TÉCNICA Y FUNCIONAL COMPLETA
+                     Manual de Código y Paso a Paso
+================================================================================
+Fecha: Mayo 2026
+Framework: Django 6.x  |  Base de datos: SQLite  |  Ejercicios en BD: 283
+================================================================================
+
+
+ÍNDICE
+------
+1. Estructura del Proyecto
+2. APP: Usuarios (apps/users)
+3. APP: Ejercicios (apps/exercises)
+4. APP: Rutinas (apps/routines)
+5. APP: Progreso (apps/progress)
+6. APP: Herramientas (apps/tools)
+7. Archivos Estáticos (CSS / JS)
+8. Templates Base
+9. Flujos Completos Paso a Paso
+10. Base de Datos — Modelos y Relaciones
+
+
+================================================================================
+1. ESTRUCTURA DEL PROYECTO
+================================================================================
+
+sportsvision/
+│
+├── apps/
+│   ├── users/          → Registro, login, perfil de usuario
+│   ├── exercises/      → Catálogo de ejercicios (283 ejercicios, 13 grupos)
+│   ├── routines/       → Rutinas, entrenamientos activos, plan semanal
+│   ├── progress/       → Calendario de progreso, mediciones corporales
+│   └── tools/          → Calculadora calorías, IMC, plan nutricional, Mis Dietas
+│
+├── templates/
+│   ├── base/           → base.html (sidebar, topbar, FABs)
+│   ├── users/          → landing, registro, login, perfil, editar_perfil
+│   ├── routines/       → paso1, paso2, paso3, plan_semanal, entrenamiento_activo
+│   ├── progress/       → calendario
+│   └── tools/          → calculadora_calorias, imc, plan_nutricional, mis_dietas
+│
+├── static/
+│   ├── css/sportsvision.css   → Estilos globales, dark/light mode
+│   └── js/sportsvision.js     → Sidebar hover, toggles, inicialización
+│
+└── sportsvision/
+    ├── settings.py
+    ├── urls.py            → Enrutador principal
+    └── wsgi.py
+
+
+================================================================================
+2. APP: USUARIOS  (apps/users/)
+================================================================================
+
+------------------------------------------------------------------------
+2.1 MODELO: UserProfile  (models.py)
+------------------------------------------------------------------------
+Extiende al User de Django con datos del deportista.
+Relación: OneToOne con django.contrib.auth.models.User
+
+Campos:
+  user            → ForeignKey al User de Django (relación 1:1)
+  edad            → Entero, edad del usuario (años)
+  peso            → Float, peso en kg
+  altura          → Float, altura en cm
+  avatar          → ImageField, foto de perfil (se guarda en media/avatars/)
+  genero          → CharField: 'M' Masculino | 'F' Femenino | 'O' Otro
+  objetivo        → CharField con opciones:
+                      bajar_peso | mantener_peso | ganar_musculo |
+                      mejorar_resistencia | mejorar_flexibilidad | rendimiento
+  nivel           → CharField: principiante | intermedio | avanzado
+  limitaciones    → JSONField (lista Python), condiciones de salud del usuario.
+                    Ejemplo: ["asma", "lesion_rodilla"]
+                    Opciones disponibles:
+                      asma, cardiaco, hipertension, diabetes,
+                      lesion_muscular, lesion_rodilla, lesion_espalda,
+                      lesion_hombro, articulacion, movilidad_reducida,
+                      embarazo, otra
+  fecha_registro  → DateTimeField, se guarda automáticamente al crear
+
+------------------------------------------------------------------------
+2.2 FORMULARIOS  (forms.py)
+------------------------------------------------------------------------
+
+EditarUsuarioForm
+  → Modelo: User de Django
+  → Campos: first_name, last_name, email
+  → Uso: Página "Editar Perfil"
+
+EditarPerfilForm
+  → Modelo: UserProfile
+  → Campos: edad, peso, altura, avatar
+  → Uso: Página "Editar Perfil"
+
+RegistroForm (hereda de UserCreationForm)
+  → Campos del formulario de 4 pasos:
+      Paso 1: username, email, password1, password2
+      Paso 2: first_name, edad, peso, altura, genero
+      Paso 3: objetivo (cards visuales)
+      Paso 4: limitaciones (checkboxes de condiciones de salud)
+  → Método save():
+      1. Crea el User de Django
+      2. Deriva el 'nivel' desde el objetivo:
+           ganar_musculo → intermedio
+           rendimiento   → avanzado
+           resto         → principiante
+      3. Crea UserProfile con todos los datos
+      4. Guarda la lista de limitaciones como JSON
+
+LoginForm (hereda de AuthenticationForm)
+  → Permite login con email O username
+  → Backend personalizado: EmailOrUsernameBackend
+
+------------------------------------------------------------------------
+2.3 VISTAS  (views.py)
+------------------------------------------------------------------------
+
+landing(request)
+  → GET: muestra la página de inicio pública
+  → Si ya está autenticado → redirect al dashboard
+
+auth_choice(request)
+  → Muestra la pantalla de elección: Login o Registro
+
+registro(request)
+  → GET:  muestra el formulario de registro (4 pasos en JS)
+  → POST: valida RegistroForm
+           → Si válido: crea usuario, hace login automático
+           → Si tiene objetivo: llama a generar_plan_inicial()
+             y redirige a plan_semanal con banner de bienvenida
+           → Si no tiene objetivo: redirige al dashboard
+
+login_view(request)
+  → GET:  muestra formulario de login
+  → POST: autentica con EmailOrUsernameBackend
+           → Si válido: redirect al dashboard
+
+logout_view(request)
+  → Cierra la sesión y redirige al landing
+
+perfil(request)
+  → Requiere login (@login_required)
+  → Calcula estadísticas del usuario:
+      total_entrenamientos → cuenta Entrenamiento.completado=True
+      total_rutinas        → cuenta Rutina del usuario
+      total_series         → cuenta SerieEntrenamiento del usuario
+      kg_levantados        → suma peso*repeticiones de todas las series
+  → Calcula IMC: peso / (altura/100)²
+  → Pasa historial de entrenamientos recientes (últimos 5)
+  → Renderiza: templates/users/perfil.html
+
+editar_perfil(request)
+  → GET:  pre-rellena EditarUsuarioForm y EditarPerfilForm
+  → POST con 'avatar' en FILES y sin 'first_name':
+           → Guarda solo el avatar (flujo rápido desde el modal del perfil)
+           → Elimina el avatar anterior antes de guardar el nuevo
+  → POST normal: valida ambos formularios y guarda todo
+  → Redirect a perfil al guardar
+
+eliminar_avatar(request)
+  → Solo acepta POST
+  → Elimina el archivo de imagen del storage
+  → Pone avatar=None en el perfil
+  → Redirect a perfil con mensaje de éxito
+
+------------------------------------------------------------------------
+2.4 URLs  (urls.py)
+------------------------------------------------------------------------
+
+/usuarios/auth/                  → auth_choice
+/usuarios/registro/              → registro
+/usuarios/login/                 → login_view
+/usuarios/logout/                → logout_view
+/usuarios/perfil/                → perfil
+/usuarios/perfil/editar/         → editar_perfil
+/usuarios/perfil/eliminar-avatar/→ eliminar_avatar
+
+------------------------------------------------------------------------
+2.5 TEMPLATE: registro.html  (4 pasos con JavaScript)
+------------------------------------------------------------------------
+
+El formulario tiene 4 paneles (div.reg-panel) que se muestran/ocultan con JS:
+
+Paso 1 — Tu cuenta:
+  Campos: username, email, password1, password2
+  Validación JS: verifica que no estén vacíos y que las contraseñas coincidan
+
+Paso 2 — Cuéntanos sobre ti:
+  Campos: first_name, género (pills azul/rosa), edad, peso, altura
+  CSS ":checked + label" maneja la selección visual de género
+
+Paso 3 — Tu objetivo:
+  Cards visuales con íconos para cada objetivo
+  JS: setObjetivo(btn) agrega clase 'selected' al card
+
+Paso 4 — Tu salud (condiciones):
+  Checkboxes visuales con colores naranja
+  "No tengo ninguna limitación" desmarca y desactiva el resto
+  Cualquier limitación desmarca la opción de "ninguna"
+
+Función goToStep(n):
+  Actualiza qué panel es visible
+  Actualiza los dots indicadores (activo/done/pendiente)
+  Actualiza las líneas conectoras
+
+------------------------------------------------------------------------
+2.6 TEMPLATE: perfil.html
+------------------------------------------------------------------------
+
+Modal de avatar (al hacer clic en la foto):
+  → Muestra la imagen completa (object-fit: contain)
+  → Botón "Editar" → abre selector de archivo + cropper
+  → Botón "Descargar" → link con atributo download a la URL del avatar
+  → Botón "Eliminar" → formulario POST a eliminar_avatar
+
+Editor de recorte (Cropper.js vía CDN):
+  → Solo para imágenes NO-GIF (JPG, PNG, WebP)
+  → GIFs se suben directamente sin recortar (preserva animación)
+  → aspectRatio: 1 (cuadrado → círculo)
+  → dragMode: 'move' (arrastra la imagen dentro del marco)
+  → Slider de zoom: rango 0-3, mapeado a Math.pow(2, val) → 1× a 8×
+  → Preview circular en tiempo real (#crop-preview-circle)
+  → "Aplicar": getCroppedCanvas(400×400) → toBlob → DataTransfer → submit
+
+------------------------------------------------------------------------
+2.7 BACKEND DE AUTENTICACIÓN  (backends.py)
+------------------------------------------------------------------------
+
+EmailOrUsernameBackend:
+  → authenticate(request, username, password):
+      1. Intenta buscar User por username exacto
+      2. Si no encuentra, busca User por email exacto
+      3. Si encuentra, verifica la contraseña con check_password()
+      4. Retorna el User o None
+
+
+================================================================================
+3. APP: EJERCICIOS  (apps/exercises/)
+================================================================================
+
+------------------------------------------------------------------------
+3.1 MODELO: Equipo  (models.py)
+------------------------------------------------------------------------
+Representa el material de entrenamiento disponible.
+
+Campos:
+  nombre → CharField con opciones (choices):
+             banco | peso_corporal | disco | mancuernas |
+             barra | barra_dominadas | kettlebell | banda
+  icono  → Emoji representativo (ej: "🏋️")
+  imagen → ImageField opcional
+
+------------------------------------------------------------------------
+3.2 MODELO: GrupoMuscular  (models.py)
+------------------------------------------------------------------------
+Los 13 grupos musculares disponibles en la plataforma.
+
+Campos:
+  nombre → Texto (ej: "Pecho", "Bíceps")
+  slug   → Identificador único URL-friendly (ej: "pecho", "biceps")
+
+Grupos en BD:
+  pecho, espalda, hombros, biceps, triceps, piernas, gluteos,
+  abdomen, core, pantorrillas, antebrazos, cardio, movilidad
+
+------------------------------------------------------------------------
+3.3 MODELO: Ejercicio  (models.py)
+------------------------------------------------------------------------
+El catálogo central de ejercicios (283 ejercicios totales).
+
+Campos:
+  nombre           → Nombre del ejercicio
+  descripcion      → Qué músculos trabaja y cómo
+  instrucciones    → Cómo ejecutarlo correctamente
+  grupo_muscular   → ForeignKey a GrupoMuscular
+  equipos          → ManyToMany con Equipo (puede necesitar varios)
+  imagen           → ImageField opcional
+  gif              → FileField opcional (animación del ejercicio)
+  nivel            → principiante | intermedio | avanzado
+  duracion_minutos → PositiveInteger (nullable).
+                     Solo para ejercicios de CARDIO y MOVILIDAD.
+                     Indica cuántos minutos dura la sección.
+                     NULL = ejercicio de fuerza (usa series/reps)
+  creado_en        → DateTimeField automático
+
+Ejercicios por grupo (aprox.):
+  Piernas: 30  |  Espalda: 27  |  Pecho: 26  |  Hombros: 23
+  Abdomen: 21  |  Cardio: 21   |  Core: 21   |  Glúteos: 21
+  Movilidad: 21|  Tríceps: 20  |  Antebrazos: 19 | Bíceps: 17
+  Pantorrillas: 16
+
+Tiempos de cardio asignados:
+  1 min: Sprint en el Lugar
+  2 min: High Knees, Bear Crawl, Jump Lunge, Lateral Shuffles, Skipping
+  3 min: Jumping Jacks, Box Jumps, Swing con Kettlebell, Speed Skaters
+  4 min: Tabata Squat
+  5 min: Jump Rope, Kick Boxing en el Aire, Sprints de 20m
+
+------------------------------------------------------------------------
+3.4 COMANDO: seed_exercises  (management/commands/seed_exercises.py)
+------------------------------------------------------------------------
+
+Uso: python manage.py seed_exercises
+     python manage.py seed_exercises --reset
+
+SeedExercise (dataclass):
+  nombre, grupo_slug, nivel, equipos (tuple), descripcion,
+  instrucciones, duracion_minutos (None por defecto)
+
+Lógica del comando:
+  1. Crea los 13 GrupoMuscular con get_or_create
+  2. Crea los equipos con get_or_create
+  3. Si --reset: elimina todos los ejercicios
+  4. Para cada SeedExercise:
+       → get_or_create por nombre
+       → Si ya existía: actualiza campos vacíos y duracion_minutos
+       → Si es nuevo: crea con todos los campos
+       → Asigna los equipos con ejercicio.equipos.add()
+  5. Reporta cuántos se crearon y cuántos se actualizaron
+
+
+================================================================================
+4. APP: RUTINAS  (apps/routines/)
+================================================================================
+
+------------------------------------------------------------------------
+4.1 MODELO: Rutina  (models.py)
+------------------------------------------------------------------------
+Una colección de ejercicios agrupados bajo un nombre.
+
+Campos:
+  usuario          → ForeignKey a User
+  nombre           → Ej: "Pecho & Tríceps", "Cuerpo Completo A"
+  descripcion      → Texto libre opcional
+  equipos          → ManyToMany con Equipo
+  grupos_musculares→ ManyToMany con GrupoMuscular
+  nivel            → principiante | intermedio | avanzado
+  es_auto_generada → Boolean (True si fue generada automáticamente)
+  creada_en        → DateTimeField automático
+
+Métodos:
+  total_ejercicios() → cuenta EjercicioRutina relacionados
+
+------------------------------------------------------------------------
+4.2 MODELO: EjercicioRutina  (models.py)
+------------------------------------------------------------------------
+Relaciona un Ejercicio con una Rutina, con orden y sugerencias.
+
+Campos:
+  rutina                  → ForeignKey a Rutina
+  ejercicio               → ForeignKey a Ejercicio
+  orden                   → PositiveInteger (para ordenar la lista)
+  series_sugeridas        → Por defecto 3
+  repeticiones_sugeridas  → Por defecto 12
+
+Ordenamiento: por campo 'orden'
+
+------------------------------------------------------------------------
+4.3 MODELO: Entrenamiento  (models.py)
+------------------------------------------------------------------------
+Registro de una sesión de entrenamiento completada.
+
+Campos:
+  usuario    → ForeignKey a User
+  rutina     → ForeignKey a Rutina (nullable)
+  nombre     → Nombre de la sesión
+  iniciado_en→ DateTimeField automático
+  terminado_en→ DateTimeField nullable (se pone al finalizar)
+  completado → Boolean
+
+Métodos:
+  peso_total() → suma peso*repeticiones de todas las series
+  duracion()   → calcula minutos entre inicio y fin
+
+------------------------------------------------------------------------
+4.4 MODELO: SerieEntrenamiento  (models.py)
+------------------------------------------------------------------------
+Una sola serie dentro de un entrenamiento activo.
+
+Campos:
+  entrenamiento   → ForeignKey a Entrenamiento
+  ejercicio       → ForeignKey a Ejercicio
+  numero_serie    → Número de serie (1, 2, 3...)
+  repeticiones    → Nullable (no aplica para cardio)
+  peso            → Float nullable (kg)
+  peso_corporal   → Float nullable
+  tiempo_minutos  → Integer nullable (para cardio)
+  tiempo_segundos → Integer nullable
+  completada      → Boolean
+  creada_en       → DateTimeField automático
+
+------------------------------------------------------------------------
+4.5 MODELO: PlanDia  (models.py)
+------------------------------------------------------------------------
+Asignación de rutinas a días de la semana para un usuario.
+
+Campos:
+  usuario  → ForeignKey a User
+  dia      → lunes|martes|miercoles|jueves|viernes|sabado|domingo
+  rutina   → ForeignKey a Rutina (nullable si es descanso)
+  descanso → Boolean
+
+Restricción unique_together: [usuario, dia]
+
+------------------------------------------------------------------------
+4.6 CONSTANTES GLOBALES  (views.py)
+------------------------------------------------------------------------
+
+OBJETIVO_CONFIG:
+  Mapea objetivo del perfil → días de entrenamiento y nivel
+  bajar_peso:           4 días, principiante
+  mantener_peso:        3 días, principiante
+  ganar_musculo:        5 días, intermedio
+  mejorar_resistencia:  4 días, principiante
+  mejorar_flexibilidad: 3 días, principiante
+  rendimiento:          5 días, avanzado
+
+SPLITS (splits de entrenamiento por días):
+  3 días: Empuje / Jalón / Piernas
+  4 días: Superior A / Inferior A / Superior B / Inferior B
+  5 días: Pecho&Tríceps / Espalda&Bíceps / Piernas / Hombros&Core / Full Body
+
+------------------------------------------------------------------------
+4.7 ADAPTACIONES POR LIMITACIONES DE SALUD  (views.py)
+------------------------------------------------------------------------
+
+_LIM_GRUPOS_EXCLUIDOS:
+  Lesión de rodilla    → excluye: piernas, glúteos
+  Lesión de hombro     → excluye: hombros
+  Movilidad reducida   → excluye: piernas, glúteos, cardio
+  Embarazo             → excluye: cardio, abdomen
+  Asma                 → excluye: cardio
+  Cardíaco             → excluye: cardio
+
+_LIM_GRUPOS_EXTRA (grupos de compensación):
+  Lesión de rodilla    → agrega: movilidad, core, antebrazos
+  Lesión de espalda    → agrega: movilidad, core
+  Lesión de hombro     → agrega: movilidad, core, piernas
+  Movilidad reducida   → agrega: movilidad, core, antebrazos, pantorrillas
+  Embarazo             → agrega: movilidad, pantorrillas
+  Cardíaco/Asma        → agrega: movilidad
+
+_LIM_NOMBRES_EXCLUIDOS (palabras clave en nombres de ejercicios):
+  Lesión rodilla → sentadilla, zancada, peso muerto, prensa, nordic...
+  Lesión espalda → peso muerto, good morning, rack pull, hiperextensiones...
+  Lesión hombro  → press militar, fondos, elevaciones, handstand...
+  Asma/Cardíaco  → burpee, sprint, box jump, tabata, thrusters...
+  Embarazo       → crunch, sit-up, salto, hollow, dragon flag...
+
+_LIM_NIVEL_MAX (nivel máximo permitido):
+  cardíaco/movilidad_reducida/embarazo → principiante
+  lesión_muscular → principiante
+  resto de lesiones/asma/hipertensión  → intermedio
+
+_SPLITS_ADAPTADOS (splits alternativos para casos severos):
+  lesion_rodilla:    3/4/5 días solo tren superior + core + movilidad
+  movilidad_reducida: 3/4/5 días solo tren superior
+  embarazo:          3/4/5 días movilidad + tren superior suave
+
+------------------------------------------------------------------------
+4.8 FUNCIONES AUXILIARES  (views.py)
+------------------------------------------------------------------------
+
+_adaptar_grupos(grupos_slugs, limitaciones):
+  1. Reúne todos los grupos excluidos según las limitaciones
+  2. Filtra los grupos originales quitando los excluidos
+  3. Agrega grupos de compensación que no estén excluidos
+  4. Si quedó vacío, usa ['movilidad', 'core']
+  5. Retorna (grupos_adaptados, nombres_a_excluir, nivel_max)
+
+_get_split_adaptado(limitaciones, dias, split_default):
+  → Busca en orden: embarazo > movilidad_reducida > lesion_rodilla
+  → Si encuentra uno, retorna el split alternativo para ese nº de días
+  → Si no, retorna el split estándar
+
+_qs_ejercicios(grupos, nivel, excluir_nombres, equipos_ids):
+  → Construye QuerySet: grupo IN grupos AND nivel=nivel
+  → Si equipos_ids: filtra también por equipo
+  → Excluye ejercicios cuyo nombre contenga las palabras clave
+  → Retorna QuerySet
+
+_nivel_ajustado(nivel_base, nivel_max_lim):
+  → Retorna el nivel más restrictivo de los dos
+
+_get_limitaciones(user):
+  → Retorna user.profile.limitaciones o [] si hay error
+
+------------------------------------------------------------------------
+4.9 VISTA: generar_plan_inicial(user, objetivo)  (views.py)
+------------------------------------------------------------------------
+Se llama automáticamente al registrarse con objetivo seleccionado.
+
+Paso a paso:
+  1. Obtiene config desde OBJETIVO_CONFIG (días, nivel)
+  2. Obtiene las limitaciones del usuario
+  3. Elige el split estándar o adaptado según limitaciones
+  4. Elimina el plan semanal anterior del usuario
+  5. Para cada día de la semana:
+       → Si corresponde a una sesión del split:
+           a. Adapta los grupos con _adaptar_grupos()
+           b. Ajusta el nivel
+           c. Construye QuerySet con _qs_ejercicios()
+           d. Si quedan < 3 ejercicios, hace fallback a principiante
+           e. Crea Rutina con nombre de la sesión
+           f. Crea EjercicioRutina para cada ejercicio seleccionado
+           g. Crea PlanDia(dia=dia, rutina=rutina)
+       → Si no: crea PlanDia(dia=dia, descanso=True)
+
+------------------------------------------------------------------------
+4.10 VISTA: paso1_equipo  (views.py)
+------------------------------------------------------------------------
+  → GET: muestra la lista de Equipo disponibles
+  → POST: guarda equipos seleccionados en session['equipos_seleccionados']
+           → Redirige a paso2_musculos
+
+------------------------------------------------------------------------
+4.11 VISTA: paso2_musculos  (views.py)
+------------------------------------------------------------------------
+  → GET: muestra todos los GrupoMuscular
+  → POST: guarda grupos en session['grupos_seleccionados']
+           → Redirige a paso3_ejercicios
+
+------------------------------------------------------------------------
+4.12 VISTA: paso3_ejercicios  (views.py)
+------------------------------------------------------------------------
+  → GET: filtra Ejercicio por equipos y grupos de la session
+  → POST:
+      1. Crea Rutina con el nombre dado
+      2. Asigna equipos y grupos a la rutina
+      3. Crea EjercicioRutina por cada ejercicio seleccionado (con orden)
+      4. Si se indicó un día, crea/actualiza el PlanDia
+      5. Redirige a iniciar_entrenamiento
+
+------------------------------------------------------------------------
+4.13 VISTA: iniciar_entrenamiento  (views.py)
+------------------------------------------------------------------------
+Gestiona el flujo de entrenamiento activo.
+
+  → get_or_create Entrenamiento para la rutina actual (completado=False)
+  → Obtiene ejercicio_idx del parámetro GET '?ejercicio=N'
+  → Si idx >= total ejercicios → redirect a finalizar
+  → Carga series existentes del ejercicio actual en este entrenamiento
+  → POST action='guardar_serie':
+      1. Guarda SerieEntrenamiento con datos del formulario
+      2. Si es el último ejercicio → redirect con ?listo=1
+  → POST action='siguiente_ejercicio':
+      → Redirect con ?ejercicio=N+1
+  → POST action='terminar_entrenamiento':
+      → Redirect a finalizar_entrenamiento
+  → Calcula progreso_pct y peso_total acumulado
+  → Pasa mostrar_overlay (True si ?listo=1 y es el último)
+
+------------------------------------------------------------------------
+4.14 VISTA: finalizar_entrenamiento  (views.py)
+------------------------------------------------------------------------
+  → Marca entrenamiento.completado = True
+  → Guarda terminado_en = now()
+  → Calcula total_reps y cuenta ejercicios únicos
+  → Renderiza pantalla de resultados
+
+------------------------------------------------------------------------
+4.15 VISTA: aplicar_plan_recomendado  (views.py)
+------------------------------------------------------------------------
+Crea el plan semanal según nivel elegido.
+
+  RECOMENDADOS contiene splits predefinidos por nivel:
+    principiante: 3 días Full Body (lunes/miércoles/viernes)
+    intermedio:   4 días Upper/Lower (lun/mar/jue/vie)
+    avanzado:     5 días PPL+extras (lun/mar/mie/jue/vie)
+
+  Paso a paso:
+    1. Obtiene nivel y limitaciones del usuario
+    2. Adapta el split con _get_split_adaptado()
+    3. Elimina plan anterior
+    4. Para cada día:
+         → Adapta grupos con _adaptar_grupos()
+         → Crea rutina y ejercicios
+         → Crea PlanDia
+
+------------------------------------------------------------------------
+4.16 VISTA: generar_plan_auto  (views.py)
+------------------------------------------------------------------------
+Versión configurable del generador de plan.
+
+  Parámetros del POST:
+    nivel          → principiante/intermedio/avanzado
+    dias_entreno   → 2 a 6 días
+    equipos        → lista de IDs de equipo
+    num_ejercicios → cantidad de ejercicios por sesión (default 5)
+
+  SPLITS incluye configuraciones para 2, 3, 4, 5 y 6 días.
+  Aplica las mismas adaptaciones por limitaciones de salud.
+
+------------------------------------------------------------------------
+4.17 TEMPLATE: entrenamiento_activo.html
+------------------------------------------------------------------------
+
+Ejercicios de FUERZA (duracion_minutos es None):
+  → Muestra formulario de serie con campos:
+       repeticiones, peso, tiempo (opcional), peso corporal (opcional)
+  → Botón "Terminar Serie" guarda y recarga
+  → Botón "Agregar Serie" permite añadir otra serie al mismo ejercicio
+  → Botón "Siguiente" avanza al próximo ejercicio
+
+Ejercicios de CARDIO (duracion_minutos tiene valor):
+  → Muestra bloque de temporizador con anillo SVG circular
+  → Anillo: radio=70, circunferencia=439.82px
+             se calcula stroke-dashoffset según tiempo restante
+  → Controles:
+       Iniciar/Pausar (toggle)
+       Reset (vuelve al tiempo original)
+  → Selector de intensidad:
+       ½ tiempo → TOTAL_SEG * 0.5
+       1× (completo) → TOTAL_SEG * 1
+       +50% → TOTAL_SEG * 1.5
+  → Al terminar: cambia anillo a verde, vibra el móvil (navigator.vibrate)
+  → Formulario oculto auto-rellena tiempo_minutos antes de submitear
+  → Si ya se completó el cardio: muestra badge verde de completado
+
+Top Bar (barra superior fija):
+  → Timer EN VIVO: contador de segundos desde que cargó la página
+  → Contador N/Total ejercicios
+  → Porcentaje de progreso
+  → kg totales levantados en la sesión
+  → Botón Abandonar (envía action='terminar_entrenamiento')
+
+Cola de ejercicios (sidebar derecha):
+  → Muestra todos los ejercicios con estado: done / current / pending
+  → Ejercicios de cardio tienen badge rojo con minutos estimados
+
+
+================================================================================
+5. APP: PROGRESO  (apps/progress/)
+================================================================================
+
+------------------------------------------------------------------------
+5.1 MODELO: AnotacionCalendario  (models.py)
+------------------------------------------------------------------------
+Notas que el usuario agrega a días específicos del calendario.
+
+Campos:
+  usuario → ForeignKey a User
+  fecha   → DateField
+  texto   → TextField (máx 500 caracteres)
+
+unique_together: [usuario, fecha] (una anotación por día por usuario)
+
+------------------------------------------------------------------------
+5.2 MODELO: MedicionCorporal  (models.py)
+------------------------------------------------------------------------
+Mediciones físicas periódicas del usuario.
+
+Campos:
+  usuario         → ForeignKey a User
+  fecha           → DateField (auto con default=date.today)
+  peso_kg         → Float nullable
+  grasa_pct       → Float nullable (porcentaje de grasa corporal)
+  musculo_pct     → Float nullable
+  pecho_cm        → Float nullable
+  cintura_cm      → Float nullable
+  cadera_cm       → Float nullable
+  brazo_cm        → Float nullable
+  pierna_cm       → Float nullable
+  notas           → TextField opcional
+
+------------------------------------------------------------------------
+5.3 VISTA: calendario_progreso  (views.py)
+------------------------------------------------------------------------
+  → Obtiene mes/año actual (o desde parámetros GET)
+  → Genera una cuadrícula de 42 celdas (6 semanas × 7 días)
+  → Para cada celda calcula:
+       entrenamiento → si hay Entrenamiento completado ese día
+       plan_dia      → rutina asignada en PlanDia para ese día
+       anotacion     → texto de AnotacionCalendario si existe
+  → POST (guardar anotación):
+       Crea o actualiza AnotacionCalendario con el texto recibido
+       Retorna JSON {ok: true} (llamada AJAX desde el JS del calendario)
+  → Pasa también el plan nutricional activo para mostrarlo en el calendario
+
+
+================================================================================
+6. APP: HERRAMIENTAS  (apps/tools/)
+================================================================================
+
+------------------------------------------------------------------------
+6.1 MODELO: CalculoCaloria  (models.py)
+------------------------------------------------------------------------
+Guarda los resultados de la calculadora de calorías.
+
+Campos:
+  usuario         → ForeignKey a User (nullable)
+  nombre          → Nombre de la dieta
+  activa          → Boolean (solo una activa a la vez)
+  genero          → M | F
+  edad, peso, altura, nivel_actividad, objetivo → datos del cálculo
+  tmb             → Tasa Metabólica Basal (Mifflin-St Jeor)
+  getd            → Gasto Energético Total Diario
+  proteinas_g, carbos_g, grasas_g → macros calculados
+
+Método calcular():
+  → Fórmula Mifflin-St Jeor:
+       Hombre: TMB = 10*peso + 6.25*altura - 5*edad + 5
+       Mujer:  TMB = 10*peso + 6.25*altura - 5*edad - 161
+  → GETD = TMB * factor_actividad + ajuste_objetivo
+  → Macros: proteínas 30% | carbos 40% | grasas 30% (en calorías)
+  → Convierte kcal a gramos: proteínas /4, carbos /4, grasas /9
+
+Factores de actividad:
+  sedentario: 1.2  |  poca: 1.375  |  activo: 1.55
+  diario: 1.725    |  atleta: 1.9
+
+Ajustes de objetivo (kcal):
+  perder_rapido: -1000  |  perder: -500  |  mantener: 0
+  ganar: +500           |  ganar_rapido: +1000
+
+------------------------------------------------------------------------
+6.2 MODELO: PlanNutricional  (models.py)
+------------------------------------------------------------------------
+Guarda el plan de comidas semanal generado.
+
+Campos:
+  usuario      → ForeignKey a User
+  nombre       → Nombre del plan
+  activa       → Boolean
+  genero, edad, peso, altura, objetivo, restriccion, comidas_dia → parámetros
+  calorias_dia → Calorías diarias calculadas
+  proteinas_g, carbos_g, grasas_g → macros diarios
+  plan_json    → JSONField con la estructura semanal:
+                 [
+                   {
+                     "dia": "Lunes",
+                     "meals": [
+                       {
+                         "time": "7:00 AM",
+                         "label": "Desayuno",
+                         "n": "Avena con proteína y frutas",
+                         "d": "80g avena, 1 scoop proteína...",
+                         "p": 32, "c": 62, "f": 8, "k": 440
+                       },
+                       ...
+                     ]
+                   },
+                   ...7 días
+                 ]
+  creado_en    → DateTimeField automático
+
+------------------------------------------------------------------------
+6.3 DICCIONARIO: ALERTAS_LIMITACIONES  (views.py)
+------------------------------------------------------------------------
+Define advertencias de nutrición y ejercicio por cada condición de salud.
+
+Estructura por condición:
+  icono    → clase Bootstrap Icons
+  color    → color hex para el borde
+  titulo   → nombre de la condición
+  nutricion→ recomendaciones alimenticias
+  ejercicio→ precauciones de entrenamiento
+
+Condiciones cubiertas:
+  asma, cardiaco, hipertension, diabetes,
+  lesion_muscular, lesion_rodilla, lesion_espalda, lesion_hombro,
+  articulacion, movilidad_reducida, embarazo
+
+------------------------------------------------------------------------
+6.4 VISTA: plan_nutricional  (views.py)
+------------------------------------------------------------------------
+
+  Paso a paso (GET):
+    1. Obtiene UserProfile del usuario
+    2. Construye lista de alertas desde sus limitaciones
+    3. Pre-rellena el formulario con datos del perfil:
+         genero → M/F si está definido
+         edad, peso, altura → si existen
+         objetivo → mapeo de objetivo_perfil a objetivo_plan:
+           bajar_peso → perder | mantener_peso → mantener | etc.
+    4. Renderiza con form, alertas, limitaciones y perfil en contexto
+
+  Paso a paso (POST):
+    1. Recibe datos del formulario JavaScript (no del form Django)
+    2. Calcula TMB con Mifflin-St Jeor
+    3. GETD = TMB * 1.55 (actividad moderada por defecto)
+    4. Ajuste según objetivo: perder -15% | mantener 0% | ganar +10%
+    5. Distribución de macros:
+         Normal:   prot 30% | carb 45% | gras 25%
+         Ganar:    prot 30% | carb 50% | gras 20%
+         Perder:   prot 35% | carb 40% | gras 25%
+         Diabetes: prot 35% | carb 35% | gras 30% (menos carbos)
+    6. Ajuste por lesiones (+ 5% proteína para recuperación):
+         Si tiene lesion_muscular/rodilla/espalda/hombro:
+           prot_pct += 0.05 (máx 40%)
+           carb_pct -= 0.05 (mín 30%)
+    7. Llama a _build_plan() para generar el plan de comidas
+    8. Renderiza con el resultado
+
+------------------------------------------------------------------------
+6.5 FUNCIÓN: _build_plan  (views.py)
+------------------------------------------------------------------------
+Genera la estructura de comidas del plan nutricional.
+
+Parámetros:
+  calorias_dia, proteinas_g, carbos_g, grasas_g → totales diarios
+  comidas_dia  → 3, 4, 5 o 6 comidas
+  restriccion  → ninguna|vegetariano|vegano|sin_gluten|sin_lactosa
+
+NOMBRES_COMIDAS y PORCIONES_COMIDA:
+  3 comidas: Desayuno 30% | Almuerzo 40% | Cena 30%
+  4 comidas: + Media Mañana 15%, reduce proporciones
+  5 comidas: + Merienda 15%
+  6 comidas: + Pre-Entreno 10%
+
+ALIMENTOS (diccionario por restricción):
+  Proteínas → según restricción: pollo/atún/salmón, tofu, tempeh, etc.
+  Carbohidratos → arroz, avena, quinoa, papa, etc.
+  Grasas → aguacate, aceite oliva, almendras, etc.
+  Verduras → brócoli, espinaca, zanahoria, pepino, tomate, lechuga
+
+Para cada comida:
+  1. Calcula kcal, proteínas, carbos, grasas según porción
+  2. Selecciona el alimento rotando por índice
+  3. Calcula la cantidad en gramos según el contenido nutricional
+  4. Retorna lista de objetos comida con nombre, emoji, macros y alimentos
+
+------------------------------------------------------------------------
+6.6 VISTA: guardar_plan_nutricional  (views.py)
+------------------------------------------------------------------------
+  → Recibe POST con datos del plan generado en JS
+  → Usa helpers _int() y _float() para valores vacíos/inválidos
+  → Parsea plan_json desde el body del POST (JSON.stringify del weekPlan)
+  → Crea PlanNutricional y lo guarda
+  → Redirige a mis_dietas con mensaje de éxito
+
+------------------------------------------------------------------------
+6.7 VISTA: mis_dietas  (views.py)
+------------------------------------------------------------------------
+  → Consulta CalculoCaloria del usuario (ordenados por fecha)
+  → Consulta PlanNutricional del usuario
+  → Pasa total = calculos.count() + planes.count()
+  → Renderiza mis_dietas.html
+
+------------------------------------------------------------------------
+6.8 TEMPLATE: plan_nutricional.html (JavaScript)
+------------------------------------------------------------------------
+El plan se genera 100% en el frontend con JavaScript.
+
+Variables globales:
+  sexo        → 'M' o 'F'
+  objetivo    → string del objetivo seleccionado
+  restricciones → array con las restricciones activas
+
+Funciones principales:
+
+setSexo(s):
+  → Actualiza variable global sexo
+  → Alterna clases 'active' en los botones de género
+
+setObjetivo(btn):
+  → Quita 'selected' de todos los objetivo-btn
+  → Añade 'selected' al botón clicado
+  → Actualiza variable global objetivo
+
+toggleRestriction(pill):
+  → Si se elige 'ninguna': deselecciona todo, limpia array
+  → Si se elige otro: quita 'ninguna', toggle del pill
+  → Actualiza array restricciones
+
+generarPlan():
+  1. Valida que edad, peso y altura estén correctos
+  2. Oculta formulario, muestra spinner de carga
+  3. setTimeout(2800ms) → simula carga con mensajes animados
+  4. calcTMB() → Mifflin-St Jeor según sexo
+  5. ACTIVITY[activ] → factor de actividad
+  6. OBJ[objetivo] → ajuste calórico y distribución de macros
+  7. buildWeekPlan(restricciones) → genera 7 días de comidas
+  8. getTips() → consejos personalizados según objetivo
+  9. render() → dibuja los resultados en el DOM
+  10. Guarda window._planData para el formulario de guardado
+
+buildMeals(restricciones):
+  → Construye la base de datos de comidas según restricciones
+  → Detecta: isVegan, isVeg, isKeto
+  → Retorna objeto db con arrays de: desayuno, media_manana,
+    almuerzo, merienda, cena (7 opciones cada uno)
+  → Cada comida: { n, d, p, c, f, k } (nombre, descripción, macros, kcal)
+
+buildWeekPlan(restricciones):
+  → Llama a buildMeals()
+  → Para cada día (Lunes a Domingo):
+    Spread de la comida del día correspondiente sobre:
+    { time, label, ...datos_comida }
+  → Retorna array de 7 días con sus meals
+
+Guardar plan (modal):
+  abrirModalGuardar() → muestra modal con input de nombre
+  confirmarGuardarPlan():
+    → Lee window._planData
+    → Rellena el form oculto con todos los campos
+    → JSON.stringify(plan) → campo plan_json
+    → Submit del form (POST a guardar_plan_nutricional)
+
+Pre-relleno desde perfil (IIFE al cargar):
+  → Si hay perfil Django: pre-rellena edad, peso, altura
+  → Si genero=='F': llama setSexo('F')
+  → Si hay objetivo: busca el btn y llama setObjetivo()
+  → Si tiene hipertensión o cardíaco: activa pill 'bajo_sodio'
+
+
+================================================================================
+7. ARCHIVOS ESTÁTICOS
+================================================================================
+
+------------------------------------------------------------------------
+7.1 sportsvision.css  (static/css/)
+------------------------------------------------------------------------
+
+Variables CSS (modo oscuro, por defecto):
+  --sv-sidebar-bg    → #1e1e2e (azul oscuro de la sidebar)
+  --sv-purple        → #7b2ff7
+  --sv-purple-light  → #9d5cf6
+  --sv-green         → #00d4aa (verde turquesa)
+  --sv-red           → #e63946
+  --sv-orange        → #f97316
+  --sv-blue          → #4361ee
+  --sv-gold          → #f4a261
+  --sv-text          → #ffffff
+  --sv-muted         → rgba(255,255,255,0.45)
+  --sv-bg-card       → #252535
+  --sv-bg-panel      → rgba(255,255,255,0.04)
+  --sv-border        → rgba(255,255,255,0.08)
+
+Modo claro (html.light-mode):
+  Paleta beige: sidebar #2d1b69, fondo principal #f3ede4
+  Las variables se sobreescriben al final del archivo
+
+Sidebar:
+  .sv-sidebar → position: fixed, ancho 220px
+  → Oculta por defecto: transform: translateX(-210px)
+  → .sv-sidebar::after → franja morado/verde visible en el borde
+  → .sv-sidebar.open → transform: translateX(0) + box-shadow
+
+Topbar:
+  .sv-topbar → sticky top:0, muestra siempre (no solo móvil)
+  .topbar-avatar-btn → icono circular de perfil (40×40px)
+
+FABs (botones flotantes):
+  .help-fab   → azul/morado, bottom:92px right:28px (encima del tema)
+  .theme-fab  → morado, bottom:28px right:28px
+
+------------------------------------------------------------------------
+7.2 sportsvision.js  (static/js/)
+------------------------------------------------------------------------
+
+initSidebar() (IIFE):
+  → TRIGGER_PX = 60 (rango de activación)
+  → document.addEventListener('mousemove'):
+      Si e.clientX <= 60 → openSidebar()
+  → sidebar.addEventListener('mouseenter') → openSidebar()
+  → sidebar.addEventListener('mouseleave') → closeSidebar (delay 200ms)
+  → closeTimer: setTimeout 200ms evita cierre brusco
+
+openSidebar():
+  → Cancela el closeTimer
+  → sidebar.classList.add('open')
+
+closeSidebar():
+  → setTimeout 200ms → sidebar.classList.remove('open')
+
+toggleSidebar():
+  → sidebar.classList.toggle('open')
+  → Usado para el botón móvil
+
+initEquipCards():
+  → Escucha cambios en .equip-checkbox
+  → Toggle clase 'selected' en la card padre
+
+initMuscleButtons():
+  → Escucha cambios en .muscle-check
+  → Toggle clase 'active' en el label siguiente
+
+autoDismissAlerts():
+  → setTimeout 3500ms → fade out y remove de .alert
+
+Manual de usuario (búsqueda):
+  → input #manual-search escucha 'input'
+  → Para cada .manual-section: compara texto contra la búsqueda
+  → Toggle clase 'hidden' según si hay coincidencia
+
+
+================================================================================
+8. TEMPLATE BASE  (templates/base/base.html)
+================================================================================
+
+Estructura HTML:
+  <head>
+    → Cropper.js CDN (para edición de avatar)
+    → Bootstrap 5.3 CSS + Icons
+    → Google Fonts: Bebas Neue, Barlow
+    → sportsvision.css
+    → Script inline en <head>: aplica 'light-mode' antes del paint
+      para evitar flash de color incorrecto
+
+  <body class="sv-layout">
+    Si usuario autenticado:
+      → nav#svSidebar (con enlaces del menú)
+      → div#sidebarOverlay (overlay oscuro para móvil)
+      → main#svMain
+        → .fitness-bg-deco (iconos decorativos de fondo)
+        → .sv-topbar (hamburger + avatar derecha)
+        → .sv-main-content
+          → {% block content %}
+      → .help-fab (botón manual)
+      → .theme-fab (botón tema)
+      → Modal del manual de usuario (8 secciones + buscador)
+    Si no autenticado:
+      → {% block public_content %}
+
+Sidebar (nav#svSidebar):
+  Menú principal: Home | Nueva Rutina | Rutina Auto | Progreso |
+                  Plan Semanal | Herramientas | Mis Dietas
+  Sidebar bottom: Mi Perfil | Cerrar Sesión
+
+Cambio de tema:
+  → Al cargar: lee localStorage('sv-theme')
+  → Si 'light': agrega html.light-mode
+  → Botón FAB: toggle 'light-mode' + guarda en localStorage
+
+Manual de usuario (modal):
+  → 8 secciones: Navegación, Perfil, Rutinas, Entrenamiento,
+                 Plan Semanal, Progreso, Herramientas, Cuenta/Salud
+  → Buscador filtra secciones por texto y data-tags
+  → Cierra con clic fuera, X o Escape
+
+
+================================================================================
+9. FLUJOS COMPLETOS PASO A PASO
+================================================================================
+
+------------------------------------------------------------------------
+9.1 FLUJO: Crear cuenta nueva
+------------------------------------------------------------------------
+1. Usuario entra a /usuarios/registro/
+2. Completa Paso 1: username, email, contraseñas
+   → JS valida que no estén vacíos y que las contraseñas coincidan
+3. Completa Paso 2: nombre, género, edad, peso, altura
+4. Completa Paso 3: elige su objetivo (card con ícono)
+5. Completa Paso 4: marca condiciones de salud (o "ninguna")
+6. Submit → RegistroForm.save():
+   → Crea User con username, email, contraseña
+   → Deriva nivel según objetivo
+   → Crea UserProfile con todos los datos y limitaciones (JSON)
+7. Login automático
+8. Si tiene objetivo: generar_plan_inicial() crea rutinas y PlanDia
+9. Redirect a plan_semanal con banner de bienvenida
+
+------------------------------------------------------------------------
+9.2 FLUJO: Entrenamiento activo
+------------------------------------------------------------------------
+1. Usuario entra a /rutinas/entrenamiento/<rutina_id>/
+2. Se crea/obtiene el Entrenamiento activo
+3. Por cada ejercicio (idx 0, 1, 2...):
+   a. Si es FUERZA: formulario de serie
+      → Ingresa reps y peso → POST action='guardar_serie'
+      → Se crea SerieEntrenamiento
+      → Puede agregar más series o avanzar al siguiente
+   b. Si es CARDIO: temporizador visual
+      → Inicia el contador con Iniciar
+      → Puede pausar, resetear o cambiar intensidad
+      → Al completar: auto-rellena tiempo y hace POST
+4. Al llegar al último ejercicio: aparece overlay automático
+5. Submit → finalizar_entrenamiento:
+   → Entrenamiento.completado = True
+   → terminado_en = now()
+   → Muestra resumen de series y estadísticas
+
+------------------------------------------------------------------------
+9.3 FLUJO: Generar Plan Nutricional y guardar dieta
+------------------------------------------------------------------------
+1. Usuario entra a /herramientas/plan-nutricional/
+2. Si tiene condiciones de salud: aparece bloque de alertas con
+   recomendaciones de nutrición y ejercicio para cada condición
+3. El formulario se pre-rellena con datos del perfil del usuario
+4. Si tiene hipertensión/cardíaco: se activa automáticamente "Bajo en sodio"
+5. Usuario ajusta datos y hace clic "Generar Plan Nutricional"
+6. JS muestra spinner 2.8s con mensajes animados
+7. JS calcula TMB, GETD, macros y genera el plan de 7 días
+8. Se muestran los resultados con pestañas de días
+9. Usuario hace clic "Guardar plan"
+10. Modal pide nombre del plan
+11. JS rellena el form oculto con todos los datos + JSON del plan
+12. POST a /herramientas/mis-dietas/guardar-plan/
+13. Backend crea PlanNutricional y redirige a mis_dietas
+14. En Mis Dietas: aparece el plan con preview de comidas del día 1
+    y botón "Ver plan completo" que abre modal con los 7 días
+
+------------------------------------------------------------------------
+9.4 FLUJO: Cambiar foto de perfil con recorte
+------------------------------------------------------------------------
+1. Usuario entra a su perfil
+2. Hace clic en el avatar → se abre modal
+3. Modal muestra la imagen completa (no recortada en círculo)
+4. Si es GIF: se sube directo (preserva animación), el GIF
+   se centra automáticamente (object-fit: cover + object-position: center)
+5. Si es JPG/PNG/WebP: clic en "Editar" → selector de archivo
+6. Se selecciona la imagen → se inicializa Cropper.js
+7. Usuario arrastra para reposicionar la imagen
+8. Desliza el slider de zoom (1× a 8× con escala exponencial)
+9. Vista previa circular en tiempo real
+10. Clic "Aplicar y guardar":
+    → getCroppedCanvas(400×400) → toBlob → File → DataTransfer
+    → El archivo se asigna al input hidden del form oculto
+    → form-avatar-crop hace POST a editar_perfil
+    → Backend elimina el avatar anterior y guarda el nuevo
+    → Redirect al perfil con la nueva foto
+
+------------------------------------------------------------------------
+9.5 FLUJO: Adaptación por limitaciones de salud
+------------------------------------------------------------------------
+1. Al registrarse, el usuario marcó "Lesión de rodilla"
+2. Al generar plan inicial: generar_plan_inicial() llama a:
+   → _get_split_adaptado(['lesion_rodilla'], 4, SPLITS[4])
+   → Retorna split sin días de piernas:
+      ['Empuje Superior', 'Jalón Superior', 'Core&Movilidad A', 'Core&Movilidad B']
+   → Para cada sesión: _adaptar_grupos() quita 'piernas'/'gluteos'
+     y agrega 'movilidad'/'core'
+   → _qs_ejercicios() excluye nombres que contengan:
+     'sentadilla', 'zancada', 'peso muerto', 'prensa', etc.
+3. Al entrar al Plan Nutricional:
+   → Se muestra el bloque naranja de "Lesión de rodilla":
+     - Nutrición: colágeno hidrolizado, vitamina C, omega-3
+     - Ejercicio: evitar sentadillas profundas, priorizar natación
+   → Los macros se ajustan: +5% proteína para recuperación tisular
+4. En la página del Plan Semanal:
+   → Se muestra banner naranja "Plan adaptado a tu perfil de salud"
+     con las condiciones listadas como badges
+
+
+================================================================================
+10. BASE DE DATOS — MODELOS Y RELACIONES
+================================================================================
+
+User (Django Auth)
+  │
+  ├── UserProfile (OneToOne)
+  │     → objetivo, nivel, limitaciones, avatar, datos físicos
+  │
+  ├── Rutina (ForeignKey, muchas por usuario)
+  │     │
+  │     ├── EjercicioRutina (ForeignKey)
+  │     │     └── Ejercicio (ForeignKey)
+  │     │           └── GrupoMuscular (ForeignKey)
+  │     │           └── Equipo (ManyToMany)
+  │     │
+  │     └── Entrenamiento (ForeignKey)
+  │           └── SerieEntrenamiento (ForeignKey)
+  │                 └── Ejercicio (ForeignKey)
+  │
+  ├── PlanDia (ForeignKey, 7 por usuario)
+  │     └── Rutina (ForeignKey, nullable)
+  │
+  ├── AnotacionCalendario (ForeignKey)
+  │     → fecha + texto
+  │
+  ├── MedicionCorporal (ForeignKey)
+  │     → mediciones físicas con fecha
+  │
+  ├── CalculoCaloria (ForeignKey)
+  │     → resultado de la calculadora de calorías
+  │
+  └── PlanNutricional (ForeignKey)
+        → plan de comidas semanal con JSON
+
+
+Ejercicio
+  ├── grupo_muscular  → GrupoMuscular
+  ├── equipos         → Equipo (M2M)
+  └── duracion_minutos (cardio/movilidad)
+
+GrupoMuscular: 13 grupos
+  pecho | espalda | hombros | biceps | triceps | piernas | gluteos |
+  abdomen | core | pantorrillas | antebrazos | cardio | movilidad
+
+Equipo: 8 tipos
+  banco | peso_corporal | disco | mancuernas | barra |
+  barra_dominadas | kettlebell | banda
+
+
+================================================================================
+                        FIN DEL DOCUMENTO
+================================================================================
+SportsVision — Documentación generada Mayo 2026
+Total de ejercicios en BD: 283  |  Grupos musculares: 13
+Apps: users, exercises, routines, progress, tools
+================================================================================

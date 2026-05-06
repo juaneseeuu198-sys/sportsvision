@@ -10,4 +10,7 @@ urlpatterns = [
     path('entrenar/<int:rutina_id>/', views.iniciar_entrenamiento, name='iniciar_entrenamiento'),
     path('finalizar/<int:entrenamiento_id>/', views.finalizar_entrenamiento, name='finalizar_entrenamiento'),
     path('eliminar/<int:rutina_id>/', views.eliminar_rutina, name='eliminar_rutina'),
+    path('plan-semanal/', views.plan_semanal, name='plan_semanal'),
+    path('plan-semanal/generar/', views.generar_plan_auto, name='generar_plan_auto'),
+    path('plan-semanal/recomendado/', views.aplicar_plan_recomendado, name='plan_recomendado'),
 ]

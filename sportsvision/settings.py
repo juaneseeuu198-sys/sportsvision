@@ -109,3 +109,30 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/usuarios/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
+
+# ── Configuración de Email ─────────────────────────────────────────────────────
+# En desarrollo: muestra el email en consola
+# En producción: configura las variables de entorno para Gmail u otro servidor
+
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'  # cambiar en producción
+)
+
+# Para usar Gmail en producción, configura estas variables de entorno:
+#   EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+#   EMAIL_HOST=smtp.gmail.com
+#   EMAIL_PORT=587
+#   EMAIL_USE_TLS=True
+#   EMAIL_HOST_USER=tu_correo@gmail.com
+#   EMAIL_HOST_PASSWORD=tu_contraseña_de_aplicacion
+
+EMAIL_HOST          = os.environ.get('EMAIL_HOST',     'smtp.gmail.com')
+EMAIL_PORT          = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS       = os.environ.get('EMAIL_USE_TLS',  'True') == 'True'
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', 'SportsVision <noreply@sportsvision.app>')
+
+# URL base para los enlaces en los correos
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')

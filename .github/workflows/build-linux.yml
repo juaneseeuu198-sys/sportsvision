@@ -1,0 +1,41 @@
+name: Build Linux Binary
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Apply migrations
+        run: python manage.py migrate --noinput
+
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+
+      - name: Build Linux binary
+        run: pyinstaller SportsVision.spec --clean
+
+      - name: Upload Linux binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: SportsVision-linux
+          path: dist/SportsVision
+          retention-days: 30

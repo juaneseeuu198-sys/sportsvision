@@ -2,12 +2,61 @@
 //  SportsVision — Main JavaScript
 // ============================================
 
-// ---- SIDEBAR TOGGLE ----
-function toggleSidebar() {
+// ---- SIDEBAR — abre con hover en el borde izquierdo ----
+(function initSidebar() {
   const sidebar = document.getElementById('svSidebar');
   if (!sidebar) return;
-  sidebar.classList.toggle('open');
-  sidebar.classList.toggle('collapsed');
+
+  // Umbral de píxeles desde el borde izquierdo para abrir
+  const TRIGGER_PX = 60;
+  let closeTimer = null;
+
+  function openSidebar() {
+    clearTimeout(closeTimer);
+    sidebar.classList.add('open');
+  }
+
+  function closeSidebar() {
+    closeTimer = setTimeout(function() {
+      sidebar.classList.remove('open');
+    }, 200); // pequeño delay para que no cierre bruscamente
+  }
+
+  // Abre cuando el mouse está cerca del borde izquierdo de la ventana
+  document.addEventListener('mousemove', function(e) {
+    if (e.clientX <= TRIGGER_PX) {
+      openSidebar();
+    }
+  });
+
+  // Mantiene abierto mientras el mouse está dentro de la sidebar
+  sidebar.addEventListener('mouseenter', openSidebar);
+  sidebar.addEventListener('mouseleave', closeSidebar);
+
+  // Botón de menú en móvil — muestra overlay
+  var btnMobile = document.getElementById('btnToggleMobile');
+  var overlay   = document.getElementById('sidebarOverlay');
+  if (btnMobile) {
+    btnMobile.addEventListener('click', function() {
+      var isOpen = sidebar.classList.toggle('open');
+      if (overlay) overlay.style.display = isOpen ? 'block' : 'none';
+    });
+  }
+
+  // En móvil, cerrar al hacer clic en un enlace de la sidebar
+  if (window.innerWidth < 768) {
+    sidebar.querySelectorAll('a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        sidebar.classList.remove('open');
+        if (overlay) overlay.style.display = 'none';
+      });
+    });
+  }
+})();
+
+function toggleSidebar() {
+  var sidebar = document.getElementById('svSidebar');
+  if (sidebar) sidebar.classList.toggle('open');
 }
 
 // ---- RADIO BUTTON STYLING ----

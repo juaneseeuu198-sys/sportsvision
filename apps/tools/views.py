@@ -1,6 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .forms import CaloriasForm, IMCForm, PlanNutricionalForm
+from .models import CalculoCaloria, PlanNutricional
 
 
 # ─── Calorie Calculator ────────────────────────────────────────────────────────
@@ -55,9 +57,11 @@ def calculadora_calorias(request):
                 'grasas_g':    round(calorias * 0.25 / 9, 1),
             }
 
+    dietas = CalculoCaloria.objects.filter(usuario=request.user) if request.user.is_authenticated else []
     return render(request, 'tools/calculadora_calorias.html', {
         'form': form,
         'resultado': resultado,
+        'dietas_count': len(list(dietas)),
     })
 
 
@@ -288,10 +292,124 @@ def _build_plan(calorias_dia, proteinas_g, carbos_g, grasas_g, comidas_dia, rest
     return plan
 
 
+# Advertencias y recomendaciones por condición
+ALERTAS_LIMITACIONES = {
+    'asma': {
+        'icono': 'bi-wind',
+        'color': '#60a5fa',
+        'titulo': 'Asma / Problemas respiratorios',
+        'nutricion': 'Prioriza antioxidantes (vitamina C, E) y omega-3 para reducir inflamación. Evita alimentos procesados y sulfitos (vino, frutos secos con conservantes).',
+        'ejercicio': 'Calienta siempre 10+ min antes. Evita ejercicio en frío extremo o alta humedad. Ten siempre tu broncodilatador a mano.',
+    },
+    'cardiaco': {
+        'icono': 'bi-heart',
+        'color': '#f87171',
+        'titulo': 'Problemas cardíacos',
+        'nutricion': 'Dieta baja en sodio (<1500 mg/día) y grasas saturadas. Aumenta omega-3 (salmón, nueces), fibra y potasio (plátano, legumbres). Limita cafeína y alcohol.',
+        'ejercicio': 'Consulta siempre con tu cardiólogo antes de aumentar intensidad. Mantén frecuencia cardíaca en zonas bajas-moderadas.',
+    },
+    'hipertension': {
+        'icono': 'bi-activity',
+        'color': '#f97316',
+        'titulo': 'Hipertensión',
+        'nutricion': 'Sigue el enfoque DASH: más frutas, verduras, lácteos bajos en grasa y menos sodio. Limita embutidos, enlatados y comida rápida.',
+        'ejercicio': 'Evita ejercicios isométricos con apnea (Valsalva). Cardio moderado (caminar, bicicleta) 30 min/día es ideal.',
+    },
+    'diabetes': {
+        'icono': 'bi-droplet',
+        'color': '#34d399',
+        'titulo': 'Diabetes',
+        'nutricion': 'Prioriza carbohidratos de bajo índice glucémico (avena, legumbres, verduras). Evita azúcares simples y harinas refinadas. Distribución uniforme de carbos en cada comida.',
+        'ejercicio': 'El ejercicio mejora la sensibilidad a la insulina. Monitorea tu glucosa antes y después del entrenamiento.',
+    },
+    'lesion_muscular': {
+        'icono': 'bi-lightning',
+        'color': '#a78bfa',
+        'titulo': 'Lesión muscular',
+        'nutricion': 'Aumenta la proteína (1.6–2g/kg) para acelerar la recuperación. Incluye alimentos antiinflamatorios: cúrcuma, jengibre, omega-3 y vitamina D.',
+        'ejercicio': 'Evita ejercitar el grupo muscular afectado. Trabaja los grupos compensatorios y realiza rehabilitación activa con supervisión.',
+    },
+    'lesion_rodilla': {
+        'icono': 'bi-person-walking',
+        'color': '#fbbf24',
+        'titulo': 'Lesión de rodilla',
+        'nutricion': 'Colágeno hidrolizado (10g/día) y vitamina C ayudan a regenerar cartílago. Omega-3 para reducir inflamación articular.',
+        'ejercicio': 'Evita sentadillas profundas, correr y saltos. Prioriza natación, bicicleta estática y ejercicios de cadena cinética abierta.',
+    },
+    'lesion_espalda': {
+        'icono': 'bi-person',
+        'color': '#fb923c',
+        'titulo': 'Lesión de espalda / columna',
+        'nutricion': 'Mantén peso saludable para reducir carga vertebral. Vitamina D y calcio para la densidad ósea. Antiinflamatorios naturales (omega-3, cúrcuma).',
+        'ejercicio': 'Evita peso muerto, sentadilla con barra y movimientos de rotación brusca. Fortalece el core con ejercicios de bajo impacto (plancha, bird-dog).',
+    },
+    'lesion_hombro': {
+        'icono': 'bi-arrows',
+        'color': '#c084fc',
+        'titulo': 'Lesión de hombro',
+        'nutricion': 'Colágeno hidrolizado y vitamina C para recuperación de tejidos blandos. Magnesio para relajar la musculatura.',
+        'ejercicio': 'Evita press por encima de la cabeza, jalones y movimientos circulares amplios. Trabaja rotadores del manguito con bandas elásticas.',
+    },
+    'articulacion': {
+        'icono': 'bi-bounding-box',
+        'color': '#38bdf8',
+        'titulo': 'Articulación con riesgo',
+        'nutricion': 'Dieta antiinflamatoria: frutas del bosque, aceite de oliva extra virgen, pescado azul y vegetales de hoja verde. Limita azúcar y grasas trans.',
+        'ejercicio': 'Prioriza ejercicio de bajo impacto (natación, elíptica). Evita impactos repetitivos. Calienta bien las articulaciones antes de cargar peso.',
+    },
+    'movilidad_reducida': {
+        'icono': 'bi-wheelchair',
+        'color': '#00d4aa',
+        'titulo': 'Movilidad reducida',
+        'nutricion': 'Ajusta las calorías a tu nivel de actividad real. Prioriza proteína alta para preservar músculo. Incluye vitamina D y calcio.',
+        'ejercicio': 'Ejercicios en silla, en cama o en agua según tu capacidad. La resistencia con bandas elásticas es segura y adaptable.',
+    },
+    'embarazo': {
+        'icono': 'bi-gender-female',
+        'color': '#f9a8d4',
+        'titulo': 'Embarazo / postparto',
+        'nutricion': 'Aumenta calorías (+300 kcal/día en 2º-3º trimestre). Prioriza ácido fólico, hierro, calcio, omega-3 (DHA). Evita alcohol, cafeína excesiva y pescados con mercurio.',
+        'ejercicio': 'Solo ejercicio aprobado por tu ginecólogo. Evita posición boca abajo después del 1er trimestre, saltos y contacto. Caminar y yoga prenatal son ideales.',
+    },
+}
+
+
 @login_required
 def plan_nutricional(request):
     resultado = None
-    form = PlanNutricionalForm()
+
+    # Obtener perfil y limitaciones del usuario
+    try:
+        perfil = request.user.profile
+    except Exception:
+        perfil = None
+
+    limitaciones = []
+    alertas = []
+    if perfil:
+        limitaciones = perfil.limitaciones or []
+        alertas = [ALERTAS_LIMITACIONES[k] for k in limitaciones if k in ALERTAS_LIMITACIONES]
+
+    # Valores por defecto desde el perfil para pre-rellenar el formulario
+    initial = {}
+    if perfil:
+        if perfil.genero in ('M', 'F'):
+            initial['genero'] = perfil.genero
+        if perfil.edad:
+            initial['edad'] = perfil.edad
+        if perfil.peso:
+            initial['peso'] = perfil.peso
+        if perfil.altura:
+            initial['altura'] = perfil.altura
+        obj_map = {
+            'bajar_peso': 'perder', 'mantener_peso': 'mantener',
+            'ganar_musculo': 'ganar', 'mejorar_resistencia': 'mantener',
+            'mejorar_flexibilidad': 'mantener', 'rendimiento': 'ganar',
+        }
+        if perfil.objetivo:
+            initial['objetivo'] = obj_map.get(perfil.objetivo, 'mantener')
+
+    form = PlanNutricionalForm(initial=initial)
 
     if request.method == 'POST':
         form = PlanNutricionalForm(request.POST)
@@ -314,12 +432,20 @@ def plan_nutricional(request):
             ajuste = {'perder': -0.15, 'mantener': 0, 'ganar': 0.10}
             calorias_dia = getd * (1 + ajuste[objetivo])
 
-            if objetivo == 'ganar':
+            # Ajuste de macros según limitaciones
+            if 'diabetes' in limitaciones:
+                prot_pct, carb_pct, gras_pct = 0.35, 0.35, 0.30  # menos carbos simples
+            elif objetivo == 'ganar':
                 prot_pct, carb_pct, gras_pct = 0.30, 0.50, 0.20
             elif objetivo == 'perder':
                 prot_pct, carb_pct, gras_pct = 0.35, 0.40, 0.25
             else:
                 prot_pct, carb_pct, gras_pct = 0.30, 0.45, 0.25
+
+            # Si tiene lesión muscular → más proteína
+            if any(k in limitaciones for k in ('lesion_muscular', 'lesion_rodilla', 'lesion_espalda', 'lesion_hombro')):
+                prot_pct = min(prot_pct + 0.05, 0.40)
+                carb_pct = max(carb_pct - 0.05, 0.30)
 
             proteinas_g = round(calorias_dia * prot_pct / 4, 1)
             carbos_g    = round(calorias_dia * carb_pct / 4, 1)
@@ -339,9 +465,136 @@ def plan_nutricional(request):
             }
 
     return render(request, 'tools/plan_nutricional.html', {
-        'form': form,
-        'resultado': resultado,
+        'form':         form,
+        'resultado':    resultado,
+        'limitaciones': limitaciones,
+        'alertas':      alertas,
+        'perfil':       perfil,
     })
+
+
+# ─── Guardar Plan Nutricional ───────────────────────────────────────────────────
+
+@login_required
+def guardar_plan_nutricional(request):
+    if request.method != 'POST':
+        return redirect('plan_nutricional')
+
+    import json as _json
+
+    def _int(val, default):
+        try: return int(val) if val not in (None, '') else default
+        except (ValueError, TypeError): return default
+
+    def _float(val, default):
+        try: return float(val) if val not in (None, '') else default
+        except (ValueError, TypeError): return default
+
+    nombre       = request.POST.get('nombre', '').strip() or 'Mi Plan'
+    genero       = request.POST.get('genero', 'M') or 'M'
+    edad         = _int(request.POST.get('edad'), 25)
+    peso         = _float(request.POST.get('peso'), 70)
+    altura       = _float(request.POST.get('altura'), 175)
+    objetivo     = request.POST.get('objetivo', 'mantener') or 'mantener'
+    restriccion  = request.POST.get('restriccion', 'ninguna') or 'ninguna'
+    comidas_dia  = _int(request.POST.get('comidas_dia'), 3)
+    calorias_dia = _float(request.POST.get('calorias_dia'), 0)
+    proteinas_g  = _float(request.POST.get('proteinas_g'), 0)
+    carbos_g     = _float(request.POST.get('carbos_g'), 0)
+    grasas_g     = _float(request.POST.get('grasas_g'), 0)
+    try:
+        plan_json = _json.loads(request.POST.get('plan_json', '[]') or '[]')
+    except Exception:
+        plan_json = []
+
+    plan = PlanNutricional(
+        usuario=request.user, nombre=nombre,
+        genero=genero, edad=edad, peso=peso, altura=altura,
+        objetivo=objetivo, restriccion=restriccion,
+        comidas_dia=comidas_dia, calorias_dia=calorias_dia,
+        proteinas_g=proteinas_g, carbos_g=carbos_g, grasas_g=grasas_g,
+        plan_json=plan_json,
+    )
+    plan.save()
+    messages.success(request, f'Plan "{nombre}" guardado en Mis Dietas.')
+    return redirect('mis_dietas')
+
+
+# ─── Guardar dieta (calculadora) ────────────────────────────────────────────────
+
+@login_required
+def guardar_dieta(request):
+    if request.method != 'POST':
+        return redirect('calculadora_calorias')
+
+    nombre          = request.POST.get('nombre', '').strip() or 'Mi Dieta'
+    genero          = request.POST.get('genero')
+    edad            = int(request.POST.get('edad', 25))
+    peso            = float(request.POST.get('peso', 70))
+    altura          = float(request.POST.get('altura', 175))
+    nivel_actividad = request.POST.get('nivel_actividad', 'activo')
+    objetivo        = request.POST.get('objetivo', 'mantener')
+
+    dieta = CalculoCaloria(
+        usuario=request.user, nombre=nombre,
+        genero=genero, edad=edad, peso=peso, altura=altura,
+        nivel_actividad=nivel_actividad, objetivo=objetivo,
+    )
+    dieta.calcular()
+    dieta.save()
+    messages.success(request, f'Dieta "{nombre}" guardada correctamente.')
+    return redirect('mis_dietas')
+
+
+# ─── Mis Dietas ──────────────────────────────────────────────────────────────────
+
+@login_required
+def mis_dietas(request):
+    calculos = CalculoCaloria.objects.filter(usuario=request.user)
+    planes   = PlanNutricional.objects.filter(usuario=request.user)
+    return render(request, 'tools/mis_dietas.html', {
+        'calculos': calculos,
+        'planes':   planes,
+        'total':    calculos.count() + planes.count(),
+    })
+
+
+@login_required
+def eliminar_dieta(request, dieta_id):
+    dieta = get_object_or_404(CalculoCaloria, id=dieta_id, usuario=request.user)
+    nombre = dieta.nombre or 'Dieta'
+    dieta.delete()
+    messages.success(request, f'"{nombre}" eliminada.')
+    return redirect('mis_dietas')
+
+
+@login_required
+def activar_dieta(request, dieta_id):
+    dieta = get_object_or_404(CalculoCaloria, id=dieta_id, usuario=request.user)
+    CalculoCaloria.objects.filter(usuario=request.user).update(activa=False)
+    dieta.activa = True
+    dieta.save()
+    messages.success(request, f'"{dieta.nombre}" establecida como dieta activa.')
+    return redirect('mis_dietas')
+
+
+@login_required
+def eliminar_plan(request, plan_id):
+    plan = get_object_or_404(PlanNutricional, id=plan_id, usuario=request.user)
+    nombre = plan.nombre or 'Plan'
+    plan.delete()
+    messages.success(request, f'"{nombre}" eliminado.')
+    return redirect('mis_dietas')
+
+
+@login_required
+def activar_plan(request, plan_id):
+    plan = get_object_or_404(PlanNutricional, id=plan_id, usuario=request.user)
+    PlanNutricional.objects.filter(usuario=request.user).update(activa=False)
+    plan.activa = True
+    plan.save()
+    messages.success(request, f'"{plan.nombre}" establecido como plan activo.')
+    return redirect('mis_dietas')
 
 
 # ─── Hub ────────────────────────────────────────────────────────────────────────

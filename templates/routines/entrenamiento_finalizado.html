@@ -2,42 +2,81 @@
 {% block title %}Entrenamiento Completado{% endblock %}
 
 {% block content %}
-<div class="sv-page-content text-center py-5">
-  <div class="finish-trophy"><i class="bi bi-trophy-fill"></i></div>
-  <h1 class="sv-welcome mt-3">¡Entrenamiento Completado!</h1>
-  <p class="text-muted mb-4">{{ entrenamiento.duracion }}</p>
+<div class="sv-page-content">
+<div class="finish-page">
+  <div class="finish-box">
 
-  <div class="results-summary">
-    <div class="result-stat">
-      <div class="rs-value">{{ entrenamiento.peso_total }}</div>
-      <div class="rs-label">kg totales</div>
+    <!-- Trophy -->
+    <div class="finish-trophy-wrap">
+      <i class="bi bi-trophy-fill"></i>
     </div>
-    <div class="result-stat">
-      <div class="rs-value">{{ series|length }}</div>
-      <div class="rs-label">series</div>
-    </div>
-  </div>
 
-  <div class="sv-panel mt-4 text-start">
-    <h5 class="sv-panel-title">Resumen de ejercicios</h5>
-    {% regroup series by ejercicio as series_by_exercise %}
-    {% for group in series_by_exercise %}
-    <div class="finish-exercise mb-3">
-      <h6 style="color:var(--sv-purple-light);">{{ group.grouper.nombre }}</h6>
-      {% for serie in group.list %}
-      <div class="finish-serie">
-        <span class="set-badge-sm">SET{{ serie.numero_serie }}</span>
-        {% if serie.repeticiones %}<span>{{ serie.repeticiones }} reps</span>{% endif %}
-        {% if serie.peso %}<span>× {{ serie.peso }} kg</span>{% endif %}
+    <div class="finish-title">¡Entrenamiento Completado!</div>
+    {% if entrenamiento.duracion %}
+    <div class="finish-subtitle"><i class="bi bi-clock me-1"></i>{{ entrenamiento.duracion }}</div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="finish-stats">
+      <div class="finish-stat-card">
+        <div class="fsc-icon">💪</div>
+        <div class="fsc-value">{{ ejercicios_count }}</div>
+        <div class="fsc-label">Ejercicios</div>
       </div>
+      <div class="finish-stat-card">
+        <div class="fsc-icon">🔁</div>
+        <div class="fsc-value">{{ series|length }}</div>
+        <div class="fsc-label">Series</div>
+      </div>
+      <div class="finish-stat-card accent-yellow">
+        <div class="fsc-icon">⚖️</div>
+        <div class="fsc-value">{{ entrenamiento.peso_total }}</div>
+        <div class="fsc-label">kg totales</div>
+      </div>
+      <div class="finish-stat-card accent-blue">
+        <div class="fsc-icon">🔥</div>
+        <div class="fsc-value">{{ total_reps }}</div>
+        <div class="fsc-label">Reps totales</div>
+      </div>
+    </div>
+
+    <!-- Exercise breakdown -->
+    <div class="finish-summary-panel">
+      <h5><i class="bi bi-list-check me-2"></i>Resumen de ejercicios</h5>
+      {% regroup series by ejercicio as series_by_exercise %}
+      {% for group in series_by_exercise %}
+      <div class="finish-ex-card">
+        <div class="finish-ex-name">
+          <i class="bi bi-activity"></i>
+          {{ group.grouper.nombre }}
+        </div>
+        <div class="finish-sets-row">
+          {% for serie in group.list %}
+          <div class="finish-set-pill">
+            <span class="set-num">S{{ serie.numero_serie }}</span>
+            <span class="set-data">
+              {% if serie.repeticiones %}{{ serie.repeticiones }} reps{% endif %}{% if serie.peso %}&nbsp;· {{ serie.peso }} kg{% endif %}{% if not serie.repeticiones and not serie.peso %}—{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted text-center py-3">No hay series registradas.</p>
       {% endfor %}
     </div>
-    {% endfor %}
-  </div>
 
-  <div class="d-flex gap-3 justify-content-center mt-4">
-    <a href="{% url 'dashboard' %}" class="btn-sv-outline">Volver al inicio</a>
-    <a href="{% url 'calendario_progreso' %}" class="btn-sv-green px-4">Ver Progreso</a>
+    <!-- Actions -->
+    <div class="finish-actions">
+      <a href="{% url 'dashboard' %}" class="btn-sv-outline">
+        <i class="bi bi-house me-1"></i> Volver al inicio
+      </a>
+      <a href="{% url 'calendario_progreso' %}" class="btn-sv-green px-4">
+        <i class="bi bi-bar-chart me-1"></i> Ver Progreso
+      </a>
+    </div>
+
   </div>
+</div>
 </div>
 {% endblock %}

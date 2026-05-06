@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
 from apps.users import views as user_views
 
 urlpatterns = [
@@ -13,4 +14,34 @@ urlpatterns = [
     path('ejercicios/', include('apps.exercises.urls')),
     path('herramientas/', include('apps.tools.urls')),
     path('progreso/', include('apps.progress.urls')),
+
+    # ── Recuperación de contraseña ─────────────────────────────────────────────
+    path('usuarios/recuperar/',
+         auth_views.PasswordResetView.as_view(
+             template_name='users/password_reset.html',
+             email_template_name='users/emails/password_reset_email.html',
+             subject_template_name='users/emails/password_reset_subject.txt',
+             success_url='/usuarios/recuperar/enviado/',
+         ),
+         name='password_reset'),
+
+    path('usuarios/recuperar/enviado/',
+         auth_views.PasswordResetDoneView.as_view(
+             template_name='users/password_reset_done.html',
+         ),
+         name='password_reset_done'),
+
+    path('usuarios/recuperar/<uidb64>/<token>/',
+         auth_views.PasswordResetConfirmView.as_view(
+             template_name='users/password_reset_confirm.html',
+             success_url='/usuarios/recuperar/listo/',
+         ),
+         name='password_reset_confirm'),
+
+    path('usuarios/recuperar/listo/',
+         auth_views.PasswordResetCompleteView.as_view(
+             template_name='users/password_reset_complete.html',
+         ),
+         name='password_reset_complete'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

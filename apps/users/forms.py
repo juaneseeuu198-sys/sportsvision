@@ -32,6 +32,21 @@ GENERO_CHOICES = [
     ('O', 'Otro'),
 ]
 
+LIMITACION_CHOICES = [
+    ('asma',              'Asma o problemas respiratorios'),
+    ('cardiaco',          'Problemas cardíacos'),
+    ('hipertension',      'Hipertensión'),
+    ('diabetes',          'Diabetes'),
+    ('lesion_muscular',   'Lesión muscular'),
+    ('lesion_rodilla',    'Lesión de rodilla'),
+    ('lesion_espalda',    'Lesión de espalda / columna'),
+    ('lesion_hombro',     'Lesión de hombro'),
+    ('articulacion',      'Articulación con riesgo'),
+    ('movilidad_reducida','Movilidad reducida'),
+    ('embarazo',          'Embarazo / postparto'),
+    ('otra',              'Otra condición'),
+]
+
 
 class RegistroForm(UserCreationForm):
     # Cuenta
@@ -52,12 +67,14 @@ class RegistroForm(UserCreationForm):
     altura = forms.FloatField(required=False, min_value=100, max_value=250, widget=forms.NumberInput(attrs={
         'class': 'form-control sv-input', 'placeholder': '175',
     }))
-    genero = forms.ChoiceField(required=False, choices=[('', 'Prefiero no decir')] + GENERO_CHOICES)
+    genero     = forms.ChoiceField(required=False, choices=[('', 'Prefiero no decir')] + GENERO_CHOICES)
+    objetivo   = forms.ChoiceField(required=False, choices=[('', '')] + UserProfile.OBJETIVO_CHOICES)
+    limitaciones = forms.MultipleChoiceField(required=False, choices=LIMITACION_CHOICES)
 
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2',
-                  'first_name', 'edad', 'peso', 'altura', 'genero']
+                  'first_name', 'edad', 'peso', 'altura', 'genero', 'objetivo', 'limitaciones']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -77,11 +94,21 @@ class RegistroForm(UserCreationForm):
         user.email      = self.cleaned_data.get('email', '')
         if commit:
             user.save()
+            objetivo = self.cleaned_data.get('objetivo') or ''
+            nivel_por_objetivo = {
+                'ganar_musculo': 'intermedio',
+                'rendimiento':   'avanzado',
+            }
+            nivel = nivel_por_objetivo.get(objetivo, 'principiante')
             UserProfile.objects.create(
                 user=user,
                 edad=self.cleaned_data.get('edad'),
                 peso=self.cleaned_data.get('peso'),
                 altura=self.cleaned_data.get('altura'),
+                genero=self.cleaned_data.get('genero') or '',
+                objetivo=objetivo,
+                nivel=nivel,
+                limitaciones=self.cleaned_data.get('limitaciones') or [],
             )
         return user
 

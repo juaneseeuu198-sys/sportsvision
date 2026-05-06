@@ -26,47 +26,54 @@
       </ul>
     </div>
 
-    <form method="post">
+    <!-- Error de validación -->
+    <div id="form-error-msg" style="display:none;background:rgba(230,57,70,.1);border:1.5px solid rgba(230,57,70,.4);
+         border-radius:12px;padding:12px 18px;margin-bottom:16px;color:#f87171;font-weight:700;font-size:13px;">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <span id="form-error-text">Por favor completa todos los campos requeridos.</span>
+    </div>
+
+    <form method="post" id="calc-form" novalidate>
       {% csrf_token %}
 
       <!-- Género -->
       <div class="sv-panel mb-3">
-        <label class="sv-label mb-3">Genero</label>
+        <label class="sv-label mb-3">Género <span style="color:#f87171;font-size:11px;">*</span></label>
         <div class="gender-select">
           <label class="gender-btn-label" for="id_genero_0">
             <input type="radio" name="genero" value="M" id="id_genero_0" hidden class="gender-radio"
                    {% if not resultado %}checked{% elif resultado.genero == 'M' %}checked{% endif %}>
-            <span class="gender-btn">Masculino</span>
+            <span class="gender-btn gender-btn-m"><i class="bi bi-gender-male me-1"></i>Masculino</span>
           </label>
           <label class="gender-btn-label" for="id_genero_1">
             <input type="radio" name="genero" value="F" id="id_genero_1" hidden class="gender-radio"
                    {% if resultado and resultado.genero == 'F' %}checked{% endif %}>
-            <span class="gender-btn">Femenino</span>
+            <span class="gender-btn gender-btn-f"><i class="bi bi-gender-female me-1"></i>Femenino</span>
           </label>
         </div>
 
         <div class="row g-3 mt-2">
           <div class="col-md-4">
-            <label class="sv-label">Edad</label>
+            <label class="sv-label">Edad <span style="color:#f87171;font-size:11px;">*</span></label>
             <div class="input-unit-wrap">
-              <input type="number" name="edad" class="form-control sv-input"
-                     value="{{ resultado.edad|default:'25' }}" min="10" max="120">
+              <input type="number" name="edad" id="campo-edad" class="form-control sv-input"
+                     value="{{ resultado.edad|default:'' }}" min="10" max="120" placeholder="25">
               <span class="input-unit-badge">Años</span>
             </div>
           </div>
           <div class="col-md-4">
-            <label class="sv-label">Peso</label>
+            <label class="sv-label">Peso <span style="color:#f87171;font-size:11px;">*</span></label>
             <div class="input-unit-wrap">
-              <input type="number" name="peso" class="form-control sv-input" step="0.1"
-                     value="{{ resultado.peso|default:'70' }}" min="30" max="300">
+              <input type="number" name="peso" id="campo-peso" class="form-control sv-input" step="0.1"
+                     value="{{ resultado.peso|default:'' }}" min="30" max="300" placeholder="70">
               <span class="input-unit-badge">kg</span>
             </div>
           </div>
           <div class="col-md-4">
-            <label class="sv-label">Altura</label>
+            <label class="sv-label">Altura <span style="color:#f87171;font-size:11px;">*</span></label>
             <div class="input-unit-wrap">
-              <input type="number" name="altura" class="form-control sv-input"
-                     value="{{ resultado.altura|default:'175' }}" min="100" max="250">
+              <input type="number" name="altura" id="campo-altura" class="form-control sv-input"
+                     value="{{ resultado.altura|default:'' }}" min="100" max="250" placeholder="175">
               <span class="input-unit-badge">cm</span>
             </div>
           </div>
@@ -156,29 +163,96 @@
     </div>
     {% endif %}
 
+    <!-- Guardar dieta -->
+    {% if resultado %}
+    <div class="sv-panel mt-3" style="border-color:rgba(123,47,247,.3);background:rgba(123,47,247,.05);">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <i class="bi bi-bookmark-heart-fill" style="font-size:28px;color:var(--sv-purple-light);flex-shrink:0;"></i>
+        <div style="flex:1;min-width:180px;">
+          <div style="font-weight:800;font-size:15px;margin-bottom:4px;">¿Guardar esta dieta?</div>
+          <div style="font-size:13px;color:var(--sv-muted);">Dale un nombre y guárdala en "Mis Dietas" para consultarla cuando quieras.</div>
+        </div>
+        <form method="post" action="{% url 'guardar_dieta' %}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          {% csrf_token %}
+          <input type="hidden" name="genero"          value="{{ resultado.genero }}">
+          <input type="hidden" name="edad"            value="{{ resultado.edad }}">
+          <input type="hidden" name="peso"            value="{{ resultado.peso }}">
+          <input type="hidden" name="altura"          value="{{ resultado.altura }}">
+          <input type="hidden" name="nivel_actividad" value="{{ resultado.nivel_actividad }}">
+          <input type="hidden" name="objetivo"        value="{{ resultado.objetivo }}">
+          <input type="text" name="nombre" class="sv-input" placeholder="Ej: Dieta de corte verano"
+                 style="width:220px;text-align:left;letter-spacing:0;text-transform:none;" maxlength="80">
+          <button type="submit" class="btn-sv-green" style="padding:12px 22px;border-radius:10px;font-size:14px;white-space:nowrap;">
+            <i class="bi bi-bookmark-fill me-1"></i> Guardar
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  function activateRadioStyle(name, activeClass) {
+  // ── Activar estilo de radio buttons ──────────────────
+  function activateRadioStyle(name) {
     document.querySelectorAll(`[name="${name}"]`).forEach(r => {
       r.addEventListener('change', () => {
         document.querySelectorAll(`[name="${name}"]`).forEach(rb => {
-          const label = rb.nextElementSibling;
-          if (label) label.classList.remove('active');
+          const lbl = rb.nextElementSibling;
+          if (lbl) lbl.classList.remove('active');
         });
         const active = r.nextElementSibling;
         if (active) active.classList.add('active');
       });
       if (r.checked) {
-        const label = r.nextElementSibling;
-        if (label) label.classList.add('active');
+        const lbl = r.nextElementSibling;
+        if (lbl) lbl.classList.add('active');
       }
     });
   }
   activateRadioStyle('genero');
   activateRadioStyle('nivel_actividad');
   activateRadioStyle('objetivo');
+
+  // ── Validación antes de enviar ────────────────────────
+  document.getElementById('calc-form').addEventListener('submit', function(e) {
+    const edad   = document.getElementById('campo-edad').value.trim();
+    const peso   = document.getElementById('campo-peso').value.trim();
+    const altura = document.getElementById('campo-altura').value.trim();
+    const errBox = document.getElementById('form-error-msg');
+    const errTxt = document.getElementById('form-error-text');
+
+    const vacíos = [];
+    if (!edad)   vacíos.push('Edad');
+    if (!peso)   vacíos.push('Peso');
+    if (!altura) vacíos.push('Altura');
+
+    if (vacíos.length > 0) {
+      e.preventDefault();
+      errTxt.textContent = 'Campos requeridos sin completar: ' + vacíos.join(', ') + '.';
+      errBox.style.display = 'block';
+      errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Resaltar campos vacíos
+      ['campo-edad','campo-peso','campo-altura'].forEach(id => {
+        const el = document.getElementById(id);
+        el.style.borderColor = el.value.trim() ? '' : '#f87171';
+      });
+    } else {
+      errBox.style.display = 'none';
+    }
+  });
+
+  // Limpiar error al escribir
+  ['campo-edad','campo-peso','campo-altura'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      this.style.borderColor = '';
+      const allFilled = ['campo-edad','campo-peso','campo-altura']
+        .every(i => document.getElementById(i).value.trim());
+      if (allFilled) document.getElementById('form-error-msg').style.display = 'none';
+    });
+  });
 </script>
 {% endblock %}

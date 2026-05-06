@@ -78,6 +78,32 @@ class Entrenamiento(models.Model):
         return "En progreso"
 
 
+class PlanDia(models.Model):
+    """Un día de la semana en el plan semanal del usuario."""
+    DIAS = [
+        ('lunes',     'Lunes'),
+        ('martes',    'Martes'),
+        ('miercoles', 'Miércoles'),
+        ('jueves',    'Jueves'),
+        ('viernes',   'Viernes'),
+        ('sabado',    'Sábado'),
+        ('domingo',   'Domingo'),
+    ]
+
+    usuario   = models.ForeignKey(User, on_delete=models.CASCADE, related_name='plan_semanal')
+    dia       = models.CharField(max_length=10, choices=DIAS)
+    rutina    = models.ForeignKey(Rutina, on_delete=models.SET_NULL, null=True, blank=True)
+    descanso  = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ['usuario', 'dia']
+        verbose_name = "Plan del día"
+        verbose_name_plural = "Plan semanal"
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.dia}"
+
+
 class SerieEntrenamiento(models.Model):
     """Una serie específica dentro de un entrenamiento."""
     entrenamiento = models.ForeignKey(Entrenamiento, on_delete=models.CASCADE, related_name='series')

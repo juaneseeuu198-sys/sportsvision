@@ -1,0 +1,261 @@
+{% extends 'base/base.html' %}
+{% block title %}Cliente: {{ cliente.first_name|default:cliente.username }} — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.cliente-header {
+  background: linear-gradient(135deg, rgba(67,97,238,.15), rgba(123,47,247,.1));
+  border: 1.5px solid rgba(67,97,238,.3); border-radius: 20px;
+  padding: 24px 28px; display: flex; align-items: center;
+  gap: 20px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.cli-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 3px solid rgba(67,97,238,.5);
+  background: rgba(67,97,238,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: #7b9ffb; overflow: hidden; flex-shrink: 0;
+}
+.cli-avatar img { width:100%; height:100%; object-fit:cover; }
+
+.privacy-banner {
+  background: rgba(249,115,22,.07); border: 1.5px solid rgba(249,115,22,.25);
+  border-left: 4px solid #f97316; border-radius: 14px; padding: 12px 18px;
+  font-size: 12px; color: var(--sv-muted); margin-bottom: 20px;
+}
+.privacy-banner strong { color: #f97316; }
+
+.data-section {
+  background: var(--sv-bg-card); border: 1.5px solid var(--sv-border);
+  border-radius: 16px; padding: 20px 22px; margin-bottom: 16px;
+}
+.data-section-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: .5px;
+  color: #4361ee; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(67,97,238,.2); padding-bottom: 8px;
+}
+
+.datos-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.dato-box { text-align: center; background: rgba(255,255,255,.04); border-radius: 12px; padding: 14px 10px; }
+.dato-val { font-family:'Bebas Neue',sans-serif; font-size:28px; color:#4361ee; line-height:1; }
+.dato-lbl { font-size:11px; font-weight:700; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+
+.entreno-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--sv-border);
+}
+.entreno-row:last-child { border-bottom: none; }
+.entreno-date { font-size:11px; font-weight:700; color:var(--sv-muted); min-width:70px; }
+.entreno-name { font-size:13px; font-weight:800; color:var(--sv-text); flex:1; }
+.entreno-stat { font-size:12px; color:var(--sv-muted); }
+
+.salud-locked {
+  text-align:center; padding:24px;
+  background:rgba(249,115,22,.05);
+  border:1.5px dashed rgba(249,115,22,.25); border-radius:12px;
+}
+.condicion-badge {
+  display:inline-block; margin:3px;
+  padding:4px 12px; border-radius:20px;
+  background:rgba(249,115,22,.15); border:1px solid rgba(249,115,22,.3);
+  font-size:12px; font-weight:700; color:#f97316;
+}
+
+.locked-section {
+  background: rgba(255,255,255,.03); border: 1.5px dashed var(--sv-border);
+  border-radius: 16px; padding: 20px; text-align: center;
+  color: var(--sv-muted); font-size: 13px; margin-bottom: 16px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content" style="max-width:800px;">
+
+  <div class="page-top-nav">
+    <a href="{% url 'profesional_dashboard' %}" class="page-back-btn">
+      <i class="bi bi-arrow-left"></i> Panel profesional
+    </a>
+  </div>
+
+  <!-- Header cliente -->
+  <div class="cliente-header">
+    <div class="cli-avatar">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="">
+      {% else %}
+        <i class="bi bi-person-fill"></i>
+      {% endif %}
+    </div>
+    <div style="flex:1;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;">
+        {{ cliente.first_name|default:cliente.username }} {{ cliente.last_name }}
+      </div>
+      <div style="font-size:13px;color:var(--sv-muted);margin-top:4px;">
+        @{{ cliente.username }}
+        {% if profile.objetivo %} · {{ profile.get_objetivo_display }}{% endif %}
+        {% if profile.nivel %} · {{ profile.get_nivel_display }}{% endif %}
+      </div>
+      <div style="font-size:11px;color:var(--sv-muted);margin-top:4px;">
+        Miembro desde {{ profile.fecha_registro|date:"M Y" }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Aviso de privacidad -->
+  <div class="privacy-banner">
+    <strong><i class="bi bi-shield-lock-fill me-1"></i>Datos con consentimiento</strong> —
+    Solo ves la información que {{ cliente.first_name|default:"el cliente" }} ha autorizado compartir contigo.
+    El cliente puede actualizar o revocar estos permisos en cualquier momento.
+  </div>
+
+  <!-- Datos básicos -->
+  {% if datos_basicos %}
+  <div class="data-section">
+    <div class="data-section-title"><i class="bi bi-person-fill"></i> Datos personales</div>
+    <div class="datos-grid">
+      {% if datos_basicos.edad %}
+      <div class="dato-box"><div class="dato-val">{{ datos_basicos.edad }}</div><div class="dato-lbl">Edad (años)</div></div>
+      {% endif %}
+      {% if datos_basicos.peso %}
+      <div class="dato-box"><div class="dato-val">{{ datos_basicos.peso }}</div><div class="dato-lbl">Peso (kg)</div></div>
+      {% endif %}
+      {% if datos_basicos.altura %}
+      <div class="dato-box"><div class="dato-val">{{ datos_basicos.altura }}</div><div class="dato-lbl">Altura (cm)</div></div>
+      {% endif %}
+    </div>
+    {% if datos_basicos.objetivo %}
+    <div style="margin-top:14px;font-size:13px;color:var(--sv-muted);">
+      <strong style="color:var(--sv-text);">Objetivo:</strong> {{ datos_basicos.objetivo }} &nbsp;·&nbsp;
+      <strong style="color:var(--sv-text);">Nivel:</strong> {{ datos_basicos.nivel }} &nbsp;·&nbsp;
+      <strong style="color:var(--sv-text);">Género:</strong> {{ datos_basicos.genero }}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Entrenamientos -->
+  {% if relacion.ver_entrenamientos %}
+  <div class="data-section">
+    <div class="data-section-title"><i class="bi bi-trophy-fill"></i> Historial de entrenamientos</div>
+    {% if entrenamientos %}
+    {% for e in entrenamientos %}
+    <div class="entreno-row">
+      <div class="entreno-date">{{ e.iniciado_en|date:"d M" }}</div>
+      <div class="entreno-name">{{ e.nombre }}</div>
+      <div class="entreno-stat">{{ e.duracion }}</div>
+      <div class="entreno-stat" style="color:#00d4aa;">{{ e.peso_total }} kg</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="color:var(--sv-muted);font-size:13px;text-align:center;padding:16px;">Aún no hay entrenamientos registrados.</div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="locked-section">
+    <i class="bi bi-lock-fill" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+    Historial de entrenamientos — el cliente no ha autorizado este acceso
+  </div>
+  {% endif %}
+
+  <!-- Mediciones -->
+  {% if relacion.ver_mediciones %}
+  <div class="data-section">
+    <div class="data-section-title"><i class="bi bi-rulers"></i> Mediciones corporales</div>
+    {% if mediciones %}
+    <div style="overflow-x:auto;">
+    <table style="width:100%;font-size:12px;border-collapse:collapse;">
+      <thead>
+        <tr style="color:var(--sv-muted);font-weight:700;text-transform:uppercase;font-size:10px;">
+          <td style="padding:6px 8px;">Fecha</td>
+          <td style="padding:6px 8px;">Peso</td>
+          <td style="padding:6px 8px;">% Grasa</td>
+          <td style="padding:6px 8px;">Cintura</td>
+          <td style="padding:6px 8px;">Pecho</td>
+          <td style="padding:6px 8px;">Brazo</td>
+        </tr>
+      </thead>
+      <tbody>
+      {% for m in mediciones %}
+      <tr style="border-top:1px solid var(--sv-border);">
+        <td style="padding:8px;">{{ m.fecha|date:"d M Y" }}</td>
+        <td style="padding:8px;color:#4361ee;font-weight:700;">{{ m.peso_kg|default:"—" }} kg</td>
+        <td style="padding:8px;">{{ m.grasa_pct|default:"—" }}%</td>
+        <td style="padding:8px;">{{ m.cintura_cm|default:"—" }} cm</td>
+        <td style="padding:8px;">{{ m.pecho_cm|default:"—" }} cm</td>
+        <td style="padding:8px;">{{ m.brazo_cm|default:"—" }} cm</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div style="color:var(--sv-muted);font-size:13px;text-align:center;padding:16px;">Sin mediciones registradas aún.</div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="locked-section">
+    <i class="bi bi-lock-fill" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+    Mediciones corporales — el cliente no ha autorizado este acceso
+  </div>
+  {% endif %}
+
+  <!-- Nutrición -->
+  {% if relacion.ver_nutricion %}
+  <div class="data-section">
+    <div class="data-section-title"><i class="bi bi-journal-medical"></i> Plan Nutricional</div>
+    {% if plan_nutri %}
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+      <div class="dato-box"><div class="dato-val" style="color:#f97316;font-size:24px;">{{ plan_nutri.calorias_dia|floatformat:0 }}</div><div class="dato-lbl">kcal/día</div></div>
+      <div class="dato-box"><div class="dato-val" style="color:#60a5fa;font-size:24px;">{{ plan_nutri.proteinas_g|floatformat:0 }}g</div><div class="dato-lbl">Proteína</div></div>
+      <div class="dato-box"><div class="dato-val" style="color:#f59e0b;font-size:24px;">{{ plan_nutri.carbos_g|floatformat:0 }}g</div><div class="dato-lbl">Carbos</div></div>
+      <div class="dato-box"><div class="dato-val" style="color:#34d399;font-size:24px;">{{ plan_nutri.grasas_g|floatformat:0 }}g</div><div class="dato-lbl">Grasas</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--sv-muted);">
+      {{ plan_nutri.nombre }} · {{ plan_nutri.get_objetivo_display }} · {{ plan_nutri.comidas_dia }} comidas/día · {{ plan_nutri.get_restriccion_display }}
+    </div>
+    {% elif calculo_cals %}
+    <div style="font-size:13px;color:var(--sv-muted);">
+      Cálculo activo: <strong style="color:var(--sv-text);">{{ calculo_cals.getd|floatformat:0 }} kcal/día</strong>
+      · {{ calculo_cals.proteinas_g|floatformat:0 }}g proteína
+      · {{ calculo_cals.carbos_g|floatformat:0 }}g carbos
+      · {{ calculo_cals.grasas_g|floatformat:0 }}g grasas
+    </div>
+    {% else %}
+    <div style="color:var(--sv-muted);font-size:13px;text-align:center;padding:16px;">Sin plan nutricional activo.</div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="locked-section">
+    <i class="bi bi-lock-fill" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+    Nutrición — el cliente no ha autorizado este acceso
+  </div>
+  {% endif %}
+
+  <!-- Condiciones de salud -->
+  {% if relacion.ver_salud %}
+  <div class="data-section" style="border-color:rgba(249,115,22,.3);">
+    <div class="data-section-title" style="color:#f97316;border-color:rgba(249,115,22,.2);">
+      <i class="bi bi-heart-pulse-fill"></i> Condiciones de salud
+      <span style="font-family:sans-serif;font-size:10px;font-weight:700;background:rgba(249,115,22,.2);padding:2px 8px;border-radius:10px;margin-left:6px;">DATO SENSIBLE</span>
+    </div>
+    {% if condiciones_salud %}
+    <div>
+      {% for c in condiciones_salud %}
+      <span class="condicion-badge">{{ c }}</span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="font-size:13px;color:var(--sv-muted);">El cliente no ha registrado condiciones de salud.</div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="locked-section" style="border-color:rgba(249,115,22,.2);">
+    <i class="bi bi-shield-lock-fill" style="font-size:24px;display:block;margin-bottom:8px;color:rgba(249,115,22,.5);"></i>
+    Condiciones de salud — el cliente no ha autorizado este acceso
+    <div style="font-size:11px;margin-top:6px;">Este es el dato más sensible. El cliente debe consentirlo explícitamente.</div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

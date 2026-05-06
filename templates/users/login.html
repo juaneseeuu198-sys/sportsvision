@@ -27,7 +27,13 @@
       </div>
 
       <div class="mb-4">
-        <label class="sv-label">Contraseña</label>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <label class="sv-label" style="margin:0;">Contraseña</label>
+          <a href="{% url 'password_reset' %}" style="font-size:12px;color:var(--sv-muted);text-decoration:none;transition:color .2s;"
+             onmouseover="this.style.color='var(--sv-purple-light)'" onmouseout="this.style.color='var(--sv-muted)'">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
         <input type="password" name="password" class="form-control sv-input"
                placeholder="Tu contraseña" required
                autocomplete="current-password">

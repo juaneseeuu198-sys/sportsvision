@@ -24,8 +24,132 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 40px; color: var(--sv-purple-light);
     overflow: hidden;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
   }
-  .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .perfil-avatar:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 5px rgba(123,47,247,0.3);
+  }
+  .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+  /* Modal avatar */
+  .avatar-modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.82); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .avatar-modal-overlay.open { display: flex; }
+  .avatar-modal {
+    background: var(--sv-bg-card);
+    border: 1.5px solid rgba(123,47,247,.35);
+    border-radius: 24px;
+    width: 100%; max-width: 380px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.7);
+  }
+  .avatar-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--sv-border);
+  }
+  .avatar-modal-head span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: .5px; color: var(--sv-text);
+  }
+  .avatar-modal-close {
+    background: rgba(255,255,255,.08); border: none;
+    border-radius: 50%; width: 30px; height: 30px;
+    color: var(--sv-muted); font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .avatar-modal-close:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+  /* Imagen completa sin recorte */
+  .avatar-modal-img-wrap {
+    background: #0a0a14;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 280px; padding: 20px;
+  }
+  .avatar-modal-img-wrap img {
+    max-width: 100%; max-height: 320px;
+    object-fit: contain;
+    border-radius: 12px;
+  }
+  .avatar-modal-img-wrap .avatar-placeholder-big {
+    font-size: 100px; color: rgba(123,47,247,.4);
+  }
+
+  .avatar-modal-body { padding: 18px 20px 20px; }
+  .avatar-modal-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: .5px;
+    color: var(--sv-text); margin-bottom: 14px; text-align: center;
+  }
+  .avatar-modal-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-av {
+    flex: 1; min-width: 90px; padding: 10px 8px;
+    border-radius: 12px; border: none;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; text-decoration: none; transition: opacity .2s, background .2s;
+  }
+  .btn-av-edit  { background: var(--sv-purple); color: #fff; }
+  .btn-av-edit:hover { opacity: .85; color: #fff; }
+  .btn-av-dl    { background: rgba(0,212,170,.12); border: 1.5px solid rgba(0,212,170,.3); color: #00d4aa; }
+  .btn-av-dl:hover { background: rgba(0,212,170,.22); color: #00d4aa; }
+  .btn-av-del   { background: rgba(230,57,70,.1); border: 1.5px solid rgba(230,57,70,.3); color: #f87171; }
+  .btn-av-del:hover { background: rgba(230,57,70,.22); }
+
+  /* Cropper integrado */
+  .crop-overlay {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,.88); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .crop-overlay.open { display: flex; }
+  .crop-modal {
+    background: var(--sv-bg-card);
+    border: 1.5px solid rgba(123,47,247,.35);
+    border-radius: 24px; width: 100%; max-width: 460px;
+    overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.7);
+  }
+  .crop-modal-head {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--sv-border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .crop-modal-head h3 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+    letter-spacing: .5px; margin: 0; color: var(--sv-text);
+  }
+  .crop-canvas-wrap { height: 280px; background: #0a0a14; }
+  .crop-canvas-wrap img { display: block; max-width: 100%; }
+  .crop-controls { padding: 14px 20px 18px; }
+  .crop-zoom-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .crop-zoom-row i { color: var(--sv-muted); font-size: 13px; flex-shrink: 0; }
+  .crop-zoom-row input[type=range] { flex: 1; height: 4px; accent-color: var(--sv-purple); cursor: pointer; }
+  .crop-zoom-val { font-size: 12px; font-weight: 800; color: var(--sv-purple-light); min-width: 36px; text-align: right; }
+  .crop-hint { font-size: 11px; color: var(--sv-muted); text-align: center; margin-bottom: 12px; }
+  .crop-btn-row { display: flex; gap: 10px; }
+  .btn-crop-cancel {
+    flex: 1; padding: 11px; border-radius: 12px;
+    background: rgba(255,255,255,.06); border: 1.5px solid var(--sv-border);
+    color: var(--sv-muted); font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-crop-cancel:hover { background: rgba(255,255,255,.12); color: #fff; }
+  .btn-crop-apply {
+    flex: 2; padding: 11px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, var(--sv-purple), var(--sv-purple-light));
+    color: #fff; font-size: 13px; font-weight: 800; cursor: pointer;
+    transition: opacity .2s; box-shadow: 0 4px 16px rgba(123,47,247,.4);
+  }
+  .btn-crop-apply:hover { opacity: .88; }
+  .crop-preview-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid var(--sv-purple); }
   .perfil-info { flex: 1; }
   .perfil-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 38px; line-height: 1; margin-bottom: 4px; }
   .perfil-username { color: var(--sv-purple-light); font-weight: 700; font-size: 15px; margin-bottom: 6px; }
@@ -160,7 +284,7 @@
 
   <!-- Header del perfil -->
   <div class="perfil-header">
-    <div class="perfil-avatar">
+    <div class="perfil-avatar" onclick="document.getElementById('avatar-modal').classList.add('open')">
       {% if profile.avatar %}
         <img src="{{ profile.avatar.url }}" alt="Avatar">
       {% else %}
@@ -182,9 +306,27 @@
         <i class="bi bi-calendar3 me-1"></i>Miembro desde {{ profile.fecha_registro|date:"M Y" }}
       </div>
     </div>
-    <a href="{% url 'editar_perfil' %}" class="page-back-btn" style="border-color:rgba(0,212,170,0.4);color:var(--sv-green);background:rgba(0,212,170,0.1);">
-      <i class="bi bi-pencil-fill"></i> Editar perfil
-    </a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="{% url 'editar_perfil' %}" class="page-back-btn" style="border-color:rgba(0,212,170,0.4);color:var(--sv-green);background:rgba(0,212,170,0.1);">
+        <i class="bi bi-pencil-fill"></i> Editar perfil
+      </a>
+      {% if profile.rol == 'admin_pro' %}
+        <a href="{% url 'admin_pro_dashboard' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.5);color:#7b9ffb;background:rgba(67,97,238,.15);">
+          <i class="bi bi-shield-fill-check"></i> Panel Admin Pro
+        </a>
+        <a href="{% url 'profesional_dashboard' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.3);color:#7b9ffb;background:rgba(67,97,238,.07);">
+          <i class="bi bi-patch-check-fill"></i> Panel Profesional
+        </a>
+      {% elif profile.rol == 'profesional' %}
+        <a href="{% url 'profesional_dashboard' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.4);color:#7b9ffb;background:rgba(67,97,238,.1);">
+          <i class="bi bi-patch-check-fill"></i> Panel Pro
+        </a>
+      {% else %}
+        <a href="{% url 'solicitar_profesional' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.3);color:#7b9ffb;background:rgba(67,97,238,.07);">
+          <i class="bi bi-patch-check"></i> Ser profesional
+        </a>
+      {% endif %}
+    </div>
   </div>
 
   <!-- Stats -->
@@ -343,4 +485,185 @@
   {% endif %}
 
 </div>
+
+<!-- Input oculto para seleccionar nueva foto -->
+<input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
+
+<!-- ══ Modal: ver imagen ══ -->
+<div class="avatar-modal-overlay" id="avatar-modal"
+     onclick="if(event.target===this) cerrarModalAvatar()">
+  <div class="avatar-modal">
+    <div class="avatar-modal-head">
+      <span><i class="bi bi-person-circle me-2"></i>Foto de perfil</span>
+      <button type="button" class="avatar-modal-close" onclick="cerrarModalAvatar()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="avatar-modal-img-wrap">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar" id="modal-avatar-img">
+      {% else %}
+        <div class="avatar-placeholder-big"><i class="bi bi-person-circle"></i></div>
+      {% endif %}
+    </div>
+
+    <div class="avatar-modal-body">
+      <div class="avatar-modal-name">{{ user.first_name|default:user.username }}</div>
+      <div class="avatar-modal-btns">
+        <!-- Editar: abre el cropper directamente -->
+        <button type="button" class="btn-av btn-av-edit" onclick="abrirCropDesdeModal()">
+          <i class="bi bi-pencil-fill"></i> Editar
+        </button>
+        {% if profile.avatar %}
+        <!-- Descargar -->
+        <a href="{{ profile.avatar.url }}" download class="btn-av btn-av-dl">
+          <i class="bi bi-download"></i> Descargar
+        </a>
+        <!-- Eliminar -->
+        <form method="post" action="{% url 'eliminar_avatar' %}" style="flex:1;min-width:90px;">
+          {% csrf_token %}
+          <button type="submit" class="btn-av btn-av-del w-100"
+                  onclick="return confirm('¿Eliminar la foto de perfil?')">
+            <i class="bi bi-trash3"></i> Eliminar
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: recortar imagen ══ -->
+<div class="crop-overlay" id="crop-overlay">
+  <div class="crop-modal">
+    <div class="crop-modal-head">
+      <h3><i class="bi bi-crop me-2"></i>Ajustar foto</h3>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="text-align:center;">
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;color:var(--sv-muted);margin-bottom:4px;">Vista previa</div>
+          <div class="crop-preview-circle" id="crop-preview-circle"></div>
+        </div>
+        <button type="button" class="avatar-modal-close" onclick="cerrarCrop()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+    <div class="crop-canvas-wrap">
+      <img id="crop-image" src="" alt="Recortar">
+    </div>
+    <div class="crop-controls">
+      <div class="crop-zoom-row">
+        <i class="bi bi-zoom-out"></i>
+        <input type="range" id="zoom-slider" min="0" max="3" step="0.01" value="0">
+        <i class="bi bi-zoom-in"></i>
+        <span class="crop-zoom-val" id="zoom-val">1×</span>
+      </div>
+      <div class="crop-hint"><i class="bi bi-arrows-move me-1"></i>Arrastra para mover · Slider para zoom</div>
+      <div class="crop-btn-row">
+        <button type="button" class="btn-crop-cancel" onclick="cerrarCrop()">Cancelar</button>
+        <button type="button" class="btn-crop-apply" onclick="aplicarCrop()">
+          <i class="bi bi-check-lg me-1"></i> Aplicar y guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Formulario oculto para guardar la imagen recortada -->
+<form method="post" action="{% url 'editar_perfil' %}" id="form-avatar-crop"
+      enctype="multipart/form-data" style="display:none;">
+  {% csrf_token %}
+  <input type="hidden" name="avatar_cropped_data" id="avatar_cropped_data">
+  <input type="file" name="avatar" id="crop-file-hidden">
+</form>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script>
+var cropper = null;
+
+function cerrarModalAvatar() {
+  document.getElementById('avatar-modal').classList.remove('open');
+}
+
+function abrirCropDesdeModal() {
+  cerrarModalAvatar();
+  document.getElementById('avatar-file-input').click();
+}
+
+// Cuando se selecciona un archivo → GIF directo, otros al cropper
+document.getElementById('avatar-file-input').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+
+  if (file.type === 'image/gif') {
+    // GIF: subir directo sin cropper para preservar la animación
+    var dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('crop-file-hidden').files = dt.files;
+    document.getElementById('form-avatar-crop').submit();
+    this.value = '';
+    return;
+  }
+
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var img = document.getElementById('crop-image');
+    img.src = ev.target.result;
+    document.getElementById('crop-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (cropper) { cropper.destroy(); cropper = null; }
+    cropper = new Cropper(img, {
+      aspectRatio: 1,
+      viewMode: 1,
+      dragMode: 'move',
+      autoCropArea: 1,
+      cropBoxMovable: false,
+      cropBoxResizable: false,
+      toggleDragModeOnDblclick: false,
+      preview: '#crop-preview-circle',
+      ready: function() {
+        document.getElementById('zoom-slider').value = 0;
+        document.getElementById('zoom-val').textContent = '1×';
+      },
+    });
+  };
+  reader.readAsDataURL(file);
+  this.value = '';
+});
+
+document.getElementById('zoom-slider').addEventListener('input', function() {
+  if (!cropper) return;
+  var val = parseFloat(this.value);
+  cropper.zoomTo(Math.pow(2, val));
+  document.getElementById('zoom-val').textContent = Math.pow(2, val).toFixed(1) + '×';
+});
+
+function aplicarCrop() {
+  if (!cropper) return;
+  var canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+  canvas.toBlob(function(blob) {
+    var file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+    var dt = new DataTransfer();
+    dt.items.add(file);
+    // Poner el archivo en el input hidden del form oculto
+    document.getElementById('crop-file-hidden').files = dt.files;
+    document.getElementById('form-avatar-crop').submit();
+  }, 'image/jpeg', 0.92);
+}
+
+function cerrarCrop() {
+  document.getElementById('crop-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    cerrarCrop();
+    cerrarModalAvatar();
+  }
+});
+</script>
+
 {% endblock %}

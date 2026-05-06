@@ -11,6 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/sportsvision.css' %}">
 
+  <script>
+    if (localStorage.getItem('sv-theme') === 'light') {
+      document.documentElement.classList.add('light-mode');
+    }
+  </script>
+
   <style>
     .btn-sidebar-open {
       display: none;
@@ -49,16 +55,6 @@
   </button>
 
   <nav class="sv-sidebar" id="svSidebar">
-    <div class="sidebar-top">
-      <button class="btn-menu" id="btnToggleSidebar"><i class="bi bi-list"></i></button>
-      <a href="{% url 'perfil' %}" class="sidebar-logo" title="Mi perfil" style="text-decoration:none;">
-        {% if user.profile.avatar %}
-          <img src="{{ user.profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
-        {% else %}
-          <div class="logo-placeholder"><i class="bi bi-person-circle"></i></div>
-        {% endif %}
-      </a>
-    </div>
 
     <ul class="sidebar-nav">
 
@@ -70,7 +66,7 @@
 
       <li>
         <a href="{% url 'paso1_equipo' %}"
-           class="{% if '/rutinas/' in request.path and request.resolver_match.url_name != 'auto_generador' %}active{% endif %}">
+           class="{% if request.resolver_match.url_name in 'paso1_equipo paso2_musculos paso3_ejercicios mis_rutinas iniciar_entrenamiento finalizar_entrenamiento eliminar_rutina' %}active{% endif %}">
           <i class="bi bi-trophy-fill"></i><span>Nueva Rutina</span>
         </a>
       </li>
@@ -90,28 +86,75 @@
       </li>
 
       <li>
+        <a href="{% url 'plan_semanal' %}"
+           class="{% if '/rutinas/plan-semanal/' in request.path %}active{% endif %}">
+          <i class="bi bi-calendar-week-fill"></i><span>Plan Semanal</span>
+        </a>
+      </li>
+
+      <li>
         <a href="{% url 'herramientas' %}"
-           class="{% if '/herramientas/' in request.path %}active{% endif %}">
+           class="{% if '/herramientas/' in request.path and request.resolver_match.url_name != 'mis_dietas' %}active{% endif %}">
           <i class="bi bi-wrench-adjustable-circle-fill"></i><span>Herramientas</span>
         </a>
       </li>
 
       <li>
-        <a href="{% url 'perfil' %}"
-           class="{% if '/usuarios/perfil' in request.path %}active{% endif %}">
-          <i class="bi bi-person-fill"></i><span>Mi Perfil</span>
+        <a href="{% url 'mis_dietas' %}"
+           class="{% if request.resolver_match.url_name == 'mis_dietas' %}active{% endif %}">
+          <i class="bi bi-bookmark-heart-fill"></i><span>Mis Dietas</span>
         </a>
       </li>
-
 
     </ul>
 
     <div class="sidebar-bottom">
+      <a href="{% url 'perfil' %}"
+         class="{% if '/usuarios/perfil' in request.path and 'privacidad' not in request.path %}active{% endif %}">
+        <i class="bi bi-person-fill"></i><span>Mi Perfil</span>
+      </a>
+
+      {% if user.profile.rol == 'admin_pro' %}
+        {# Admin Pro: ve su panel de administración y el panel profesional #}
+        <a href="{% url 'admin_pro_dashboard' %}"
+           class="{% if 'admin-pro' in request.path %}active{% endif %}">
+          <i class="bi bi-shield-fill-check"></i><span>Admin Pro</span>
+        </a>
+        <a href="{% url 'profesional_dashboard' %}"
+           class="{% if 'profesional/dashboard' in request.path or 'profesional/cliente' in request.path %}active{% endif %}">
+          <i class="bi bi-patch-check-fill"></i><span>Panel Pro</span>
+        </a>
+      {% elif user.profile.rol == 'profesional' %}
+        {# Profesional aprobado: solo ve su panel #}
+        <a href="{% url 'profesional_dashboard' %}"
+           class="{% if 'profesional/dashboard' in request.path or 'profesional/cliente' in request.path %}active{% endif %}">
+          <i class="bi bi-patch-check-fill"></i><span>Panel Pro</span>
+        </a>
+        <a href="{% url 'privacidad' %}"
+           class="{% if 'privacidad' in request.path %}active{% endif %}">
+          <i class="bi bi-shield-lock-fill"></i><span>Privacidad</span>
+        </a>
+      {% else %}
+        {# Usuario normal: puede solicitar ser profesional y gestionar privacidad #}
+        <a href="{% url 'solicitar_profesional' %}"
+           class="{% if 'solicitar' in request.path %}active{% endif %}">
+          <i class="bi bi-patch-check"></i><span>Ser profesional</span>
+        </a>
+        <a href="{% url 'privacidad' %}"
+           class="{% if 'privacidad' in request.path %}active{% endif %}">
+          <i class="bi bi-shield-lock-fill"></i><span>Privacidad</span>
+        </a>
+      {% endif %}
+
       <a href="{% url 'logout' %}" class="sidebar-logout">
         <i class="bi bi-power"></i><span>Cerrar Sesión</span>
       </a>
     </div>
   </nav>
+
+  <!-- Overlay para cerrar sidebar en móvil al tocar fuera -->
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);"
+       onclick="document.getElementById('svSidebar').classList.remove('open');this.style.display='none';"></div>
 
   <main class="sv-main" id="svMain">
 
@@ -124,8 +167,20 @@
       <i class="bi bi-egg-fried"></i>
     </div>
 
-    <div class="sv-topbar d-md-none">
-      <button class="btn-menu" id="btnToggleMobile"><i class="bi bi-list"></i></button>
+    <div class="sv-topbar">
+      <!-- Hamburger solo en móvil -->
+      <button class="btn-menu d-md-none" id="btnToggleMobile"><i class="bi bi-list"></i></button>
+
+      <div class="sv-topbar-spacer"></div>
+
+      <!-- Icono de perfil en la derecha -->
+      <a href="{% url 'perfil' %}" class="topbar-avatar-btn" title="{{ user.first_name|default:user.username }}">
+        {% if user.profile.avatar %}
+          <img src="{{ user.profile.avatar.url }}" alt="Avatar">
+        {% else %}
+          <i class="bi bi-person-fill"></i>
+        {% endif %}
+      </a>
     </div>
 
     <div class="sv-main-content">
@@ -136,12 +191,298 @@
 
 </div>
 
+<!-- Manual de usuario FAB -->
+<button class="help-fab" id="helpFabBtn" title="Manual de usuario" onclick="document.getElementById('manual-overlay').classList.add('open')">
+  <i class="bi bi-question-lg"></i>
+</button>
+
+<!-- Theme toggle FAB -->
+<button class="theme-fab" id="themeToggleBtn" title="Cambiar tema">
+  <i class="bi bi-sun-fill" id="themeIcon"></i>
+</button>
+
+<!-- ══ Modal Manual de Usuario ══ -->
+<div class="manual-overlay" id="manual-overlay"
+     onclick="if(event.target===this) this.classList.remove('open')">
+  <div class="manual-modal">
+
+    <div class="manual-head">
+      <div>
+        <div class="manual-head-title"><i class="bi bi-book-fill me-2"></i>Manual de Usuario</div>
+        <div class="manual-head-sub">SportsVision — Guía completa de todas las funciones</div>
+      </div>
+      <button class="manual-close" onclick="document.getElementById('manual-overlay').classList.remove('open')">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Buscador rápido -->
+    <div class="manual-search-wrap">
+      <i class="bi bi-search manual-search-icon"></i>
+      <input type="text" id="manual-search" class="manual-search" placeholder="Buscar en el manual...">
+    </div>
+
+    <div class="manual-body" id="manual-body">
+
+      <!-- ── SECCIÓN 1: Navegación ── -->
+      <div class="manual-section" data-tags="navegacion sidebar menu perfil">
+        <div class="manual-section-title"><i class="bi bi-layout-sidebar"></i> Navegación</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-layout-sidebar"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Barra lateral (Sidebar)</div>
+              <div class="manual-item-desc">Acerca el mouse al <strong>borde izquierdo</strong> de la pantalla para que se deslice automáticamente. En móvil usa el botón ☰ del topbar.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-person-circle"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Icono de perfil (arriba derecha)</div>
+              <div class="manual-item-desc">Haz clic en el avatar circular para acceder directamente a tu perfil desde cualquier página.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(244,162,97,.15);color:#f4a261;"><i class="bi bi-sun-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Modo claro / oscuro</div>
+              <div class="manual-item-desc">Botón circular en la esquina inferior derecha. Alterna entre modo oscuro y beige claro. La preferencia se guarda automáticamente.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 2: Mi Perfil ── -->
+      <div class="manual-section" data-tags="perfil avatar foto usuario datos">
+        <div class="manual-section-title"><i class="bi bi-person-fill"></i> Mi Perfil</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-camera-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Cambiar foto de perfil</div>
+              <div class="manual-item-desc">Haz clic en tu avatar → <em>Editar</em>. Se abre un editor de recorte con <strong>zoom y arrastre</strong> para encuadrar exactamente la parte que quieres. Los GIFs se suben directamente conservando la animación.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-download"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Descargar o eliminar foto</div>
+              <div class="manual-item-desc">Clic en el avatar → botón <em>Descargar</em> para guardar la imagen en tu dispositivo, o <em>Eliminar</em> para quitarla del perfil.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(67,97,238,.2);color:#7b9ffb;"><i class="bi bi-pencil-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Editar datos personales</div>
+              <div class="manual-item-desc">Botón <em>Editar perfil</em>: cambia nombre, email, edad, peso y altura. Los datos físicos se usan para calcular tu IMC y personalizar planes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 3: Rutinas ── -->
+      <div class="manual-section" data-tags="rutina ejercicio entrenamiento crear equipo musculo">
+        <div class="manual-section-title"><i class="bi bi-trophy-fill"></i> Crear Rutina</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-1-circle-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Paso 1 — Selecciona tu equipo</div>
+              <div class="manual-item-desc">Indica qué material tienes disponible (mancuernas, barra, banda, etc.). Esto filtra los ejercicios que puedes realizar.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-2-circle-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Paso 2 — Selecciona grupos musculares</div>
+              <div class="manual-item-desc">Elige qué músculos quieres trabajar hoy (pecho, espalda, piernas, etc.).</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(244,162,97,.15);color:#f4a261;"><i class="bi bi-3-circle-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Paso 3 — Elige ejercicios y asigna día</div>
+              <div class="manual-item-desc">Selecciona los ejercicios del listado filtrado, ponle nombre a la rutina y opcionalmente asígnala a un día de la semana.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(230,57,70,.15);color:#f87171;"><i class="bi bi-lightning-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Rutina automática</div>
+              <div class="manual-item-desc">En <em>Rutina Auto</em> elige nivel y equipo y el sistema genera una rutina aleatoria en segundos, adaptada a tus limitaciones de salud si las tienes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 4: Entrenamiento Activo ── -->
+      <div class="manual-section" data-tags="entrenamiento activo serie cardio temporizador timer">
+        <div class="manual-section-title"><i class="bi bi-play-circle-fill"></i> Entrenamiento Activo</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Registrar series</div>
+              <div class="manual-item-desc">Por cada ejercicio ingresa repeticiones y peso. Puedes agregar varias series antes de pasar al siguiente ejercicio.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(230,57,70,.15);color:#f87171;"><i class="bi bi-heart-pulse-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Sección Cardio</div>
+              <div class="manual-item-desc">Los ejercicios de cardio muestran un <strong>temporizador con anillo visual</strong>. Pulsa Iniciar, pausa cuando quieras y ajusta la intensidad (½, 1× o 1.5× el tiempo estimado).</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-trophy-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Finalizar entrenamiento</div>
+              <div class="manual-item-desc">Al completar el último ejercicio aparece un overlay automático con cuenta regresiva. Puedes ver el resumen con series, repeticiones y kg totales.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 5: Plan Semanal ── -->
+      <div class="manual-section" data-tags="plan semanal semana dias rutina programar">
+        <div class="manual-section-title"><i class="bi bi-calendar-week-fill"></i> Plan Semanal</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-magic"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Generar plan automático</div>
+              <div class="manual-item-desc">Botón <em>Generar automáticamente</em>: elige nivel, días de entrenamiento y equipo. El sistema crea el split semanal y lo adapta a tus limitaciones de salud.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-star-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Plan recomendado</div>
+              <div class="manual-item-desc">Aplica el plan óptimo según tu nivel (principiante 3 días, intermedio 4 días, avanzado 5 días). Incluye splits Push/Pull/Legs adaptados.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(244,162,97,.15);color:#f4a261;"><i class="bi bi-calendar-check"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Asignación manual</div>
+              <div class="manual-item-desc">Usa los selectores de cada día para asignar cualquier rutina existente o marcar el día como descanso.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 6: Progreso ── -->
+      <div class="manual-section" data-tags="progreso calendario medicion peso cuerpo anotacion">
+        <div class="manual-section-title"><i class="bi bi-calendar-check-fill"></i> Progreso</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-calendar3"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Calendario de progreso</div>
+              <div class="manual-item-desc">Visualiza qué días entrenaste, tus rutinas asignadas y tus anotaciones. Haz clic en un día para ver el detalle o agregar una nota.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-rulers"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Mediciones corporales</div>
+              <div class="manual-item-desc">Registra peso, porcentaje de grasa, medidas (pecho, cintura, cadera, brazos, piernas) para llevar un seguimiento visual de tu evolución.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 7: Herramientas ── -->
+      <div class="manual-section" data-tags="herramientas calculadora calorias imc plan nutricional dieta">
+        <div class="manual-section-title"><i class="bi bi-wrench-adjustable-circle-fill"></i> Herramientas</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(244,162,97,.15);color:#f4a261;"><i class="bi bi-calculator-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Calculadora de Calorías</div>
+              <div class="manual-item-desc">Ingresa tu género, edad, peso, altura, actividad y objetivo. Calcula tu TMB y GET diario con distribución de macros (proteínas, carbos, grasas).</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(67,97,238,.2);color:#7b9ffb;"><i class="bi bi-activity"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Calculadora de IMC</div>
+              <div class="manual-item-desc">Calcula tu Índice de Masa Corporal. Muestra categoría (bajo peso, normal, sobrepeso, obesidad), riesgo de salud y el rango de peso ideal para tu altura.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-journal-medical"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Plan Nutricional</div>
+              <div class="manual-item-desc">Genera un plan de alimentación semanal personalizado. Elige objetivo, restricciones dietéticas (vegano, sin gluten, etc.) y número de comidas. El formulario se pre-rellena con tus datos del perfil. Si tienes condiciones de salud, el plan ajusta los macros automáticamente.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-bookmark-heart-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Mis Dietas</div>
+              <div class="manual-item-desc">Guarda tu plan nutricional con un nombre. Puedes tener múltiples planes guardados, ver el detalle completo de cada comida por día, activar el que quieras usar y eliminar los que no necesites.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 8: Registro y salud ── -->
+      <div class="manual-section" data-tags="registro cuenta salud limitaciones discapacidad condicion">
+        <div class="manual-section-title"><i class="bi bi-heart-pulse-fill"></i> Cuenta y Salud</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(249,115,22,.15);color:#f97316;"><i class="bi bi-shield-fill-check"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Registro en 4 pasos</div>
+              <div class="manual-item-desc"><strong>Paso 1</strong> Cuenta · <strong>Paso 2</strong> Datos personales · <strong>Paso 3</strong> Objetivo · <strong>Paso 4</strong> Condiciones de salud (asma, lesiones, diabetes, etc.).</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(249,115,22,.15);color:#f97316;"><i class="bi bi-heart-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Adaptación por condición de salud</div>
+              <div class="manual-item-desc">Si registras una condición (lesión de rodilla, problemas cardíacos, embarazo, etc.), el sistema <strong>excluye ejercicios de riesgo</strong>, ajusta los macros del plan nutricional y muestra recomendaciones específicas. Puedes marcar varias condiciones a la vez.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /manual-body -->
+  </div>
+</div>
+
 {% else %}
   {% block public_content %}{% endblock %}
 {% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/sportsvision.js' %}"></script>
+
+<script>
+// Theme toggle
+(function () {
+  var html = document.documentElement;
+  var btn  = document.getElementById('themeToggleBtn');
+  var icon = document.getElementById('themeIcon');
+
+  function syncUI() {
+    var isLight = html.classList.contains('light-mode');
+    if (icon) icon.className = isLight ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+  }
+
+  syncUI(); // sync icons with the class already applied in <head>
+
+  if (btn) {
+    btn.addEventListener('click', function () {
+      var next = html.classList.contains('light-mode') ? 'dark' : 'light';
+      html.classList.toggle('light-mode', next === 'light');
+      localStorage.setItem('sv-theme', next);
+      syncUI();
+    });
+  }
+})();
+</script>
 
 <script>
 (function () {
@@ -178,6 +519,27 @@
 </script>
 
 {% block extra_js %}{% endblock %}
+
+<script>
+// Manual — buscador
+(function() {
+  var input = document.getElementById('manual-search');
+  if (!input) return;
+  input.addEventListener('input', function() {
+    var q = this.value.toLowerCase().trim();
+    document.querySelectorAll('.manual-section').forEach(function(sec) {
+      if (!q) { sec.classList.remove('hidden'); return; }
+      var tags  = (sec.dataset.tags || '').toLowerCase();
+      var text  = sec.textContent.toLowerCase();
+      sec.classList.toggle('hidden', !tags.includes(q) && !text.includes(q));
+    });
+  });
+  // Cerrar con Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.getElementById('manual-overlay')?.classList.remove('open');
+  });
+})();
+</script>
 
 </body>
 </html>

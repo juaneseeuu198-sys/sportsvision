@@ -47,13 +47,64 @@
       {% endfor %}
     </div>
 
+    <!-- Campo oculto que recibe el día seleccionado -->
+    <input type="hidden" name="dia_plan" id="dia_plan_input" value="">
+
     <div class="step-nav-footer">
       <a href="{% url 'paso2_musculos' %}" class="btn-sv-back"><i class="bi bi-arrow-left"></i></a>
-      <button type="submit" class="btn-sv-green px-5">
-        <i class="bi bi-play-fill"></i> Crear Rutina
+      <button type="button" class="btn-sv-green px-5" id="btn-guardar-rutina">
+        <i class="bi bi-check-lg me-1"></i> Guardar Rutina
       </button>
     </div>
   </form>
+</div>
+
+<!-- ── Modal: programar día ── -->
+<div id="modal-programar" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0d1b2a;border:1.5px solid rgba(123,47,247,.4);border-radius:24px;
+              padding:32px 28px;max-width:480px;width:100%;
+              box-shadow:0 24px 60px rgba(0,0,0,.8);">
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:40px;margin-bottom:10px;">📅</div>
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:#fff;margin:0 0 8px;">
+        ¿Programar esta rutina?
+      </h3>
+      <p style="color:rgba(255,255,255,.5);font-size:13px;margin:0;">
+        Selecciona el día de la semana en que quieres realizarla.<br>
+        Puedes cambiarla después desde el Plan Semanal.
+      </p>
+    </div>
+
+    <!-- Días de la semana -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;">
+      {% for val, label in dias_semana %}
+      <button type="button" class="dia-btn" data-dia="{{ val }}"
+              style="padding:10px 4px;border-radius:12px;border:1.5px solid rgba(255,255,255,.12);
+                     background:rgba(255,255,255,.04);color:rgba(255,255,255,.55);
+                     font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;
+                     cursor:pointer;transition:all .2s;text-align:center;">
+        {{ label|slice:":3" }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button type="button" id="btn-sin-programar"
+              style="flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);
+                     background:transparent;color:rgba(255,255,255,.5);font-weight:700;
+                     font-size:13px;cursor:pointer;transition:all .2s;">
+        <i class="bi bi-x-lg me-1"></i> Sin programar
+      </button>
+      <button type="button" id="btn-confirmar-dia" disabled
+              style="flex:2;padding:12px;border-radius:12px;border:none;
+                     background:var(--sv-purple);color:#fff;font-weight:700;
+                     font-size:13px;cursor:pointer;opacity:.4;transition:all .2s;">
+        <i class="bi bi-calendar-check me-1"></i> Programar y empezar
+      </button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -74,9 +125,67 @@
   }
 
   function mezclarEjercicio(id, btn) {
-    // Future: call API to swap exercise
     btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i>';
     setTimeout(() => { btn.innerHTML = '<i class="bi bi-shuffle"></i> Mezclar'; }, 800);
   }
+
+  // ── Modal programar día ──────────────────────────────
+  const modal        = document.getElementById('modal-programar');
+  const inputDia     = document.getElementById('dia_plan_input');
+  const btnGuardar   = document.getElementById('btn-guardar-rutina');
+  const btnConfirmar = document.getElementById('btn-confirmar-dia');
+  const btnSin       = document.getElementById('btn-sin-programar');
+  const form         = btnGuardar.closest('form');
+  let diaSeleccionado = '';
+
+  btnGuardar.addEventListener('click', () => {
+    const checked = form.querySelectorAll('input[name="ejercicios"]:checked');
+    if (checked.length === 0) {
+      alert('Selecciona al menos un ejercicio.');
+      return;
+    }
+    diaSeleccionado = '';
+    inputDia.value = '';
+    document.querySelectorAll('.dia-btn').forEach(b => {
+      b.style.borderColor = 'rgba(255,255,255,.12)';
+      b.style.background  = 'rgba(255,255,255,.04)';
+      b.style.color       = 'rgba(255,255,255,.55)';
+    });
+    btnConfirmar.disabled = true;
+    btnConfirmar.style.opacity = '.4';
+    modal.style.display = 'flex';
+  });
+
+  document.querySelectorAll('.dia-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.dia-btn').forEach(b => {
+        b.style.borderColor = 'rgba(255,255,255,.12)';
+        b.style.background  = 'rgba(255,255,255,.04)';
+        b.style.color       = 'rgba(255,255,255,.55)';
+      });
+      btn.style.borderColor = 'var(--sv-purple)';
+      btn.style.background  = 'rgba(123,47,247,.25)';
+      btn.style.color       = '#c084fc';
+      diaSeleccionado = btn.dataset.dia;
+      btnConfirmar.disabled = false;
+      btnConfirmar.style.opacity = '1';
+    });
+  });
+
+  btnConfirmar.addEventListener('click', () => {
+    inputDia.value = diaSeleccionado;
+    modal.style.display = 'none';
+    form.submit();
+  });
+
+  btnSin.addEventListener('click', () => {
+    inputDia.value = '';
+    modal.style.display = 'none';
+    form.submit();
+  });
+
+  modal.addEventListener('click', e => {
+    if (e.target === modal) modal.style.display = 'none';
+  });
 </script>
 {% endblock %}

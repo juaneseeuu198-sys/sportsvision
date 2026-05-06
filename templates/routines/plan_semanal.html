@@ -1,0 +1,543 @@
+{% extends 'base/base.html' %}
+{% block title %}Plan Semanal — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.dia-card {
+  background: var(--sv-bg-card);
+  border: 1.5px solid rgba(255,255,255,.07);
+  border-radius: 18px;
+  padding: 18px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color .2s, transform .2s;
+  position: relative;
+  overflow: hidden;
+}
+.dia-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 18px 18px 0 0;
+  background: rgba(255,255,255,.06);
+  transition: background .2s;
+}
+.dia-card.tiene-rutina { border-color: rgba(123,47,247,.35); }
+.dia-card.tiene-rutina::before { background: linear-gradient(90deg, var(--sv-purple), #4361ee); }
+.dia-card.es-descanso { border-color: rgba(0,212,170,.3); }
+.dia-card.es-descanso::before { background: linear-gradient(90deg, #00d4aa, #0097a7); }
+
+.dia-nombre {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 1px;
+  color: #fff;
+  text-align: center;
+}
+
+.dia-select {
+  background: rgba(255,255,255,.06);
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 600;
+  padding: 8px 10px;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.dia-select:focus { border-color: var(--sv-purple); outline: none; }
+.dia-select option { background: #1a1a2e; color: #fff; }
+
+.dia-descanso-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+.toggle-descanso {
+  position: relative;
+  width: 36px; height: 20px;
+  flex-shrink: 0;
+}
+.toggle-descanso input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,.1);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  left: 3px; top: 3px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .2s;
+}
+.toggle-descanso input:checked + .toggle-track {
+  background: #00d4aa;
+}
+.toggle-descanso input:checked + .toggle-track::after {
+  transform: translateX(16px);
+}
+.descanso-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,.4);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.dia-badge {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 8px;
+  margin-top: auto;
+}
+.dia-badge.badge-rutina { background: rgba(123,47,247,.2); color: #c084fc; }
+.dia-badge.badge-descanso { background: rgba(0,212,170,.15); color: #00d4aa; }
+.dia-badge.badge-libre { background: rgba(255,255,255,.05); color: rgba(255,255,255,.3); }
+
+.plan-legend {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255,255,255,.45);
+}
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+/* ── Banner bienvenida ───────────────────────────────── */
+.bienvenida-banner {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  background: linear-gradient(135deg, rgba(0,212,170,.12), rgba(123,47,247,.12));
+  border: 1.5px solid rgba(0,212,170,.3);
+  border-radius: 18px; padding: 20px 24px;
+}
+.bv-left  { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 200px; }
+.bv-emoji { font-size: 36px; line-height: 1; flex-shrink: 0; }
+.bv-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .5px; color: #fff; margin-bottom: 4px; }
+.bv-sub   { font-size: 13px; color: rgba(255,255,255,.6); }
+.bv-sub strong { color: #00d4aa; }
+.bv-btn   {
+  padding: 10px 22px; border-radius: 12px;
+  background: rgba(0,212,170,.15); border: 1.5px solid rgba(0,212,170,.4);
+  color: #00d4aa; font-size: 13px; font-weight: 700;
+  text-decoration: none; white-space: nowrap; transition: background .2s;
+}
+.bv-btn:hover { background: rgba(0,212,170,.28); color: #00d4aa; }
+
+html.light-mode .bienvenida-banner { background: linear-gradient(135deg, rgba(0,212,170,.08), rgba(123,47,247,.06)); border-color: rgba(0,212,170,.35); }
+html.light-mode .bv-title { color: #1a1a2e; }
+html.light-mode .bv-sub   { color: #475569; }
+
+.plan-subtitle     { color: rgba(255,255,255,.45); font-size: 13px; margin-bottom: 24px; }
+.plan-rec-title    { font-family: 'Bebas Neue', sans-serif; font-size: 26px; margin-bottom: 6px; color: #fff; }
+.plan-rec-desc     { font-size: 13px; color: rgba(255,255,255,.45); margin-bottom: 16px; }
+
+.preview-dia-card        { border-radius: 10px; padding: 6px 10px; text-align: center; min-width: 70px; }
+.preview-dia-activo      { background: rgba(123,47,247,.2); border: 1.5px solid rgba(123,47,247,.4); }
+.preview-dia-descanso    { background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.1); }
+.preview-dia-nombre      { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .5px; }
+.preview-dia-icon        { font-size: 16px; line-height: 1.4; }
+.preview-dia-rutina      { font-size: 9px; color: rgba(255,255,255,.5); font-weight: 600; line-height: 1.3; }
+
+/* Modal pills */
+.modal-pill {
+  text-align: center; padding: 10px; border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  color: rgba(255,255,255,.45);
+  transition: all .2s; cursor: pointer;
+}
+.modal-pill.nivel-pill { font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 700; padding: 10px 6px; }
+
+/* Selección basada en :checked nativo — nunca puede haber 2 seleccionados */
+.dias-radio:checked + .modal-pill,
+.nivel-radio:checked + .modal-pill {
+  border-color: var(--sv-purple);
+  background: rgba(123,47,247,.22);
+  color: #fff;
+}
+.eq-check-label { color: rgba(255,255,255,.7); }
+
+@media (max-width: 900px) { .plan-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 580px) { .plan-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── Light mode ────────────────────────────────────────── */
+html.light-mode .plan-subtitle          { color: #64748b; }
+html.light-mode .plan-rec-title         { color: #1a1a2e; }
+html.light-mode .plan-rec-desc          { color: #64748b; }
+
+html.light-mode .preview-dia-descanso   { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.1); }
+html.light-mode .preview-dia-nombre     { color: #64748b; }
+html.light-mode .preview-dia-rutina     { color: #94a3b8; }
+
+html.light-mode .dia-card               { background: #fdf8f2; border-color: rgba(123,47,247,.22); box-shadow: 0 2px 10px rgba(123,47,247,.06); }
+html.light-mode .dia-card::before       { background: rgba(123,47,247,.08); }
+html.light-mode .dia-card.tiene-rutina  { border-color: rgba(123,47,247,.45); box-shadow: 0 2px 12px rgba(123,47,247,.12); }
+html.light-mode .dia-card.es-descanso   { border-color: rgba(0,212,170,.4); box-shadow: 0 2px 12px rgba(0,212,170,.08); }
+html.light-mode .dia-nombre             { color: #1a1a2e; }
+html.light-mode .dia-select             { background: #f3f0ff; border-color: rgba(123,47,247,.2); color: #1a1a2e; }
+html.light-mode .dia-select option      { background: #fff; color: #1a1a2e; }
+html.light-mode .toggle-track          { background: rgba(0,0,0,.12); }
+html.light-mode .descanso-label        { color: #64748b; }
+html.light-mode .dia-badge.badge-libre  { background: rgba(0,0,0,.05); color: #94a3b8; }
+html.light-mode .legend-item           { color: #475569; }
+html.light-mode .legend-dot[style*="rgba(255,255,255"] { background: #cbd5e1 !important; }
+html.light-mode .modal-pill                              { background: #ede8df; border-color: rgba(0,0,0,.12); color: #64748b; }
+html.light-mode .dias-radio:checked + .modal-pill,
+html.light-mode .nivel-radio:checked + .modal-pill       { background: rgba(123,47,247,.15); border-color: var(--sv-purple); color: var(--sv-purple); }
+html.light-mode .eq-check-label      { color: #475569; border-color: rgba(0,0,0,.1) !important; background: #f8fafc !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content" style="max-width:1100px;">
+
+  {% if bienvenida %}
+  <div class="bienvenida-banner mb-4">
+    <div class="bv-left">
+      <span class="bv-emoji">🎉</span>
+      <div>
+        <div class="bv-title">¡Bienvenido/a, {{ display_name }}!</div>
+        <div class="bv-sub">Creamos tu plan basado en tu objetivo: <strong>{{ objetivo_label }}</strong>. Puedes ajustarlo a tu gusto.</div>
+      </div>
+    </div>
+    <a href="{% url 'dashboard' %}" class="bv-btn">Ir al inicio</a>
+  </div>
+  {% endif %}
+
+  {% if limitaciones %}
+  <div style="background:rgba(249,115,22,.08);border:1.5px solid rgba(249,115,22,.3);
+              border-left:4px solid #f97316;border-radius:16px;padding:14px 20px;
+              margin-bottom:20px;display:flex;align-items:flex-start;gap:14px;">
+    <i class="bi bi-heart-pulse-fill" style="color:#f97316;font-size:22px;flex-shrink:0;margin-top:2px;"></i>
+    <div>
+      <div style="font-size:13px;font-weight:800;color:var(--sv-text);margin-bottom:6px;">
+        Plan adaptado a tu perfil de salud
+      </div>
+      <div style="font-size:12px;color:var(--sv-muted);line-height:1.7;">
+        Tu rutina excluye ejercicios de riesgo para:
+        {% for lbl in limitaciones_labels %}
+          <span style="display:inline-block;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3);
+                       border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;
+                       color:#f97316;margin:2px;">{{ lbl }}</span>
+        {% endfor %}
+      </div>
+      <div style="font-size:11px;color:var(--sv-muted);margin-top:6px;">
+        <i class="bi bi-info-circle me-1"></i>
+        Siempre consulta con tu médico o fisioterapeuta antes de iniciar cualquier plan de entrenamiento.
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-3">
+    <h1 class="sv-page-title mb-0">Plan Semanal</h1>
+    <button type="button" class="btn-sv-green" style="padding:10px 22px;font-size:14px;border-radius:12px;"
+            onclick="document.getElementById('modal-auto').style.display='flex'">
+      <i class="bi bi-magic me-2"></i>Generar automáticamente
+    </button>
+  </div>
+  <p class="plan-subtitle">
+    Asigna una rutina a cada día de la semana. Marca los días de descanso cuando no quieras entrenar.
+  </p>
+
+  <!-- ── Plan Recomendado ──────────────────────────── -->
+  <div class="sv-panel mb-4" style="border:1.5px solid rgba(0,212,170,.25);background:linear-gradient(135deg,rgba(0,212,170,.07),rgba(67,97,238,.05));">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+      <div style="flex:1;min-width:220px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,170,.15);border:1.5px solid rgba(0,212,170,.3);border-radius:20px;padding:4px 14px;margin-bottom:12px;">
+          <i class="bi bi-stars" style="color:#00d4aa;"></i>
+          <span style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#00d4aa;">Recomendado para ti</span>
+        </div>
+        <h3 class="plan-rec-title">
+          {% if nivel_perfil == 'avanzado' %}Plan Avanzado — PPL 5 días
+          {% elif nivel_perfil == 'intermedio' %}Plan Intermedio — Upper/Lower 4 días
+          {% else %}Plan Principiante — Full Body 3 días
+          {% endif %}
+        </h3>
+        <p class="plan-rec-desc">{{ nivel_preview.descripcion }}</p>
+
+        <!-- Preview de los días -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+          {% for dia_n, icon, nombre in nivel_preview.sesiones %}
+          <div class="preview-dia-card {% if icon == '💪' %}preview-dia-activo{% else %}preview-dia-descanso{% endif %}">
+            <div class="preview-dia-nombre">{{ dia_n }}</div>
+            <div class="preview-dia-icon">{{ icon }}</div>
+            <div class="preview-dia-rutina">{{ nombre|truncatechars:12 }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Selector de nivel + botón -->
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <select class="dia-select" style="max-width:200px;" id="sel-nivel-rec"
+              onchange="location.href='?nivel='+this.value">
+        <option value="principiante" {% if nivel_perfil == 'principiante' %}selected{% endif %}>Principiante — 3 días</option>
+        <option value="intermedio"   {% if nivel_perfil == 'intermedio' %}selected{% endif %}>Intermedio — 4 días</option>
+        <option value="avanzado"     {% if nivel_perfil == 'avanzado' %}selected{% endif %}>Avanzado — 5 días</option>
+      </select>
+      <form method="post" action="{% url 'plan_recomendado' %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="nivel" value="{{ nivel_perfil }}">
+        <button type="submit" class="btn-sv-green" style="padding:10px 28px;font-size:14px;border-radius:12px;">
+          <i class="bi bi-check2-circle me-2"></i>Aplicar este plan
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Leyenda -->
+  <div class="plan-legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:var(--sv-purple);"></div>
+      Día con rutina
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#00d4aa;"></div>
+      Día de descanso
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(255,255,255,.2);"></div>
+      Día libre
+    </div>
+  </div>
+
+  <form method="post" id="plan-form">
+    {% csrf_token %}
+
+    <div class="plan-grid">
+      {% for dia in dias %}
+      <div class="dia-card {% if dia.descanso %}es-descanso{% elif dia.rutina %}tiene-rutina{% endif %}"
+           id="card_{{ dia.key }}">
+
+        <div class="dia-nombre">{{ dia.nombre }}</div>
+
+        <select name="rutina_{{ dia.key }}" class="dia-select"
+                id="sel_{{ dia.key }}"
+                {% if dia.descanso %}disabled{% endif %}>
+          <option value="">— Sin rutina —</option>
+          {% for r in rutinas %}
+          <option value="{{ r.id }}"
+            {% if dia.rutina and dia.rutina.id == r.id %}selected{% endif %}>
+            {{ r.nombre }}
+          </option>
+          {% endfor %}
+        </select>
+
+        <div class="dia-descanso-wrap">
+          <label class="toggle-descanso">
+            <input type="checkbox" name="descanso_{{ dia.key }}"
+                   id="des_{{ dia.key }}"
+                   {% if dia.descanso %}checked{% endif %}
+                   onchange="toggleDescanso('{{ dia.key }}', this.checked)">
+            <span class="toggle-track"></span>
+          </label>
+          <span class="descanso-label">Descanso</span>
+        </div>
+
+        <div class="dia-badge
+          {% if dia.descanso %}badge-descanso
+          {% elif dia.rutina %}badge-rutina
+          {% else %}badge-libre{% endif %}"
+          id="badge_{{ dia.key }}">
+          {% if dia.descanso %}😴 Descanso
+          {% elif dia.rutina %}💪 {{ dia.rutina.nombre|truncatechars:14 }}
+          {% else %}Libre{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if not rutinas %}
+    <div style="text-align:center;padding:20px;background:rgba(123,47,247,.07);border:1.5px solid rgba(123,47,247,.2);border-radius:16px;margin-bottom:24px;">
+      <i class="bi bi-info-circle" style="font-size:24px;color:var(--sv-purple-light);display:block;margin-bottom:8px;"></i>
+      <p style="color:rgba(255,255,255,.5);font-size:13px;margin:0;">
+        Aún no tienes rutinas.
+        <a href="{% url 'paso1_equipo' %}" style="color:var(--sv-purple-light);">Crea una primero</a>.
+      </p>
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn-sv-green" style="padding:14px 40px;font-size:15px;border-radius:14px;">
+      <i class="bi bi-check-lg me-2"></i>Guardar plan
+    </button>
+  </form>
+
+</div>
+{% endblock %}
+
+<!-- ═══════════ MODAL GENERADOR AUTOMÁTICO ═══════════ -->
+<div id="modal-auto" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0d1b2a;border:1.5px solid rgba(123,47,247,.4);border-radius:24px;
+              padding:32px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;
+              box-shadow:0 24px 60px rgba(0,0,0,.8);">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:28px;margin:0;color:#fff;">
+        <i class="bi bi-magic me-2" style="color:var(--sv-purple-light);"></i>Generador Automático
+      </h3>
+      <button onclick="document.getElementById('modal-auto').style.display='none'"
+              style="background:none;border:none;color:rgba(255,255,255,.5);font-size:22px;cursor:pointer;">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <form method="post" action="{% url 'generar_plan_auto' %}">
+      {% csrf_token %}
+
+      <!-- Días de entrenamiento -->
+      <div class="mb-4">
+        <label class="sv-label mb-2">¿Cuántos días quieres entrenar por semana?</label>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+          {% for n in "23456" %}
+          <label style="cursor:pointer;">
+            <input type="radio" name="dias_entreno" value="{{ n }}" class="dias-radio"
+                   style="display:none;" {% if n == '3' %}checked{% endif %}>
+            <div class="modal-pill dias-pill" data-val="{{ n }}">{{ n }}</div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Nivel -->
+      <div class="mb-4">
+        <label class="sv-label mb-2">Nivel de entrenamiento</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          {% for val,lbl in nivel_choices %}
+          <label style="cursor:pointer;">
+            <input type="radio" name="nivel" value="{{ val }}" style="display:none;"
+                   class="nivel-radio" {% if val == 'principiante' %}checked{% endif %}>
+            <div class="modal-pill nivel-pill" data-val="{{ val }}">{{ lbl }}</div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Ejercicios por sesión -->
+      <div class="mb-4">
+        <label class="sv-label">
+          Ejercicios por sesión: <span id="ej-label"
+            style="color:var(--sv-purple-light);font-family:'Bebas Neue',sans-serif;font-size:22px;">5</span>
+        </label>
+        <input type="range" name="num_ejercicios" min="3" max="10" value="5"
+               class="sv-range mt-2" oninput="document.getElementById('ej-label').textContent=this.value">
+      </div>
+
+      <!-- Equipamiento -->
+      <div class="mb-4">
+        <label class="sv-label mb-2">Equipamiento disponible <span style="color:rgba(255,255,255,.3);font-weight:400;">(opcional)</span></label>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+          {% for eq in equipos %}
+          <label style="cursor:pointer;display:flex;align-items:center;gap:8px;
+                        padding:8px 12px;border-radius:10px;
+                        border:1.5px solid rgba(255,255,255,.08);
+                        background:rgba(255,255,255,.03);transition:border-color .2s;"
+                 class="eq-check-label">
+            <input type="checkbox" name="equipos" value="{{ eq.id }}"
+                   style="accent-color:var(--sv-purple);">
+            <span style="font-size:13px;color:#bbb;">{{ eq.icono }} {{ eq }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div style="background:rgba(123,47,247,.08);border:1.5px solid rgba(123,47,247,.2);
+                  border-radius:12px;padding:12px;margin-bottom:20px;font-size:12px;color:rgba(255,255,255,.5);">
+        <i class="bi bi-info-circle me-1" style="color:var(--sv-purple-light);"></i>
+        Esto creará nuevas rutinas y reemplazará el plan semanal actual.
+      </div>
+
+      <button type="submit" class="btn-sv-green w-100" style="padding:14px;font-size:15px;border-radius:14px;">
+        <i class="bi bi-lightning-fill me-2"></i>Generar plan de la semana
+      </button>
+    </form>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+function toggleDescanso(dia, isDescanso) {
+  const card  = document.getElementById('card_' + dia);
+  const sel   = document.getElementById('sel_'  + dia);
+  const badge = document.getElementById('badge_' + dia);
+
+  if (isDescanso) {
+    card.classList.add('es-descanso');
+    card.classList.remove('tiene-rutina');
+    sel.disabled = true;
+    badge.className = 'dia-badge badge-descanso';
+    badge.textContent = '😴 Descanso';
+  } else {
+    card.classList.remove('es-descanso');
+    sel.disabled = false;
+    updateBadge(dia);
+  }
+}
+
+function updateBadge(dia) {
+  const card  = document.getElementById('card_' + dia);
+  const sel   = document.getElementById('sel_'  + dia);
+  const badge = document.getElementById('badge_' + dia);
+  const des   = document.getElementById('des_'  + dia);
+
+  if (des.checked) return;
+
+  if (sel.value) {
+    card.classList.add('tiene-rutina');
+    badge.className = 'dia-badge badge-rutina';
+    badge.textContent = '💪 ' + sel.options[sel.selectedIndex].text.substring(0,14);
+  } else {
+    card.classList.remove('tiene-rutina');
+    badge.className = 'dia-badge badge-libre';
+    badge.textContent = 'Libre';
+  }
+}
+
+document.querySelectorAll('.dia-select').forEach(sel => {
+  sel.addEventListener('change', () => updateBadge(sel.id.replace('sel_', '')));
+});
+
+// Pills se manejan con CSS :checked + sibling — sin JS necesario
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modal-auto').addEventListener('click', function(e) {
+  if (e.target === this) this.style.display = 'none';
+});
+</script>
+{% endblock %}

@@ -54,6 +54,10 @@ class Ejercicio(models.Model):
         choices=[('principiante', 'Principiante'), ('intermedio', 'Intermedio'), ('avanzado', 'Avanzado')],
         default='principiante'
     )
+    duracion_minutos = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text="Duración estimada en minutos (sólo para ejercicios de cardio/movilidad)"
+    )
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
