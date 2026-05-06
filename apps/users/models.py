@@ -48,6 +48,11 @@ class UserProfile(models.Model):
                                      help_text="Código único para que usuarios se conecten")
     especialidad  = models.CharField(max_length=100, blank=True, default='',
                                      help_text="Ej: Entrenador personal, Nutricionista")
+    telefono           = models.CharField(max_length=20, blank=True, default='',
+                                          help_text="Ej: +573105937981")
+    telefono_verificado= models.BooleanField(default=False)
+    direccion          = models.CharField(max_length=250, blank=True, default='')
+    acepto_terminos    = models.BooleanField(default=False)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     def generar_codigo(self):
@@ -139,6 +144,23 @@ class SolicitudProfesional(models.Model):
 
     def __str__(self):
         return f"Solicitud de {self.usuario.username} ({self.estado})"
+
+
+class PhoneVerificationCode(models.Model):
+    user       = models.ForeignKey(User, on_delete=models.CASCADE,
+                                   related_name='phone_codes')
+    codigo     = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used    = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timezone.timedelta(minutes=10)
+
+    class Meta:
+        verbose_name = "Código de verificación de teléfono"
+
+    def __str__(self):
+        return f"Código de {self.user.username}"
 
 
 class EmailVerificationToken(models.Model):

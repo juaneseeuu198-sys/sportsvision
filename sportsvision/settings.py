@@ -145,3 +145,8 @@ DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', 'SportsVision <norepl
 
 # URL base para los enlaces en los correos
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
+
+# ── Twilio (verificación por SMS) ──────────────────────────────────────────────
+TWILIO_ACCOUNT_SID  = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN   = os.environ.get('TWILIO_AUTH_TOKEN', '')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')

@@ -7,8 +7,9 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
+import random
 from .forms import RegistroForm, LoginForm, EditarUsuarioForm, EditarPerfilForm
-from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailVerificationToken
+from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailVerificationToken, PhoneVerificationCode
 
 
 def landing(request):
@@ -817,3 +818,97 @@ def revocar_profesional(request, relacion_id):
         relacion.save()
         messages.success(request, 'Acceso revocado. El profesional ya no puede ver tus datos.')
     return redirect('privacidad')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TÉRMINOS Y CONDICIONES
+# ─────────────────────────────────────────────────────────────────────────────
+
+def terminos_condiciones(request):
+    return render(request, 'users/terminos_condiciones.html')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VERIFICACIÓN DE TELÉFONO
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _enviar_sms(telefono, codigo):
+    """Envía el código por SMS usando Twilio, o lo imprime en consola si no hay config."""
+    account_sid = settings.TWILIO_ACCOUNT_SID
+    auth_token  = settings.TWILIO_AUTH_TOKEN
+    from_number = settings.TWILIO_PHONE_NUMBER
+
+    if account_sid and auth_token and from_number:
+        from twilio.rest import Client
+        client = Client(account_sid, auth_token)
+        client.messages.create(
+            body=f'SportsVision: tu código de verificación es {codigo}. Válido por 10 minutos.',
+            from_=from_number,
+            to=telefono,
+        )
+    else:
+        print(f'[SMS] Código para {telefono}: {codigo}')
+
+
+@login_required
+def verificar_telefono(request):
+    profile = request.user.profile
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+
+        if accion == 'enviar':
+            telefono = request.POST.get('telefono', '').strip()
+            if not telefono:
+                messages.error(request, 'Ingresa un número de teléfono.')
+                return render(request, 'users/verificar_telefono.html', {'profile': profile})
+
+            # Normalizar: asegurar que tenga código de país
+            if not telefono.startswith('+'):
+                telefono = '+57' + telefono.lstrip('0')
+
+            profile.telefono = telefono
+            profile.telefono_verificado = False
+            profile.save(update_fields=['telefono', 'telefono_verificado'])
+
+            # Invalidar códigos anteriores
+            PhoneVerificationCode.objects.filter(user=request.user, is_used=False).update(is_used=True)
+
+            codigo = str(random.randint(100000, 999999))
+            PhoneVerificationCode.objects.create(user=request.user, codigo=codigo)
+
+            try:
+                _enviar_sms(telefono, codigo)
+                messages.success(request, f'Código enviado a {telefono}.')
+            except Exception as e:
+                messages.error(request, f'Error al enviar SMS: {e}')
+
+            return render(request, 'users/verificar_telefono.html', {
+                'profile': profile, 'esperando_codigo': True,
+            })
+
+        if accion == 'verificar':
+            codigo_ingresado = request.POST.get('codigo', '').strip()
+            code_obj = PhoneVerificationCode.objects.filter(
+                user=request.user, is_used=False
+            ).order_by('-created_at').first()
+
+            if not code_obj:
+                messages.error(request, 'No hay ningún código pendiente. Solicita uno nuevo.')
+            elif code_obj.is_expired():
+                messages.error(request, 'El código expiró. Solicita uno nuevo.')
+            elif code_obj.codigo != codigo_ingresado:
+                messages.error(request, 'Código incorrecto. Inténtalo de nuevo.')
+            else:
+                code_obj.is_used = True
+                code_obj.save()
+                profile.telefono_verificado = True
+                profile.save(update_fields=['telefono_verificado'])
+                messages.success(request, '¡Teléfono verificado correctamente!')
+                return redirect('perfil')
+
+            return render(request, 'users/verificar_telefono.html', {
+                'profile': profile, 'esperando_codigo': True,
+            })
+
+    return render(request, 'users/verificar_telefono.html', {'profile': profile})

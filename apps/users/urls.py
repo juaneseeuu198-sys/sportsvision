@@ -32,4 +32,8 @@ urlpatterns = [
     path('privacidad/conectar/',                     views.conectar_profesional, name='conectar_profesional'),
     path('privacidad/permisos/<int:relacion_id>/',   views.actualizar_permisos,  name='actualizar_permisos'),
     path('privacidad/revocar/<int:relacion_id>/',    views.revocar_profesional,  name='revocar_profesional'),
+
+    # Términos y verificación de teléfono
+    path('terminos/',           views.terminos_condiciones, name='terminos_condiciones'),
+    path('verificar-telefono/', views.verificar_telefono,   name='verificar_telefono'),
 ]

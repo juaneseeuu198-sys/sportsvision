@@ -564,11 +564,31 @@
           </div>
         </div>
 
-        <div class="reg-btn-row" style="margin-top:20px;">
+        <!-- Términos y Condiciones -->
+        <div style="background:rgba(123,47,247,.07);border:1.5px solid rgba(123,47,247,.2);
+                    border-radius:16px;padding:16px 18px;margin-top:20px;">
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+            <input type="checkbox" name="acepto_terminos" id="acepto_terminos"
+                   style="width:18px;height:18px;margin-top:2px;accent-color:#7b2ff7;flex-shrink:0;">
+            <span style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.6;">
+              He leído y acepto los
+              <a href="{% url 'terminos_condiciones' %}" target="_blank"
+                 style="color:#9d5cf6;font-weight:700;">Términos y Condiciones</a>
+              de SportsVision, incluyendo la política de privacidad y el tratamiento de mis datos personales.
+            </span>
+          </label>
+          {% if form.acepto_terminos.errors %}
+            <p style="color:#f87171;font-size:12px;margin:8px 0 0;">
+              {{ form.acepto_terminos.errors.0 }}
+            </p>
+          {% endif %}
+        </div>
+
+        <div class="reg-btn-row" style="margin-top:16px;">
           <button type="button" class="btn-reg-back" id="btn-back3">
             <i class="bi bi-arrow-left"></i>
           </button>
-          <button type="submit" class="btn-sv-outline py-3" style="flex:1;">
+          <button type="submit" class="btn-sv-outline py-3" style="flex:1;" id="btn-crear">
             <i class="bi bi-check-lg me-1"></i> Crear cuenta
           </button>
         </div>

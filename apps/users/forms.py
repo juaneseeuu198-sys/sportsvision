@@ -18,11 +18,13 @@ class EditarUsuarioForm(forms.ModelForm):
 class EditarPerfilForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['edad', 'peso', 'altura', 'avatar']
+        fields = ['edad', 'peso', 'altura', 'avatar', 'telefono', 'direccion']
         widgets = {
-            'edad':   forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Edad'}),
-            'peso':   forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Peso (kg)', 'step': '0.1'}),
-            'altura': forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Altura (cm)'}),
+            'edad':      forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Edad'}),
+            'peso':      forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Peso (kg)', 'step': '0.1'}),
+            'altura':    forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Altura (cm)'}),
+            'telefono':  forms.TextInput(attrs={'class': 'sv-input', 'placeholder': '+57 300 000 0000'}),
+            'direccion': forms.TextInput(attrs={'class': 'sv-input', 'placeholder': 'Calle 123 # 45-67, Ciudad'}),
         }
 
 
@@ -70,11 +72,15 @@ class RegistroForm(UserCreationForm):
     genero     = forms.ChoiceField(required=False, choices=[('', 'Prefiero no decir')] + GENERO_CHOICES)
     objetivo   = forms.ChoiceField(required=False, choices=[('', '')] + UserProfile.OBJETIVO_CHOICES)
     limitaciones = forms.MultipleChoiceField(required=False, choices=LIMITACION_CHOICES)
+    acepto_terminos = forms.BooleanField(required=True, error_messages={
+        'required': 'Debes aceptar los Términos y Condiciones para continuar.'
+    })
 
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2',
-                  'first_name', 'edad', 'peso', 'altura', 'genero', 'objetivo', 'limitaciones']
+                  'first_name', 'edad', 'peso', 'altura', 'genero', 'objetivo',
+                  'limitaciones', 'acepto_terminos']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -99,6 +105,7 @@ class RegistroForm(UserCreationForm):
 
     def save_profile(self, user):
         objetivo = self.cleaned_data.get('objetivo') or ''
+        acepto  = self.cleaned_data.get('acepto_terminos', False)
         nivel_por_objetivo = {
             'ganar_musculo': 'intermedio',
             'rendimiento':   'avanzado',
@@ -113,6 +120,7 @@ class RegistroForm(UserCreationForm):
             objetivo=objetivo,
             nivel=nivel,
             limitaciones=self.cleaned_data.get('limitaciones') or [],
+            acepto_terminos=acepto,
         )
 
 

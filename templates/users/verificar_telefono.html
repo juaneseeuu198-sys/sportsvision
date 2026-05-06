@@ -1,0 +1,221 @@
+{% extends 'base/base.html' %}
+{% block title %}Verificar Teléfono — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.vt-card {
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--sv-bg-card);
+  border: 1.5px solid var(--sv-border);
+  border-radius: 24px;
+  padding: 36px 32px;
+}
+.vt-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(0,212,170,.12); border: 2px solid rgba(0,212,170,.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 24px;
+}
+.vt-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; letter-spacing: 1px;
+  color: var(--sv-text); text-align: center; margin-bottom: 8px;
+}
+.vt-sub {
+  color: var(--sv-muted); font-size: 14px;
+  text-align: center; margin-bottom: 28px; line-height: 1.7;
+}
+.vt-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 14px; border-radius: 999px;
+  font-size: 12px; font-weight: 800; letter-spacing: .5px;
+  text-transform: uppercase; margin-bottom: 24px;
+}
+.vt-badge-ok  { background: rgba(52,211,153,.15); border: 1px solid rgba(52,211,153,.35); color: #34d399; }
+.vt-badge-no  { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.3); color: #f87171; }
+
+/* Código OTP */
+.otp-row {
+  display: flex; gap: 10px; justify-content: center;
+  margin-bottom: 24px;
+}
+.otp-digit {
+  width: 52px; height: 64px;
+  background: var(--sv-bg-panel);
+  border: 2px solid var(--sv-border);
+  border-radius: 14px;
+  font-size: 28px; font-weight: 900;
+  color: var(--sv-text); text-align: center;
+  transition: border-color .2s;
+  caret-color: var(--sv-purple);
+}
+.otp-digit:focus { outline: none; border-color: var(--sv-purple); box-shadow: 0 0 0 3px rgba(123,47,247,.2); }
+
+.vt-phone-row {
+  display: flex; gap: 10px; margin-bottom: 20px;
+}
+.vt-prefix {
+  background: var(--sv-bg-panel);
+  border: 1.5px solid var(--sv-border);
+  border-radius: 12px; padding: 0 16px;
+  font-size: 15px; font-weight: 700;
+  color: var(--sv-muted);
+  display: flex; align-items: center; white-space: nowrap;
+  flex-shrink: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content" style="max-width:540px;">
+
+  <div class="page-top-nav">
+    <a href="{% url 'perfil' %}" class="page-back-btn">
+      <i class="bi bi-arrow-left"></i> Mi Perfil
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}success{% endif %} mb-3"
+           style="border-radius:12px;font-size:14px;">
+        {{ msg }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="vt-card">
+
+    <div class="vt-icon">📱</div>
+
+    <h1 class="vt-title">Verificar Teléfono</h1>
+
+    {% if profile.telefono %}
+      <div style="text-align:center;margin-bottom:16px;">
+        {% if profile.telefono_verificado %}
+          <span class="vt-badge vt-badge-ok">
+            <i class="bi bi-patch-check-fill"></i> {{ profile.telefono }} — Verificado
+          </span>
+        {% else %}
+          <span class="vt-badge vt-badge-no">
+            <i class="bi bi-exclamation-circle-fill"></i> {{ profile.telefono }} — Sin verificar
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if not esperando_codigo %}
+      <!-- PASO 1: ingresar número -->
+      <p class="vt-sub">
+        Ingresa tu número de teléfono. Te enviaremos un código de
+        <strong style="color:var(--sv-text);">6 dígitos</strong> por SMS para confirmar que es tuyo.
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="enviar">
+
+        <label class="sv-label">Número de teléfono</label>
+        <div class="vt-phone-row">
+          <div class="vt-prefix">🇨🇴 +57</div>
+          <input type="tel" name="telefono"
+                 class="sv-input"
+                 placeholder="300 000 0000"
+                 value="{{ profile.telefono|slice:'3:' }}"
+                 inputmode="numeric" maxlength="15"
+                 style="flex:1;">
+        </div>
+
+        <div style="background:rgba(123,47,247,.08);border:1px solid rgba(123,47,247,.2);
+                    border-radius:12px;padding:12px 16px;margin-bottom:20px;font-size:13px;
+                    color:var(--sv-muted);line-height:1.7;">
+          <i class="bi bi-shield-lock me-1" style="color:var(--sv-purple);"></i>
+          El código expira en <strong style="color:var(--sv-text);">10 minutos</strong>.
+          Nunca lo compartas con nadie.
+        </div>
+
+        <button type="submit" class="btn-calcular w-100">
+          <i class="bi bi-send-fill me-2"></i> Enviar código SMS
+        </button>
+      </form>
+
+    {% else %}
+      <!-- PASO 2: ingresar código -->
+      <p class="vt-sub">
+        Enviamos un código de 6 dígitos a
+        <strong style="color:var(--sv-text);">{{ profile.telefono }}</strong>.
+        Ingrésalo abajo antes de que expire.
+      </p>
+
+      <form method="post" id="otp-form">
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="verificar">
+        <input type="hidden" name="codigo" id="codigo-hidden">
+
+        <div class="otp-row" id="otp-row">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        </div>
+
+        <button type="submit" class="btn-calcular w-100" id="btn-verificar" disabled>
+          <i class="bi bi-check-circle-fill me-2"></i> Verificar código
+        </button>
+      </form>
+
+      <div style="text-align:center;margin-top:16px;">
+        <form method="post" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="accion" value="enviar">
+          <input type="hidden" name="telefono" value="{{ profile.telefono }}">
+          <button type="submit" style="background:none;border:none;color:var(--sv-purple-light);
+                                       font-size:13px;cursor:pointer;font-weight:700;">
+            <i class="bi bi-arrow-clockwise me-1"></i> Reenviar código
+          </button>
+        </form>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+(function() {
+  var digits = document.querySelectorAll('.otp-digit');
+  if (!digits.length) return;
+
+  digits.forEach(function(inp, i) {
+    inp.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g,'').slice(-1);
+      if (this.value && i < digits.length - 1) digits[i+1].focus();
+      checkComplete();
+    });
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !this.value && i > 0) digits[i-1].focus();
+    });
+    inp.addEventListener('paste', function(e) {
+      e.preventDefault();
+      var paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+      paste.split('').slice(0,6).forEach(function(ch, j) {
+        if (digits[j]) digits[j].value = ch;
+      });
+      var last = Math.min(paste.length, 5);
+      digits[last].focus();
+      checkComplete();
+    });
+  });
+
+  function checkComplete() {
+    var code = Array.from(digits).map(function(d){ return d.value; }).join('');
+    document.getElementById('codigo-hidden').value = code;
+    document.getElementById('btn-verificar').disabled = code.length < 6;
+  }
+
+  digits[0].focus();
+})();
+</script>
+{% endblock %}
