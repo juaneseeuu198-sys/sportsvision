@@ -280,11 +280,29 @@ html.light-mode .nutri-sep { background: rgba(0,0,0,.1); }
 html.light-mode .plan-chip.chip-rutina   { background: rgba(67,97,238,.1); color: #3b5ec6; }
 html.light-mode .plan-chip.chip-descanso { background: rgba(52,211,153,.1); color: #10b981; }
 
+/* ── Scroll wrapper para móvil ── */
+.cal-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 16px;
+}
+.cal-scroll-wrapper .cal-grid {
+  min-width: 420px;
+}
+
 @media (max-width: 640px) {
-  .cal-cell { min-height: 60px; padding: 5px 4px; }
-  .cal-num  { font-size: 15px; }
-  .workout-chip, .plan-chip { font-size: 7px; }
+  .sv-page-content { padding: 16px 10px; }
+  .cal-cell { min-height: 56px; padding: 4px 3px; }
+  .cal-num  { font-size: 13px; }
+  .cal-day-name { font-size: 10px; padding: 8px 2px; }
+  .workout-chip, .plan-chip { font-size: 7px; padding: 1px 4px; }
   .workout-stats { display: none; }
+  .day-badge { font-size: 7px; top: 3px; right: 3px; }
+  .cal-mode-bar { gap: 6px; }
+  .mode-btn { padding: 5px 10px; font-size: 11px; }
+  .mode-hint { display: none; }
+  .cal-legend { gap: 10px; font-size: 11px; padding: 8px 12px; }
 }
 </style>
 {% endblock %}
@@ -361,6 +379,7 @@ html.light-mode .plan-chip.chip-descanso { background: rgba(52,211,153,.1); colo
   {% endif %}
 
   <!-- Calendar -->
+  <div class="cal-scroll-wrapper">
   <div class="cal-grid">
     <div class="cal-days-header">
       <div class="cal-day-name">Lun</div>
@@ -406,6 +425,7 @@ html.light-mode .plan-chip.chip-descanso { background: rgba(52,211,153,.1); colo
       {% endfor %}
     </div>
   </div>
+  </div>{# /cal-scroll-wrapper #}
 
   <!-- Day detail -->
   {% if dia_sel %}

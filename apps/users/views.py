@@ -4,8 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
 from .forms import RegistroForm, LoginForm, EditarUsuarioForm, EditarPerfilForm
-from .models import UserProfile, RelacionProfesional, SolicitudProfesional
+from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailVerificationToken
 
 
 def landing(request):
@@ -21,27 +24,85 @@ def auth_choice(request):
 
 
 def registro(request):
-    """Registro de nuevo usuario."""
+    """Registro de nuevo usuario — crea cuenta inactiva y envía verificación."""
     if request.user.is_authenticated:
         return redirect('dashboard')
 
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user,
-                  backend='apps.users.backends.EmailOrUsernameBackend')
-            objetivo = form.cleaned_data.get('objetivo', '')
-            if objetivo:
-                from apps.routines.views import generar_plan_inicial
-                generar_plan_inicial(user, objetivo)
-                request.session['plan_bienvenida'] = True
-                return redirect('plan_semanal')
-            return redirect('dashboard')
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            # Guardar datos del perfil (segundo save del form)
+            form.save_profile(user)
+
+            token_obj = EmailVerificationToken.objects.create(user=user)
+            _enviar_correo_verificacion(request, user, token_obj)
+
+            # Guardar objetivo en sesión para usarlo tras verificar
+            request.session['pendiente_objetivo'] = form.cleaned_data.get('objetivo', '')
+            return redirect('verificacion_enviada')
     else:
         form = RegistroForm()
 
     return render(request, 'users/registro.html', {'form': form})
+
+
+def _enviar_correo_verificacion(request, user, token_obj):
+    url = f"{settings.FRONTEND_URL}/usuarios/verificar-email/{token_obj.token}/"
+    html = render_to_string('users/emails/verificacion_email.html', {
+        'user': user,
+        'url': url,
+    })
+    send_mail(
+        subject='Verifica tu cuenta en SportsVision',
+        message=f'Hola {user.username}, verifica tu cuenta en: {url}',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        html_message=html,
+        fail_silently=True,
+    )
+
+
+def verificacion_enviada(request):
+    """Página informativa: 'Revisa tu correo'."""
+    return render(request, 'users/verificacion_enviada.html')
+
+
+def verificar_email(request, token):
+    """Activa la cuenta cuando el usuario hace clic en el enlace del correo."""
+    token_obj = get_object_or_404(EmailVerificationToken, token=token)
+
+    if token_obj.is_used:
+        messages.error(request, 'Este enlace de verificación ya fue utilizado.')
+        return redirect('login')
+
+    if token_obj.is_expired():
+        messages.error(request, 'El enlace de verificación expiró. Regístrate nuevamente.')
+        token_obj.user.delete()
+        return redirect('registro')
+
+    user = token_obj.user
+    user.is_active = True
+    user.save()
+    token_obj.is_used = True
+    token_obj.save()
+
+    login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
+
+    objetivo = request.session.pop('pendiente_objetivo', '')
+    if objetivo:
+        from apps.routines.views import generar_plan_inicial
+        generar_plan_inicial(user, objetivo)
+
+    return redirect('bienvenido')
+
+
+@login_required
+def bienvenido(request):
+    """Página de bienvenida con los siguientes pasos tras verificar el correo."""
+    return render(request, 'users/bienvenido.html')
 
 
 def login_view(request):

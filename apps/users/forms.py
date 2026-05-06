@@ -94,23 +94,26 @@ class RegistroForm(UserCreationForm):
         user.email      = self.cleaned_data.get('email', '')
         if commit:
             user.save()
-            objetivo = self.cleaned_data.get('objetivo') or ''
-            nivel_por_objetivo = {
-                'ganar_musculo': 'intermedio',
-                'rendimiento':   'avanzado',
-            }
-            nivel = nivel_por_objetivo.get(objetivo, 'principiante')
-            UserProfile.objects.create(
-                user=user,
-                edad=self.cleaned_data.get('edad'),
-                peso=self.cleaned_data.get('peso'),
-                altura=self.cleaned_data.get('altura'),
-                genero=self.cleaned_data.get('genero') or '',
-                objetivo=objetivo,
-                nivel=nivel,
-                limitaciones=self.cleaned_data.get('limitaciones') or [],
-            )
+            self.save_profile(user)
         return user
+
+    def save_profile(self, user):
+        objetivo = self.cleaned_data.get('objetivo') or ''
+        nivel_por_objetivo = {
+            'ganar_musculo': 'intermedio',
+            'rendimiento':   'avanzado',
+        }
+        nivel = nivel_por_objetivo.get(objetivo, 'principiante')
+        UserProfile.objects.create(
+            user=user,
+            edad=self.cleaned_data.get('edad'),
+            peso=self.cleaned_data.get('peso'),
+            altura=self.cleaned_data.get('altura'),
+            genero=self.cleaned_data.get('genero') or '',
+            objetivo=objetivo,
+            nivel=nivel,
+            limitaciones=self.cleaned_data.get('limitaciones') or [],
+        )
 
 
 class LoginForm(AuthenticationForm):

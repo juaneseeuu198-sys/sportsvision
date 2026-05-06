@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class UserProfile(models.Model):
@@ -136,3 +137,20 @@ class SolicitudProfesional(models.Model):
 
     def __str__(self):
         return f"Solicitud de {self.usuario.username} ({self.estado})"
+
+
+class EmailVerificationToken(models.Model):
+    user       = models.OneToOneField(User, on_delete=models.CASCADE,
+                                      related_name='email_verification_token')
+    token      = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used    = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timezone.timedelta(hours=24)
+
+    class Meta:
+        verbose_name = "Token de verificación de correo"
+
+    def __str__(self):
+        return f"Token de {self.user.username}"

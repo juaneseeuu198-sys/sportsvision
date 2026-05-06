@@ -1,0 +1,320 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Bienvenido a SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+  .sv-welcome-page {
+    min-height: 100vh;
+    background: #0b0c18;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 48px 20px 60px;
+  }
+
+  .sv-welcome-hero {
+    text-align: center;
+    max-width: 680px;
+    margin-bottom: 52px;
+  }
+
+  .sv-welcome-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,212,170,0.12);
+    border: 1px solid rgba(0,212,170,0.35);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #00d4aa;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 24px;
+  }
+
+  .sv-welcome-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 7vw, 80px);
+    line-height: 1;
+    letter-spacing: 2px;
+    color: #fff;
+    margin: 0 0 20px;
+  }
+
+  .sv-welcome-title span { color: #00d4aa; }
+
+  .sv-welcome-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,.5);
+    line-height: 1.8;
+    margin: 0;
+  }
+
+  /* Grid de pasos */
+  .sv-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1100px;
+    margin-bottom: 48px;
+  }
+
+  .sv-step-card {
+    background: #1a1a2e;
+    border: 1.5px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 32px 28px;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+    overflow: hidden;
+  }
+
+  .sv-step-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .sv-step-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(123,47,247,0.4);
+  }
+
+  .sv-step-card:hover::before { opacity: 1; }
+
+  .sv-step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .sv-step-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+
+  .sv-step-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 10px;
+    line-height: 1.3;
+  }
+
+  .sv-step-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,.45);
+    line-height: 1.75;
+    margin: 0 0 24px;
+  }
+
+  .sv-step-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+
+  .sv-step-link:hover { opacity: 0.85; transform: translateX(3px); }
+
+  /* Colores por paso */
+  .step-purple .sv-step-num  { color: #9d5cf6; }
+  .step-purple .sv-step-icon { background: rgba(123,47,247,0.15); border: 1.5px solid rgba(123,47,247,0.3); }
+  .step-purple .sv-step-link { background: rgba(123,47,247,0.15); color: #9d5cf6; border: 1px solid rgba(123,47,247,0.3); }
+
+  .step-cyan .sv-step-num  { color: #00d4aa; }
+  .step-cyan .sv-step-icon { background: rgba(0,212,170,0.12); border: 1.5px solid rgba(0,212,170,0.3); }
+  .step-cyan .sv-step-link { background: rgba(0,212,170,0.12); color: #00d4aa; border: 1px solid rgba(0,212,170,0.3); }
+
+  .step-orange .sv-step-num  { color: #f97316; }
+  .step-orange .sv-step-icon { background: rgba(249,115,22,0.12); border: 1.5px solid rgba(249,115,22,0.3); }
+  .step-orange .sv-step-link { background: rgba(249,115,22,0.12); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
+
+  .step-blue .sv-step-num  { color: #60a5fa; }
+  .step-blue .sv-step-icon { background: rgba(96,165,250,0.12); border: 1.5px solid rgba(96,165,250,0.3); }
+  .step-blue .sv-step-link { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+
+  /* CTA principal */
+  .sv-welcome-cta {
+    text-align: center;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .sv-welcome-cta p {
+    color: rgba(255,255,255,.4);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .btn-sv-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #7b2ff7, #9d5cf6);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 900;
+    text-decoration: none;
+    padding: 16px 44px;
+    border-radius: 14px;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 8px 32px rgba(123,47,247,0.35);
+  }
+
+  .btn-sv-start:hover { opacity: 0.9; transform: translateY(-2px); color: #fff; }
+
+  /* Avatar saludo */
+  .sv-user-greeting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .sv-user-avatar-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7b2ff7, #00d4aa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 640px) {
+    .sv-steps-grid { grid-template-columns: 1fr; }
+    .sv-welcome-page { padding: 32px 16px 48px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-welcome-page">
+
+  <!-- Hero -->
+  <div class="sv-welcome-hero">
+    <div class="sv-welcome-badge">
+      <i class="bi bi-patch-check-fill"></i>
+      Cuenta verificada
+    </div>
+
+    <div class="sv-user-greeting">
+      <div class="sv-user-avatar-circle">
+        {{ user.first_name|first|upper|default:user.username|first|upper }}
+      </div>
+      <span style="color:rgba(255,255,255,.5);font-size:16px;">
+        Hola, <strong style="color:#fff;">{{ user.first_name|default:user.username }}</strong>
+      </span>
+    </div>
+
+    <h1 class="sv-welcome-title">
+      Bienvenido a<br><span>SportsVision</span>
+    </h1>
+    <p class="sv-welcome-sub">
+      Tu cuenta está activa. Estos son los pasos para sacar el máximo partido
+      a la plataforma desde el primer día.
+    </p>
+  </div>
+
+  <!-- Grid de pasos -->
+  <div class="sv-steps-grid">
+
+    <!-- Paso 1: Tu plan de entrenamiento -->
+    <div class="sv-step-card step-purple">
+      <div class="sv-step-num">Paso 01</div>
+      <div class="sv-step-icon">🏋️</div>
+      <h3 class="sv-step-title">Tu plan de entrenamiento</h3>
+      <p class="sv-step-desc">
+        Ya generamos un plan personalizado según tu objetivo. Revísalo,
+        marca los días y registra cada serie para seguir tu progreso.
+      </p>
+      <a href="{% url 'plan_semanal' %}" class="sv-step-link">
+        Ver mi plan <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <!-- Paso 2: Completa tu perfil -->
+    <div class="sv-step-card step-cyan">
+      <div class="sv-step-num">Paso 02</div>
+      <div class="sv-step-icon">👤</div>
+      <h3 class="sv-step-title">Completa tu perfil</h3>
+      <p class="sv-step-desc">
+        Agrega tu foto, peso y altura si aún no lo has hecho. Con más datos
+        nuestros algoritmos ajustan mejor tus rutinas y recomendaciones.
+      </p>
+      <a href="{% url 'editar_perfil' %}" class="sv-step-link">
+        Editar perfil <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <!-- Paso 3: Registra tu progreso -->
+    <div class="sv-step-card step-orange">
+      <div class="sv-step-num">Paso 03</div>
+      <div class="sv-step-icon">📈</div>
+      <h3 class="sv-step-title">Registra tu progreso</h3>
+      <p class="sv-step-desc">
+        Lleva un control de tus medidas corporales semana a semana y
+        visualiza la evolución en gráficas claras e intuitivas.
+      </p>
+      <a href="{% url 'calendario_progreso' %}" class="sv-step-link">
+        Ver progreso <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <!-- Paso 4: Explora herramientas -->
+    <div class="sv-step-card step-blue">
+      <div class="sv-step-num">Paso 04</div>
+      <div class="sv-step-icon">🔬</div>
+      <h3 class="sv-step-title">Explora las herramientas</h3>
+      <p class="sv-step-desc">
+        Calcula tu IMC, tu gasto calórico y obtén un plan nutricional
+        estimado. Todo en un solo lugar, sin necesidad de apps externas.
+      </p>
+      <a href="{% url 'herramientas' %}" class="sv-step-link">
+        Ir a herramientas <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- CTA final -->
+  <div class="sv-welcome-cta">
+    <p>¿Todo listo? Empieza directamente desde tu dashboard.</p>
+    <a href="{% url 'dashboard' %}" class="btn-sv-start">
+      <i class="bi bi-lightning-charge-fill"></i>
+      Ir al dashboard
+    </a>
+  </div>
+
+</div>
+{% endblock %}
