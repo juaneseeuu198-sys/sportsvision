@@ -5,12 +5,13 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('templates',   'templates'),
-        ('static',      'static'),
-        ('staticfiles', 'staticfiles'),
-        ('apps',        'apps'),
-        ('sportsvision','sportsvision'),
-        ('db.sqlite3',  '.'),
+        ('templates',    'templates'),
+        ('static',       'static'),
+        ('staticfiles',  'staticfiles'),
+        ('apps',         'apps'),
+        ('sportsvision', 'sportsvision'),
+        ('db.sqlite3',   '.'),
+        ('db_config.txt','.'),
     ],
     hiddenimports=[
         # Django core
@@ -59,6 +60,9 @@ a = Analysis(
         'apps.progress',
         'apps.progress.models',
         'apps.progress.views',
+        # PostgreSQL
+        'psycopg2',
+        'psycopg2._psycopg',
         # Pillow
         'PIL',
         'PIL.Image',

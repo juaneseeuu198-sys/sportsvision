@@ -25,16 +25,22 @@ def user_data_dir():
 
 def setup_database():
     """
-    La BD necesita estar fuera del .exe para ser escribible.
-    Si no existe en AppData, copia la inicial que viene dentro del exe.
+    Si existe db_config.txt con una DATABASE_URL, usa PostgreSQL remoto.
+    Si no, usa SQLite local en AppData.
     """
+    config_path = os.path.join(meipass(), 'db_config.txt')
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            db_url = f.read().strip()
+        if db_url:
+            os.environ['DATABASE_URL'] = db_url
+            return None
+
     data_dir  = user_data_dir()
     db_dest   = os.path.join(data_dir, 'db.sqlite3')
     db_origen = os.path.join(meipass(), 'db.sqlite3')
-
     if not os.path.exists(db_dest) and os.path.exists(db_origen):
         shutil.copy2(db_origen, db_dest)
-
     return db_dest
 
 
@@ -44,8 +50,8 @@ def main():
 
     db_path = setup_database()
 
-    # Apuntar la BD a AppData del usuario
-    os.environ['SPORTSVISION_DB'] = db_path
+    if db_path:
+        os.environ['SPORTSVISION_DB'] = db_path
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sportsvision.settings')
 
     import django
