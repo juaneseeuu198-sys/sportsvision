@@ -29,18 +29,20 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Create db_config.txt placeholder
-        run: touch db_config.txt
+      - name: Create db_config.txt (Railway PostgreSQL)
+        run: echo "${{ secrets.DATABASE_URL }}" > db_config.txt
 
       - name: Apply migrations
         run: python manage.py migrate --noinput
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Seed exercises
         run: python manage.py seed_exercises
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Collect static files
         run: python manage.py collectstatic --noinput
@@ -78,18 +80,20 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Create db_config.txt placeholder
-        run: New-Item -ItemType File -Path db_config.txt -Force
+      - name: Create db_config.txt (Railway PostgreSQL)
+        run: echo "${{ secrets.DATABASE_URL }}" | Out-File -FilePath db_config.txt -Encoding utf8
 
       - name: Apply migrations
         run: python manage.py migrate --noinput
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Seed exercises
         run: python manage.py seed_exercises
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Collect static files
         run: python manage.py collectstatic --noinput

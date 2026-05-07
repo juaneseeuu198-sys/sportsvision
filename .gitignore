@@ -10,6 +10,7 @@ staticfiles/
 venv/
 env/
 .env
+db_config.txt
 .vscode/
 .idea/
 .DS_Store
