@@ -3,9 +3,20 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from django.views.generic import TemplateView
 from apps.users import views as user_views
 
 urlpatterns = [
+    # ── PWA ───────────────────────────────────────────────────────────────────
+    path('manifest.json', TemplateView.as_view(
+        template_name='pwa/manifest.json',
+        content_type='application/json',
+    ), name='manifest'),
+    path('sw.js', TemplateView.as_view(
+        template_name='pwa/sw.js',
+        content_type='application/javascript',
+    ), name='sw'),
+
     path('admin/', admin.site.urls),
     path('', user_views.landing, name='landing'),
     path('dashboard/', user_views.dashboard, name='dashboard'),
