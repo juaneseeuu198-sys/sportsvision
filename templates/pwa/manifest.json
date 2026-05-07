@@ -10,6 +10,7 @@
   "background_color": "#0b0c18",
   "lang": "es",
   "categories": ["health", "fitness", "sports"],
+  "permissions": ["camera", "storage"],
   "icons": [
     {
       "src": "/static/images/logo.png",
