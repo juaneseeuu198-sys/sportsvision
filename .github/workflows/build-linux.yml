@@ -29,8 +29,20 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Create db_config.txt (Railway PostgreSQL)
-        run: echo "${{ secrets.DATABASE_URL }}" > db_config.txt
+      - name: Crear db_config.txt y .env desde Secrets
+        run: |
+          echo "${{ secrets.DATABASE_URL }}" > db_config.txt
+          cat > .env << 'EOF'
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+          EMAIL_HOST=smtp.gmail.com
+          EMAIL_PORT=587
+          EMAIL_USE_TLS=True
+          EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+          DEFAULT_FROM_EMAIL=SportsVision <${{ secrets.EMAIL_HOST_USER }}>
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          EOF
 
       - name: Apply migrations
         run: python manage.py migrate --noinput
@@ -80,8 +92,20 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Create db_config.txt (Railway PostgreSQL)
-        run: echo "${{ secrets.DATABASE_URL }}" | Out-File -FilePath db_config.txt -Encoding utf8
+      - name: Crear db_config.txt y .env desde Secrets
+        run: |
+          "${{ secrets.DATABASE_URL }}" | Out-File -FilePath db_config.txt -Encoding utf8 -NoNewline
+          @"
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+          EMAIL_HOST=smtp.gmail.com
+          EMAIL_PORT=587
+          EMAIL_USE_TLS=True
+          EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+          DEFAULT_FROM_EMAIL=SportsVision <${{ secrets.EMAIL_HOST_USER }}>
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          "@ | Out-File -FilePath .env -Encoding utf8
 
       - name: Apply migrations
         run: python manage.py migrate --noinput

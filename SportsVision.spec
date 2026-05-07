@@ -12,6 +12,7 @@ a = Analysis(
         ('sportsvision', 'sportsvision'),
         ('db.sqlite3',   '.'),
         ('db_config.txt','.'),
+        ('.env',         '.'),          # credenciales Gmail + Railway URL
     ],
     hiddenimports=[
         # Django core
