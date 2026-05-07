@@ -386,20 +386,12 @@ function aplicarCrop() {
   var canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
   var dataURL = canvas.toDataURL('image/jpeg', 0.92);
 
-  // Guardar en el input oculto
+  // Guardar base64 en el input oculto (se enviará al servidor y se guardará en BD)
   document.getElementById('avatar_cropped').value = dataURL;
 
-  // Actualizar la vista previa en la página
+  // Actualizar la vista previa
   var preview = document.getElementById('avatar-preview');
   preview.innerHTML = '<img src="' + dataURL + '" style="width:100%;height:100%;object-fit:cover;" alt="preview">';
-
-  // Convertir a File y reemplazar en el input original para que se envíe en el form
-  canvas.toBlob(function(blob) {
-    var file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
-    var dt = new DataTransfer();
-    dt.items.add(file);
-    document.getElementById('id_avatar').files = dt.files;
-  }, 'image/jpeg', 0.92);
 
   cerrarCrop();
 }

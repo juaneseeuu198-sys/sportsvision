@@ -574,12 +574,11 @@
   </div>
 </div>
 
-<!-- Formulario oculto para guardar la imagen recortada -->
+<!-- Formulario oculto para guardar la imagen recortada (base64 → BD) -->
 <form method="post" action="{% url 'editar_perfil' %}" id="form-avatar-crop"
       enctype="multipart/form-data" style="display:none;">
   {% csrf_token %}
-  <input type="hidden" name="avatar_cropped_data" id="avatar_cropped_data">
-  <input type="file" name="avatar" id="crop-file-hidden">
+  <input type="hidden" name="avatar_cropped" id="avatar_cropped">
 </form>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
@@ -596,22 +595,32 @@ function abrirCropDesdeModal() {
   document.getElementById('avatar-file-input').click();
 }
 
-// Cuando se selecciona un archivo → GIF directo, otros al cropper
+// Selección de archivo → GIF en base64 directo, otros al cropper
 document.getElementById('avatar-file-input').addEventListener('change', function(e) {
   var file = e.target.files[0];
   if (!file) return;
 
-  if (file.type === 'image/gif') {
-    // GIF: subir directo sin cropper para preservar la animación
-    var dt = new DataTransfer();
-    dt.items.add(file);
-    document.getElementById('crop-file-hidden').files = dt.files;
-    document.getElementById('form-avatar-crop').submit();
+  // Límite 5 MB
+  if (file.size > 5 * 1024 * 1024) {
+    alert('La imagen no puede superar 5 MB.');
     this.value = '';
     return;
   }
 
   var reader = new FileReader();
+
+  if (file.type === 'image/gif') {
+    // GIF: base64 directo → guarda en BD, preserva animación
+    reader.onload = function(ev) {
+      document.getElementById('avatar_cropped').value = ev.target.result;
+      document.getElementById('form-avatar-crop').submit();
+    };
+    reader.readAsDataURL(file);
+    this.value = '';
+    return;
+  }
+
+  // Foto normal → abrir cropper
   reader.onload = function(ev) {
     var img = document.getElementById('crop-image');
     img.src = ev.target.result;
@@ -646,15 +655,12 @@ document.getElementById('zoom-slider').addEventListener('input', function() {
 
 function aplicarCrop() {
   if (!cropper) return;
+  // Usar toDataURL (síncrono) → no necesita DataTransfer, funciona en todos los móviles
   var canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
-  canvas.toBlob(function(blob) {
-    var file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
-    var dt = new DataTransfer();
-    dt.items.add(file);
-    // Poner el archivo en el input hidden del form oculto
-    document.getElementById('crop-file-hidden').files = dt.files;
-    document.getElementById('form-avatar-crop').submit();
-  }, 'image/jpeg', 0.92);
+  var dataURL = canvas.toDataURL('image/jpeg', 0.92);
+  document.getElementById('avatar_cropped').value = dataURL;
+  cerrarCrop();
+  document.getElementById('form-avatar-crop').submit();
 }
 
 function cerrarCrop() {
