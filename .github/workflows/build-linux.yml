@@ -29,32 +29,25 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Crear db_config.txt y .env desde Secrets
+      - name: Crear db_config.txt y .env para bundlear en el ejecutable
         run: |
-          echo "${{ secrets.DATABASE_URL }}" > db_config.txt
-          cat > .env << 'EOF'
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-          EMAIL_HOST=smtp.gmail.com
-          EMAIL_PORT=587
-          EMAIL_USE_TLS=True
-          EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
-          EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
-          DEFAULT_FROM_EMAIL=SportsVision <${{ secrets.EMAIL_HOST_USER }}>
-          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-          EOF
+          printf '%s' "${{ secrets.DATABASE_URL }}" > db_config.txt
+          printf 'DATABASE_URL=%s\nEMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend\nEMAIL_HOST=smtp.gmail.com\nEMAIL_PORT=587\nEMAIL_USE_TLS=True\nEMAIL_HOST_USER=%s\nEMAIL_HOST_PASSWORD=%s\nDEFAULT_FROM_EMAIL=SportsVision <%s>\nFRONTEND_URL=%s\n' \
+            "${{ secrets.DATABASE_URL }}" \
+            "${{ secrets.EMAIL_HOST_USER }}" \
+            "${{ secrets.EMAIL_HOST_PASSWORD }}" \
+            "${{ secrets.EMAIL_HOST_USER }}" \
+            "${{ secrets.FRONTEND_URL }}" > .env
 
-      - name: Apply migrations
+      - name: Migrations con SQLite local (para el build del .exe)
         run: python manage.py migrate --noinput
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Seed exercises
+      - name: Seed exercises en SQLite local
         run: python manage.py seed_exercises
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Collect static files
         run: python manage.py collectstatic --noinput
@@ -92,32 +85,21 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Crear db_config.txt y .env desde Secrets
+      - name: Crear db_config.txt y .env para bundlear en el ejecutable
         run: |
-          "${{ secrets.DATABASE_URL }}" | Out-File -FilePath db_config.txt -Encoding utf8 -NoNewline
-          @"
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-          EMAIL_HOST=smtp.gmail.com
-          EMAIL_PORT=587
-          EMAIL_USE_TLS=True
-          EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
-          EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
-          DEFAULT_FROM_EMAIL=SportsVision <${{ secrets.EMAIL_HOST_USER }}>
-          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-          "@ | Out-File -FilePath .env -Encoding utf8
+          [System.IO.File]::WriteAllText("db_config.txt", "${{ secrets.DATABASE_URL }}")
+          $envContent = "DATABASE_URL=${{ secrets.DATABASE_URL }}`nEMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend`nEMAIL_HOST=smtp.gmail.com`nEMAIL_PORT=587`nEMAIL_USE_TLS=True`nEMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}`nEMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}`nDEFAULT_FROM_EMAIL=SportsVision <${{ secrets.EMAIL_HOST_USER }}>`nFRONTEND_URL=${{ secrets.FRONTEND_URL }}"
+          [System.IO.File]::WriteAllText(".env", $envContent)
 
-      - name: Apply migrations
+      - name: Migrations con SQLite local (para el build del .exe)
         run: python manage.py migrate --noinput
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Seed exercises
+      - name: Seed exercises en SQLite local
         run: python manage.py seed_exercises
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Collect static files
         run: python manage.py collectstatic --noinput
