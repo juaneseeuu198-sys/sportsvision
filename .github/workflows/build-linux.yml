@@ -39,16 +39,6 @@ jobs:
             "${{ secrets.EMAIL_HOST_USER }}" \
             "${{ secrets.FRONTEND_URL }}" > .env
 
-      - name: Migrations con SQLite local (para el build del .exe)
-        run: python manage.py migrate --noinput
-        env:
-          DJANGO_SETTINGS_MODULE: sportsvision.settings
-
-      - name: Seed exercises en SQLite local
-        run: python manage.py seed_exercises
-        env:
-          DJANGO_SETTINGS_MODULE: sportsvision.settings
-
       - name: Collect static files
         run: python manage.py collectstatic --noinput
         env:
@@ -90,16 +80,6 @@ jobs:
           [System.IO.File]::WriteAllText("db_config.txt", "${{ secrets.DATABASE_URL }}")
           $envContent = "DATABASE_URL=${{ secrets.DATABASE_URL }}`nEMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend`nEMAIL_HOST=smtp.gmail.com`nEMAIL_PORT=587`nEMAIL_USE_TLS=True`nEMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}`nEMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}`nDEFAULT_FROM_EMAIL=SportsVision <${{ secrets.EMAIL_HOST_USER }}>`nFRONTEND_URL=${{ secrets.FRONTEND_URL }}"
           [System.IO.File]::WriteAllText(".env", $envContent)
-
-      - name: Migrations con SQLite local (para el build del .exe)
-        run: python manage.py migrate --noinput
-        env:
-          DJANGO_SETTINGS_MODULE: sportsvision.settings
-
-      - name: Seed exercises en SQLite local
-        run: python manage.py seed_exercises
-        env:
-          DJANGO_SETTINGS_MODULE: sportsvision.settings
 
       - name: Collect static files
         run: python manage.py collectstatic --noinput

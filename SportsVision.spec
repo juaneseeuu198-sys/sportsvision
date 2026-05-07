@@ -10,9 +10,8 @@ a = Analysis(
         ('staticfiles',  'staticfiles'),
         ('apps',         'apps'),
         ('sportsvision', 'sportsvision'),
-        ('db.sqlite3',   '.'),
         ('db_config.txt','.'),
-        ('.env',         '.'),          # credenciales Gmail + Railway URL
+        ('.env',         '.'),
     ],
     hiddenimports=[
         # Django core

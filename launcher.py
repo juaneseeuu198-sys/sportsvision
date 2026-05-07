@@ -1,40 +1,25 @@
 """
 Punto de entrada para SportsVision (.exe Windows / binario Linux).
-Conecta a la base de datos central de Railway y carga credenciales desde .env.
+SIEMPRE conecta a Railway PostgreSQL — sin fallback local.
 """
 import os
 import sys
 import threading
 import webbrowser
 import time
-import shutil
 
 
 def exe_dir():
-    """Carpeta donde vive el ejecutable (o el script en desarrollo)."""
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))
 
 
 def meipass():
-    """Carpeta donde PyInstaller extrae archivos internos del .exe."""
     return getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
 
 
-def user_data_dir():
-    r"""Datos del usuario: %APPDATA%\SportsVision en Windows, ~/.SportsVision en Linux."""
-    if sys.platform == 'win32':
-        base = os.environ.get('APPDATA') or os.path.expanduser('~')
-    else:
-        base = os.path.expanduser('~')
-    path = os.path.join(base, 'SportsVision')
-    os.makedirs(path, exist_ok=True)
-    return path
-
-
 def _leer_env_file(path):
-    """Carga variables de un archivo .env sin necesitar python-dotenv."""
     try:
         from dotenv import load_dotenv
         load_dotenv(path, override=False)
@@ -52,101 +37,95 @@ def _leer_env_file(path):
 
 
 def cargar_env():
-    """
-    Carga variables de entorno en orden de prioridad:
-    1. Variables ya definidas en el sistema (máxima prioridad, no se sobreescriben)
-    2. .env externo al lado del ejecutable
-    3. .env interno (bakeado dentro del .exe)
-    """
-    # .env externo (al lado del .exe)
+    # 1. .env externo (al lado del .exe, tiene prioridad)
     ext = os.path.join(exe_dir(), '.env')
     if os.path.exists(ext):
         _leer_env_file(ext)
-        print(f"[CONFIG] .env externo cargado: {ext}")
 
-    # .env interno (bundleado en el .exe por PyInstaller)
+    # 2. .env interno (bakeado en el .exe)
     interno = os.path.join(meipass(), '.env')
     if os.path.exists(interno) and interno != ext:
         _leer_env_file(interno)
-        print(f"[CONFIG] .env interno cargado")
 
 
-def setup_database():
+def obtener_database_url():
     """
-    Prioridad de conexión:
-    1. DATABASE_URL ya en el entorno (de cargar_env o del sistema)
-    2. db_config.txt externo (al lado del .exe)
-    3. db_config.txt interno (bakeado en el .exe)
-    4. SQLite local en AppData
+    Busca DATABASE_URL en orden de prioridad.
+    Retorna la URL o None si no se encuentra.
     """
-    # 1. Ya definida
+    # 1. Variable de entorno ya definida (cargada desde .env)
     if os.environ.get('DATABASE_URL'):
-        print("[DB] PostgreSQL Railway (variable de entorno)")
-        return None
+        return os.environ['DATABASE_URL']
 
     # 2. db_config.txt externo
     ext = os.path.join(exe_dir(), 'db_config.txt')
     if os.path.exists(ext):
-        db_url = open(ext, 'r', encoding='utf-8').read().strip()
-        if db_url:
-            os.environ['DATABASE_URL'] = db_url
-            print("[DB] PostgreSQL Railway (db_config.txt externo)")
-            return None
+        url = open(ext, encoding='utf-8').read().strip()
+        if url:
+            return url
 
     # 3. db_config.txt interno
     interno = os.path.join(meipass(), 'db_config.txt')
     if os.path.exists(interno):
-        db_url = open(interno, 'r', encoding='utf-8').read().strip()
-        if db_url:
-            os.environ['DATABASE_URL'] = db_url
-            print("[DB] PostgreSQL Railway (db_config.txt interno)")
-            return None
+        url = open(interno, encoding='utf-8').read().strip()
+        if url:
+            return url
 
-    # 4. SQLite local
-    data_dir  = user_data_dir()
-    db_dest   = os.path.join(data_dir, 'db.sqlite3')
-    db_origen = os.path.join(meipass(), 'db.sqlite3')
-    if not os.path.exists(db_dest) and os.path.exists(db_origen):
-        shutil.copy2(db_origen, db_dest)
-    print(f"[DB] SQLite local: {db_dest}")
-    return db_dest
+    return None
 
 
 def main():
-    # 1. Cargar credenciales (.env)
     cargar_env()
 
-    internal = meipass()
-    os.chdir(internal)
+    db_url = obtener_database_url()
 
-    # 2. Configurar base de datos
-    db_path = setup_database()
-    if db_path:
-        os.environ['SPORTSVISION_DB'] = db_path
+    if not db_url:
+        print("=" * 55)
+        print("  ERROR: No se encontró la URL de la base de datos.")
+        print("  Coloca un archivo db_config.txt al lado del .exe")
+        print("  con la URL de Railway PostgreSQL.")
+        print("=" * 55)
+        input("Presiona Enter para salir...")
+        sys.exit(1)
 
+    os.environ['DATABASE_URL'] = db_url
+
+    os.chdir(meipass())
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sportsvision.settings')
 
-    # 3. Iniciar Django
     import django
     django.setup()
+
+    # Verificar conexión a Railway antes de continuar
+    try:
+        from django.db import connection
+        connection.ensure_connection()
+        print("[DB] ✓ Conectado a Railway PostgreSQL")
+    except Exception as e:
+        print("=" * 55)
+        print(f"  ERROR: No se pudo conectar a la base de datos.")
+        print(f"  Verifica tu conexión a internet.")
+        print(f"  Detalle: {e}")
+        print("=" * 55)
+        input("Presiona Enter para salir...")
+        sys.exit(1)
 
     from django.core.management import call_command
     print("Aplicando migraciones...")
     call_command('migrate', verbosity=0, interactive=False)
 
-    print("\n" + "="*52)
+    print("\n" + "=" * 52)
     print("  SportsVision")
-    db_tipo = "PostgreSQL Railway" if os.environ.get('DATABASE_URL') else "SQLite local"
-    print(f"  Base de datos: {db_tipo}")
+    print("  Base de datos: Railway PostgreSQL ✓")
     print("  URL: http://127.0.0.1:8000")
     print("  Cierra esta ventana para apagar.")
-    print("="*52 + "\n")
+    print("=" * 52 + "\n")
 
-    def abrir_navegador():
-        time.sleep(2)
-        webbrowser.open('http://127.0.0.1:8000')
+    threading.Thread(
+        target=lambda: (time.sleep(2), webbrowser.open('http://127.0.0.1:8000')),
+        daemon=True
+    ).start()
 
-    threading.Thread(target=abrir_navegador, daemon=True).start()
     call_command('runserver', '127.0.0.1:8000', '--noreload')
 
 
