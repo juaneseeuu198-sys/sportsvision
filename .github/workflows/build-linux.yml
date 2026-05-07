@@ -18,24 +18,90 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libpq-dev gcc
+
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Create db_config.txt placeholder
+        run: touch db_config.txt
+
       - name: Apply migrations
         run: python manage.py migrate --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: sportsvision.settings
+
+      - name: Seed exercises
+        run: python manage.py seed_exercises
+        env:
+          DJANGO_SETTINGS_MODULE: sportsvision.settings
 
       - name: Collect static files
         run: python manage.py collectstatic --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: sportsvision.settings
 
       - name: Build Linux binary
         run: pyinstaller SportsVision.spec --clean
+
+      - name: Make binary executable
+        run: chmod +x dist/SportsVision
 
       - name: Upload Linux binary
         uses: actions/upload-artifact@v4
         with:
           name: SportsVision-linux
           path: dist/SportsVision
+          retention-days: 30
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Create db_config.txt placeholder
+        run: New-Item -ItemType File -Path db_config.txt -Force
+
+      - name: Apply migrations
+        run: python manage.py migrate --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: sportsvision.settings
+
+      - name: Seed exercises
+        run: python manage.py seed_exercises
+        env:
+          DJANGO_SETTINGS_MODULE: sportsvision.settings
+
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: sportsvision.settings
+
+      - name: Build Windows executable
+        run: pyinstaller SportsVision.spec --clean
+
+      - name: Upload Windows executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: SportsVision-windows
+          path: dist/SportsVision.exe
           retention-days: 30

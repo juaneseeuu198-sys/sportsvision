@@ -3,7 +3,6 @@
 *.pyo
 dist/
 build/
-*.spec
 *.log
 db.sqlite3
 media/
@@ -15,5 +14,3 @@ env/
 .idea/
 .DS_Store
 Thumbs.db
-launcher.py
-build_exe.bat
