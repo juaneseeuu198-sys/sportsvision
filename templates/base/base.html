@@ -165,8 +165,7 @@
   </nav>
 
   <!-- Overlay para cerrar sidebar en móvil al tocar fuera -->
-  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);"
-       onclick="document.getElementById('svSidebar').classList.remove('open');this.style.display='none';"></div>
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);transition:opacity .3s;"></div>
 
   <main class="sv-main" id="svMain">
 
@@ -502,33 +501,74 @@
 (function () {
   var layout  = document.getElementById('svLayout');
   var sidebar = document.getElementById('svSidebar');
+  var overlay = document.getElementById('sidebarOverlay');
   var btnOpen = document.getElementById('btnOpenSidebar');
 
   function isMobile() { return window.innerWidth <= 768; }
 
-  function closeSidebar() {
-    sidebar.classList.add('collapsed');
-    layout.classList.add('sidebar-collapsed');
-    if (btnOpen) btnOpen.style.display = 'flex';
-  }
-
   function openSidebar() {
-    sidebar.classList.remove('collapsed');
-    layout.classList.remove('sidebar-collapsed');
-    if (btnOpen) btnOpen.style.display = 'none';
-  }
-
-  function toggleSidebar() {
     if (isMobile()) {
-      sidebar.classList.toggle('open');
+      sidebar.classList.add('open');
+      if (overlay) { overlay.style.display = 'block'; }
     } else {
-      sidebar.classList.contains('collapsed') ? openSidebar() : closeSidebar();
+      sidebar.classList.remove('collapsed');
+      layout.classList.remove('sidebar-collapsed');
+      if (btnOpen) btnOpen.style.display = 'none';
     }
   }
 
+  function closeSidebar() {
+    if (isMobile()) {
+      sidebar.classList.remove('open');
+      if (overlay) { overlay.style.display = 'none'; }
+    } else {
+      sidebar.classList.add('collapsed');
+      layout.classList.add('sidebar-collapsed');
+      if (btnOpen) btnOpen.style.display = 'flex';
+    }
+  }
+
+  function toggleSidebar() {
+    sidebar.classList.contains('open') || !sidebar.classList.contains('collapsed')
+      ? closeSidebar() : openSidebar();
+  }
+
+  // Botones
   document.getElementById('btnToggleSidebar')?.addEventListener('click', toggleSidebar);
   document.getElementById('btnToggleMobile')?.addEventListener('click', toggleSidebar);
   btnOpen?.addEventListener('click', openSidebar);
+
+  // Tap en el overlay → cerrar
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+
+  // ── Swipe gestures ────────────────────────────────────────────────
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var SWIPE_THRESHOLD   = 50;   // px mínimos para contar como swipe
+  var EDGE_ZONE         = 35;   // px desde el borde izquierdo para abrir
+
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    var deltaX = e.changedTouches[0].clientX - touchStartX;
+    var deltaY = e.changedTouches[0].clientY - touchStartY;
+
+    // Solo reconocer si el movimiento horizontal supera al vertical
+    if (Math.abs(deltaX) < Math.abs(deltaY)) return;
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
+
+    if (deltaX > 0 && touchStartX < EDGE_ZONE) {
+      // Deslizar derecha desde el borde → abrir
+      openSidebar();
+    } else if (deltaX < 0 && sidebar.classList.contains('open')) {
+      // Deslizar izquierda con sidebar abierto → cerrar
+      closeSidebar();
+    }
+  }, { passive: true });
+  // ─────────────────────────────────────────────────────────────────
 })();
 </script>
 
