@@ -146,6 +146,23 @@ class SolicitudProfesional(models.Model):
         return f"Solicitud de {self.usuario.username} ({self.estado})"
 
 
+class EmailPreVerification(models.Model):
+    """Verifica el email ANTES de crear la cuenta (paso 1 del registro)."""
+    email      = models.EmailField()
+    codigo     = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used    = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timezone.timedelta(minutes=15)
+
+    class Meta:
+        verbose_name = "Pre-verificación de email"
+
+    def __str__(self):
+        return f"PreVerif {self.email}"
+
+
 class PhoneVerificationCode(models.Model):
     user       = models.ForeignKey(User, on_delete=models.CASCADE,
                                    related_name='phone_codes')

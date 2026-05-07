@@ -2,11 +2,12 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('auth/',           views.auth_choice,        name='auth_choice'),
-    path('registro/',       views.registro,           name='registro'),
-    path('verificacion-enviada/', views.verificacion_enviada, name='verificacion_enviada'),
-    path('verificar-email/<uuid:token>/', views.verificar_email, name='verificar_email'),
-    path('bienvenido/',     views.bienvenido,         name='bienvenido'),
+    path('auth/',                    views.auth_choice,               name='auth_choice'),
+    # Registro en 3 pasos
+    path('registro/',                views.iniciar_registro,          name='iniciar_registro'),
+    path('registro/verificar/',      views.confirmar_email_registro,  name='confirmar_email_registro'),
+    path('registro/completar/',      views.registro,                  name='registro'),
+    path('bienvenido/',              views.bienvenido,                name='bienvenido'),
     path('login/',          views.login_view,         name='login'),
     path('logout/',         views.logout_view,        name='logout'),
     path('perfil/',                   views.perfil,          name='perfil'),

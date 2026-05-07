@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 import random
 from .forms import RegistroForm, LoginForm, EditarUsuarioForm, EditarPerfilForm
-from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailVerificationToken, PhoneVerificationCode
+from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailVerificationToken, PhoneVerificationCode, EmailPreVerification
 
 
 def landing(request):
@@ -24,80 +24,138 @@ def auth_choice(request):
     return render(request, 'users/auth_choice.html')
 
 
-def registro(request):
-    """Registro de nuevo usuario — crea cuenta inactiva y envía verificación."""
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        form = RegistroForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
-            # Guardar datos del perfil (segundo save del form)
-            form.save_profile(user)
-
-            token_obj = EmailVerificationToken.objects.create(user=user)
-            _enviar_correo_verificacion(request, user, token_obj)
-
-            # Guardar objetivo en sesión para usarlo tras verificar
-            request.session['pendiente_objetivo'] = form.cleaned_data.get('objetivo', '')
-            return redirect('verificacion_enviada')
-    else:
-        form = RegistroForm()
-
-    return render(request, 'users/registro.html', {'form': form})
-
-
-def _enviar_correo_verificacion(request, user, token_obj):
-    url = f"{settings.FRONTEND_URL}/usuarios/verificar-email/{token_obj.token}/"
-    html = render_to_string('users/emails/verificacion_email.html', {
-        'user': user,
-        'url': url,
+def _enviar_otp_registro(email, codigo):
+    """Envía el código OTP de verificación antes de crear la cuenta."""
+    html = render_to_string('users/emails/otp_registro_email.html', {
+        'codigo': codigo,
+        'email': email,
     })
     send_mail(
-        subject='Verifica tu cuenta en SportsVision',
-        message=f'Hola {user.username}, verifica tu cuenta en: {url}',
+        subject=f'SportsVision — Tu código de verificación: {codigo}',
+        message=f'Tu código de verificación es: {codigo}. Válido por 15 minutos.',
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
+        recipient_list=[email],
         html_message=html,
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
-def verificacion_enviada(request):
-    """Página informativa: 'Revisa tu correo'."""
-    return render(request, 'users/verificacion_enviada.html')
+def iniciar_registro(request):
+    """Paso 1 — El usuario ingresa su email y recibe un código OTP."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    error = None
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+
+        if not email:
+            error = 'Ingresa tu correo electrónico.'
+        elif User.objects.filter(email=email).exists():
+            error = 'Este correo ya tiene una cuenta. ¿Quieres iniciar sesión?'
+        else:
+            # Invalidar códigos anteriores para este email
+            EmailPreVerification.objects.filter(email=email, is_used=False).update(is_used=True)
+            codigo = str(random.randint(100000, 999999))
+            EmailPreVerification.objects.create(email=email, codigo=codigo)
+            try:
+                _enviar_otp_registro(email, codigo)
+                request.session['email_registro'] = email
+                return redirect('confirmar_email_registro')
+            except Exception as e:
+                error = f'Error al enviar el código: {e}'
+
+    return render(request, 'users/inicio_registro.html', {'error': error})
 
 
-def verificar_email(request, token):
-    """Activa la cuenta cuando el usuario hace clic en el enlace del correo."""
-    token_obj = get_object_or_404(EmailVerificationToken, token=token)
+def confirmar_email_registro(request):
+    """Paso 2 — El usuario ingresa el código OTP recibido por correo."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
 
-    if token_obj.is_used:
-        messages.error(request, 'Este enlace de verificación ya fue utilizado.')
-        return redirect('login')
+    email = request.session.get('email_registro')
+    if not email:
+        return redirect('iniciar_registro')
 
-    if token_obj.is_expired():
-        messages.error(request, 'El enlace de verificación expiró. Regístrate nuevamente.')
-        token_obj.user.delete()
-        return redirect('registro')
+    error = None
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
 
-    user = token_obj.user
-    user.is_active = True
-    user.save()
-    token_obj.is_used = True
-    token_obj.save()
+        if accion == 'reenviar':
+            EmailPreVerification.objects.filter(email=email, is_used=False).update(is_used=True)
+            codigo = str(random.randint(100000, 999999))
+            EmailPreVerification.objects.create(email=email, codigo=codigo)
+            try:
+                _enviar_otp_registro(email, codigo)
+                messages.success(request, 'Código reenviado.')
+            except Exception as e:
+                error = f'Error al reenviar: {e}'
 
-    login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
+        elif accion == 'verificar':
+            codigo_ingresado = request.POST.get('codigo', '').strip()
+            preverif = EmailPreVerification.objects.filter(
+                email=email, is_used=False
+            ).order_by('-created_at').first()
 
-    objetivo = request.session.pop('pendiente_objetivo', '')
-    if objetivo:
-        from apps.routines.views import generar_plan_inicial
-        generar_plan_inicial(user, objetivo)
+            if not preverif:
+                error = 'No hay código pendiente. Solicita uno nuevo.'
+            elif preverif.is_expired():
+                error = 'El código expiró. Haz clic en "Reenviar código".'
+            elif preverif.codigo != codigo_ingresado:
+                error = 'Código incorrecto. Inténtalo de nuevo.'
+            else:
+                preverif.is_used = True
+                preverif.save()
+                request.session['email_verificado'] = email
+                request.session.pop('email_registro', None)
+                return redirect('registro')
 
-    return redirect('bienvenido')
+    return render(request, 'users/confirmar_email_registro.html', {
+        'email': email,
+        'error': error,
+    })
+
+
+def registro(request):
+    """Paso 3 — Completar los datos de la cuenta (email ya verificado)."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    email_verificado = request.session.get('email_verificado')
+    if not email_verificado:
+        return redirect('iniciar_registro')
+
+    if request.method == 'POST':
+        form = RegistroForm(request.POST, initial={'email': email_verificado})
+        # Forzar el email verificado aunque el usuario lo cambie en el POST
+        data = request.POST.copy()
+        data['email'] = email_verificado
+        form = RegistroForm(data)
+
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.email = email_verificado
+            user.is_active = True
+            user.save()
+            form.save_profile(user)
+
+            request.session.pop('email_verificado', None)
+
+            login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
+
+            objetivo = form.cleaned_data.get('objetivo', '')
+            if objetivo:
+                from apps.routines.views import generar_plan_inicial
+                generar_plan_inicial(user, objetivo)
+
+            return redirect('bienvenido')
+    else:
+        form = RegistroForm(initial={'email': email_verificado})
+
+    return render(request, 'users/registro.html', {
+        'form': form,
+        'email_verificado': email_verificado,
+    })
 
 
 @login_required
