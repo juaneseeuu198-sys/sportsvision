@@ -832,22 +832,21 @@ def terminos_condiciones(request):
 # VERIFICACIÓN DE TELÉFONO
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _enviar_sms(telefono, codigo):
-    """Envía el código por SMS usando Twilio, o lo imprime en consola si no hay config."""
-    account_sid = settings.TWILIO_ACCOUNT_SID
-    auth_token  = settings.TWILIO_AUTH_TOKEN
-    from_number = settings.TWILIO_PHONE_NUMBER
-
-    if account_sid and auth_token and from_number:
-        from twilio.rest import Client
-        client = Client(account_sid, auth_token)
-        client.messages.create(
-            body=f'SportsVision: tu código de verificación es {codigo}. Válido por 10 minutos.',
-            from_=from_number,
-            to=telefono,
-        )
-    else:
-        print(f'[SMS] Código para {telefono}: {codigo}')
+def _enviar_codigo_verificacion(user, telefono, codigo):
+    """Envía el código por correo electrónico (Gmail ya configurado)."""
+    html = render_to_string('users/emails/codigo_verificacion_email.html', {
+        'user': user,
+        'codigo': codigo,
+        'telefono': telefono,
+    })
+    send_mail(
+        subject=f'SportsVision — Tu código de verificación: {codigo}',
+        message=f'Tu código de verificación de SportsVision es: {codigo}. Válido por 10 minutos.',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        html_message=html,
+        fail_silently=False,
+    )
 
 
 @login_required
@@ -878,10 +877,10 @@ def verificar_telefono(request):
             PhoneVerificationCode.objects.create(user=request.user, codigo=codigo)
 
             try:
-                _enviar_sms(telefono, codigo)
-                messages.success(request, f'Código enviado a {telefono}.')
+                _enviar_codigo_verificacion(request.user, telefono, codigo)
+                messages.success(request, f'Código enviado a {request.user.email}.')
             except Exception as e:
-                messages.error(request, f'Error al enviar SMS: {e}')
+                messages.error(request, f'Error al enviar el código: {e}')
 
             return render(request, 'users/verificar_telefono.html', {
                 'profile': profile, 'esperando_codigo': True,

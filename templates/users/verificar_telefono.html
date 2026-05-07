@@ -143,9 +143,9 @@
     {% else %}
       <!-- PASO 2: ingresar código -->
       <p class="vt-sub">
-        Enviamos un código de 6 dígitos a
-        <strong style="color:var(--sv-text);">{{ profile.telefono }}</strong>.
-        Ingrésalo abajo antes de que expire.
+        Enviamos un código de <strong style="color:var(--sv-text);">6 dígitos</strong>
+        al correo <strong style="color:#00d4aa;">{{ request.user.email }}</strong>.
+        Ingrésalo abajo antes de que expire (10 min).
       </p>
 
       <form method="post" id="otp-form">
