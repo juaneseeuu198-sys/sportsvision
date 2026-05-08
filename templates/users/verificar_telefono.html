@@ -143,8 +143,8 @@
     {% else %}
       <!-- PASO 2: ingresar código -->
       <p class="vt-sub">
-        Enviamos un código de <strong style="color:var(--sv-text);">6 dígitos</strong>
-        al correo <strong style="color:#00d4aa;">{{ request.user.email }}</strong>.
+        Enviamos un SMS con el código de <strong style="color:var(--sv-text);">6 dígitos</strong>
+        al número <strong style="color:#00d4aa;">{{ profile.telefono }}</strong>.
         Ingrésalo abajo antes de que expire (10 min).
       </p>
 

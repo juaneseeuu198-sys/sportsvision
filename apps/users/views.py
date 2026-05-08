@@ -895,20 +895,35 @@ def terminos_condiciones(request):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _enviar_codigo_verificacion(user, telefono, codigo):
-    """Envía el código por correo electrónico (Gmail ya configurado)."""
-    html = render_to_string('users/emails/codigo_verificacion_email.html', {
-        'user': user,
-        'codigo': codigo,
-        'telefono': telefono,
-    })
-    send_mail(
-        subject=f'SportsVision — Tu código de verificación: {codigo}',
-        message=f'Tu código de verificación de SportsVision es: {codigo}. Válido por 10 minutos.',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=html,
-        fail_silently=False,
-    )
+    """
+    Envía el código de verificación por SMS usando Twilio.
+    Si Twilio no está configurado, cae de vuelta a email.
+    """
+    sid   = getattr(settings, 'TWILIO_ACCOUNT_SID',  '').strip()
+    token = getattr(settings, 'TWILIO_AUTH_TOKEN',   '').strip()
+    from_ = getattr(settings, 'TWILIO_PHONE_NUMBER', '').strip()
+
+    if sid and token and from_:
+        from twilio.rest import Client
+        client = Client(sid, token)
+        client.messages.create(
+            body=f'SportsVision: tu código de verificación es {codigo}. Válido 10 min.',
+            from_=from_,
+            to=telefono,
+        )
+    else:
+        # Fallback a email si Twilio no está configurado
+        html = render_to_string('users/emails/codigo_verificacion_email.html', {
+            'user': user, 'codigo': codigo, 'telefono': telefono,
+        })
+        send_mail(
+            subject=f'SportsVision — Tu código: {codigo}',
+            message=f'Tu código de verificación es: {codigo}. Válido 10 minutos.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html,
+            fail_silently=False,
+        )
 
 
 @login_required
