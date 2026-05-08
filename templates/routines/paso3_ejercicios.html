@@ -231,36 +231,65 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.7);
+  background: rgba(0,0,0,.75);
   z-index: 100;
+  backdrop-filter: blur(2px);
 }
 .ae-sheet-backdrop.open { display: block; }
 
 .ae-sheet {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  background: #1c1c1e;
-  border-radius: 20px 20px 0 0;
+  background: #18181b;
+  border-radius: 24px 24px 0 0;
+  border-top: 1px solid rgba(255,255,255,.08);
   z-index: 101;
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
   transform: translateY(100%);
-  transition: transform .3s ease;
+  transition: transform .32s cubic-bezier(.4,0,.2,1);
 }
 .ae-sheet.open { transform: translateY(0); }
 
 .ae-sheet-handle {
-  width: 36px; height: 4px;
-  background: #555;
+  width: 40px; height: 4px;
+  background: #3f3f46;
   border-radius: 2px;
-  margin: 12px auto 4px;
+  margin: 14px auto 0;
+  flex-shrink: 0;
 }
-.ae-sheet-title {
+.ae-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  flex-shrink: 0;
+}
+.ae-sheet-title-text {
   color: #fff;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
-  text-align: center;
-  padding: 8px 16px 14px;
+  letter-spacing: .2px;
+}
+.ae-sheet-clear {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.ae-sheet-clear:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+.ae-sheet-list {
+  overflow-y: auto;
+  flex: 1;
+  padding-bottom: 20px;
 }
 .ae-sheet-row {
   display: flex;
@@ -268,22 +297,52 @@
   gap: 14px;
   padding: 12px 20px;
   cursor: pointer;
-  border-top: 1px solid #2c2c2e;
+  transition: background .12s;
+  border-bottom: 1px solid rgba(255,255,255,.04);
 }
-.ae-sheet-row:active { background: #2c2c2e; }
+.ae-sheet-row:active { background: rgba(255,255,255,.04); }
+.ae-sheet-row.selected { background: rgba(107,114,128,.12); }
+
 .ae-sheet-thumb {
-  width: 52px; height: 52px;
+  width: 50px; height: 50px;
   border-radius: 50%;
-  background: #fff;
+  background: #27272a;
   overflow: hidden;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background .15s;
 }
+.ae-sheet-row.selected .ae-sheet-thumb { background: #3f3f46; }
 .ae-sheet-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.ae-sheet-label { color: #fff; font-size: 15px; font-weight: 500; flex: 1; }
-.ae-sheet-check { color: #fff; font-size: 18px; }
+.ae-sheet-label {
+  color: #e4e4e7;
+  font-size: 15px;
+  font-weight: 500;
+  flex: 1;
+}
+.ae-sheet-row.selected .ae-sheet-label { color: #fff; font-weight: 600; }
+
+/* Toggle circle */
+.ae-sheet-toggle {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid #3f3f46;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.ae-sheet-row.selected .ae-sheet-toggle {
+  background: #6b7280;
+  border-color: #6b7280;
+}
+.ae-sheet-row.selected .ae-sheet-toggle::after {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
 
 /* ── Vacío ── */
 .ae-empty {
@@ -455,50 +514,45 @@
 <!-- BOTTOM SHEET: MÚSCULOS -->
 <div class="ae-sheet" id="sheet-musculos">
   <div class="ae-sheet-handle"></div>
-  <div class="ae-sheet-title">Grupo Muscular</div>
-  <div class="ae-sheet-row" onclick="aplicarFiltroMusculos(null, this)">
-    <div class="ae-sheet-thumb" style="background:#2c2c2e;">
-      <i class="bi bi-person-fill" style="color:#888;font-size:22px;"></i>
-    </div>
-    <span class="ae-sheet-label">Todos los músculos</span>
-    <i class="bi bi-check2 ae-sheet-check" {% if not grupos_activos %}{% else %}style="display:none"{% endif %}></i>
+  <div class="ae-sheet-header">
+    <span class="ae-sheet-title-text">Grupo Muscular</span>
+    <button class="ae-sheet-clear" onclick="limpiarGruposSheet()">Limpiar</button>
   </div>
-  {% for g in todos_grupos %}
-  <div class="ae-sheet-row" onclick="aplicarFiltroMusculos({{ g.id }}, this)">
-    <div class="ae-sheet-thumb">
-      {% if g.imagen %}<img src="{{ g.imagen.url }}" alt="{{ g.nombre }}">
-      {% else %}<i class="bi bi-person" style="color:#888;font-size:20px;"></i>
-      {% endif %}
+  <div class="ae-sheet-list">
+    {% for g in todos_grupos %}
+    <div class="ae-sheet-row" id="sg-{{ g.id }}" onclick="toggleGrupo({{ g.id }}, '{{ g.nombre }}', this)">
+      <div class="ae-sheet-thumb">
+        {% if g.imagen %}<img src="{{ g.imagen.url }}" alt="{{ g.nombre }}">
+        {% else %}<i class="bi bi-person-fill" style="color:#6b7280;font-size:20px;"></i>
+        {% endif %}
+      </div>
+      <span class="ae-sheet-label">{{ g.nombre }}</span>
+      <div class="ae-sheet-toggle"></div>
     </div>
-    <span class="ae-sheet-label">{{ g.nombre }}</span>
-    <i class="bi bi-check2 ae-sheet-check" {% if g.id|stringformat:"s" not in grupos_activos %}style="display:none"{% endif %}></i>
+    {% endfor %}
   </div>
-  {% endfor %}
 </div>
 
 <!-- BOTTOM SHEET: EQUIPO -->
 <div class="ae-sheet" id="sheet-equipos">
   <div class="ae-sheet-handle"></div>
-  <div class="ae-sheet-title">Equipo</div>
-  <div class="ae-sheet-row" onclick="aplicarFiltroEquipos(null, this)">
-    <div class="ae-sheet-thumb" style="background:#2c2c2e;">
-      <i class="bi bi-three-dots" style="color:#888;font-size:22px;"></i>
-    </div>
-    <span class="ae-sheet-label">Todo el equipo</span>
-    <i class="bi bi-check2 ae-sheet-check" {% if not equipos_activos %}{% else %}style="display:none"{% endif %}></i>
+  <div class="ae-sheet-header">
+    <span class="ae-sheet-title-text">Equipamiento</span>
+    <button class="ae-sheet-clear" onclick="limpiarEquiposSheet()">Limpiar</button>
   </div>
-  {% for eq in todos_equipos %}
-  <div class="ae-sheet-row" onclick="aplicarFiltroEquipos({{ eq.id }}, this)">
-    <div class="ae-sheet-thumb">
-      {% if eq.imagen %}<img src="{{ eq.imagen.url }}" alt="{{ eq.nombre }}">
-      {% elif eq.icono %}<i class="{{ eq.icono }}" style="color:#888;font-size:20px;"></i>
-      {% else %}<i class="bi bi-gear" style="color:#888;font-size:20px;"></i>
-      {% endif %}
+  <div class="ae-sheet-list">
+    {% for eq in todos_equipos %}
+    <div class="ae-sheet-row" id="se-{{ eq.id }}" onclick="toggleEquipo({{ eq.id }}, '{{ eq.get_nombre_display }}', this)">
+      <div class="ae-sheet-thumb">
+        {% if eq.imagen %}<img src="{{ eq.imagen.url }}" alt="{{ eq.nombre }}">
+        {% else %}<i class="bi bi-dumbbell" style="color:#6b7280;font-size:20px;"></i>
+        {% endif %}
+      </div>
+      <span class="ae-sheet-label">{{ eq.get_nombre_display }}</span>
+      <div class="ae-sheet-toggle"></div>
     </div>
-    <span class="ae-sheet-label">{{ eq.nombre }}</span>
-    <i class="bi bi-check2 ae-sheet-check" {% if eq.id|stringformat:"s" not in equipos_activos %}style="display:none"{% endif %}></i>
+    {% endfor %}
   </div>
-  {% endfor %}
 </div>
 
 <!-- MODAL: PROGRAMAR DÍA -->
@@ -541,10 +595,8 @@
 <script>
 // ── Estado de filtros y selección ──────────────────────────────────────────
 var seleccionados  = new Set();
-var equipoActivo   = null;   // id numérico o null = todos
-var grupoActivo    = null;   // id numérico o null = todos
-var equipoNombre   = '';
-var grupoNombre    = '';
+var equiposActivos = new Set();   // múltiples equipos seleccionados
+var gruposActivos  = new Set();   // múltiples grupos seleccionados
 
 // ── Selección de ejercicios ────────────────────────────────────────────────
 function toggleEjercicio(id, row) {
@@ -566,57 +618,103 @@ function toggleEjercicio(id, row) {
   document.getElementById('btn-guardar').disabled  = seleccionados.size === 0;
 }
 
-// ── Filtrado central (búsqueda + equipo + grupo) ───────────────────────────
+// ── Filtrado central ────────────────────────────────────────────────────────
 function aplicarFiltros() {
-  var q       = (document.getElementById('ae-search').value || '').toLowerCase();
+  var q = (document.getElementById('ae-search').value || '').toLowerCase();
   var visible = 0;
 
   document.querySelectorAll('.ae-item').forEach(function(el) {
     var nombre  = el.dataset.nombre  || '';
     var musculo = el.dataset.musculo || '';
     var grupoId = el.dataset.grupoId || '';
-    var equipos = el.dataset.equipos ? el.dataset.equipos.split(',') : [];
+    var equipos = el.dataset.equipos ? el.dataset.equipos.split(',').filter(Boolean) : [];
 
     var okSearch = !q || nombre.includes(q) || musculo.includes(q);
-    var okEquipo = !equipoActivo || equipos.indexOf(String(equipoActivo)) !== -1;
-    var okGrupo  = !grupoActivo  || grupoId === String(grupoActivo);
+    var okEquipo = equiposActivos.size === 0 || equipos.some(function(e){ return equiposActivos.has(Number(e)); });
+    var okGrupo  = gruposActivos.size  === 0 || (grupoId && gruposActivos.has(Number(grupoId)));
 
     var show = okSearch && okEquipo && okGrupo;
     el.style.display = show ? '' : 'none';
     if (show && el.classList.contains('ae-exercise-row')) visible++;
   });
 
-  // Ocultar recientes si hay búsqueda o filtro activo
+  var hayFiltro = q || equiposActivos.size > 0 || gruposActivos.size > 0;
   var secRec = document.getElementById('seccion-recientes');
-  if (secRec) secRec.style.display = (q || equipoActivo || grupoActivo) ? 'none' : '';
-
+  if (secRec) secRec.style.display = hayFiltro ? 'none' : '';
   document.getElementById('sin-resultados').style.display = visible === 0 ? '' : 'none';
   actualizarChips();
+  actualizarBotonesFiltro();
 }
 
-// ── Chips de filtros activos ────────────────────────────────────────────────
+// ── Chips ────────────────────────────────────────────────────────────────────
 function actualizarChips() {
   var wrap = document.getElementById('active-filters');
   wrap.innerHTML = '';
-  if (equipoActivo) {
-    wrap.innerHTML += '<div class="ae-chip" onclick="limpiarEquipo()">'+equipoNombre+' <i class="bi bi-x"></i></div>';
-  }
-  if (grupoActivo) {
-    wrap.innerHTML += '<div class="ae-chip" onclick="limpiarGrupo()">'+grupoNombre+' <i class="bi bi-x"></i></div>';
-  }
+  document.querySelectorAll('#sheet-equipos .ae-sheet-row.selected').forEach(function(row){
+    var nombre = row.querySelector('.ae-sheet-label').textContent.trim();
+    var id = row.id.replace('se-','');
+    wrap.innerHTML += '<div class="ae-chip" onclick="toggleEquipoById('+id+')">'+nombre+' <i class="bi bi-x"></i></div>';
+  });
+  document.querySelectorAll('#sheet-musculos .ae-sheet-row.selected').forEach(function(row){
+    var nombre = row.querySelector('.ae-sheet-label').textContent.trim();
+    var id = row.id.replace('sg-','');
+    wrap.innerHTML += '<div class="ae-chip" onclick="toggleGrupoById('+id+')">'+nombre+' <i class="bi bi-x"></i></div>';
+  });
 }
 
-function limpiarEquipo() {
-  equipoActivo = null; equipoNombre = '';
-  // Resetear checkmarks en el sheet
-  document.querySelectorAll('#sheet-equipos .ae-sheet-check').forEach(function(ic,i){ ic.style.display = i===0 ? '' : 'none'; });
+function actualizarBotonesFiltro() {
+  var btnE = document.getElementById('btn-equipos');
+  var btnM = document.getElementById('btn-musculos');
+  btnE.classList.toggle('active', equiposActivos.size > 0);
+  btnM.classList.toggle('active', gruposActivos.size  > 0);
+  var cntE = btnE.querySelector('.ae-filter-count');
+  var cntM = btnM.querySelector('.ae-filter-count');
+  if (equiposActivos.size > 0) {
+    if (!cntE) { cntE = document.createElement('span'); cntE.className='ae-filter-count'; btnE.appendChild(cntE); }
+    cntE.textContent = equiposActivos.size;
+  } else if (cntE) cntE.remove();
+  if (gruposActivos.size > 0) {
+    if (!cntM) { cntM = document.createElement('span'); cntM.className='ae-filter-count'; btnM.appendChild(cntM); }
+    cntM.textContent = gruposActivos.size;
+  } else if (cntM) cntM.remove();
+}
+
+// ── Toggle selección en sheets ───────────────────────────────────────────────
+function toggleEquipo(id, nombre, row) {
+  row.classList.toggle('selected');
+  if (equiposActivos.has(id)) equiposActivos.delete(id);
+  else equiposActivos.add(id);
   aplicarFiltros();
 }
-function limpiarGrupo() {
-  grupoActivo = null; grupoNombre = '';
-  document.querySelectorAll('#sheet-musculos .ae-sheet-check').forEach(function(ic,i){ ic.style.display = i===0 ? '' : 'none'; });
+function toggleEquipoById(id) {
+  var row = document.getElementById('se-'+id);
+  if (row) { row.classList.remove('selected'); equiposActivos.delete(id); aplicarFiltros(); }
+}
+function toggleGrupo(id, nombre, row) {
+  row.classList.toggle('selected');
+  if (gruposActivos.has(id)) gruposActivos.delete(id);
+  else gruposActivos.add(id);
   aplicarFiltros();
 }
+function toggleGrupoById(id) {
+  var row = document.getElementById('sg-'+id);
+  if (row) { row.classList.remove('selected'); gruposActivos.delete(id); aplicarFiltros(); }
+}
+
+function limpiarEquiposSheet() {
+  equiposActivos.clear();
+  document.querySelectorAll('#sheet-equipos .ae-sheet-row').forEach(function(r){ r.classList.remove('selected'); });
+  aplicarFiltros();
+}
+function limpiarGruposSheet() {
+  gruposActivos.clear();
+  document.querySelectorAll('#sheet-musculos .ae-sheet-row').forEach(function(r){ r.classList.remove('selected'); });
+  aplicarFiltros();
+}
+
+// Aliases para retrocompatibilidad
+function limpiarEquipo()  { limpiarEquiposSheet(); }
+function limpiarGrupo()   { limpiarGruposSheet();  }
 
 // ── Bottom sheets ──────────────────────────────────────────────────────────
 function abrirSheet(id) {
@@ -628,38 +726,6 @@ function cerrarSheets() {
   document.querySelectorAll('.ae-sheet').forEach(function(s){ s.classList.remove('open'); });
 }
 
-function aplicarFiltroEquipos(id, row) {
-  // Actualizar checkmarks en el sheet
-  document.querySelectorAll('#sheet-equipos .ae-sheet-check').forEach(function(ic){ ic.style.display = 'none'; });
-  var check = row.querySelector('.ae-sheet-check');
-  if (check) check.style.display = '';
-
-  if (id) {
-    equipoActivo  = id;
-    equipoNombre  = row.querySelector('.ae-sheet-label').textContent.trim();
-  } else {
-    equipoActivo  = null;
-    equipoNombre  = '';
-  }
-  cerrarSheets();
-  aplicarFiltros();
-}
-
-function aplicarFiltroMusculos(id, row) {
-  document.querySelectorAll('#sheet-musculos .ae-sheet-check').forEach(function(ic){ ic.style.display = 'none'; });
-  var check = row.querySelector('.ae-sheet-check');
-  if (check) check.style.display = '';
-
-  if (id) {
-    grupoActivo  = id;
-    grupoNombre  = row.querySelector('.ae-sheet-label').textContent.trim();
-  } else {
-    grupoActivo  = null;
-    grupoNombre  = '';
-  }
-  cerrarSheets();
-  aplicarFiltros();
-}
 
 // ── Búsqueda ──────────────────────────────────────────────────────────────
 function filtrarEjercicios() { aplicarFiltros(); }
