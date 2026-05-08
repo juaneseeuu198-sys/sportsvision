@@ -419,7 +419,7 @@ body.sv-body { background: #000 !important; }
     <form method="post" style="margin:0;">
       {% csrf_token %}
       <input type="hidden" name="action" value="terminar_entrenamiento">
-      <button type="submit" class="wk-finish-btn">Finish</button>
+      <button type="submit" class="wk-finish-btn">Finalizar</button>
     </form>
   </div>
 
@@ -477,20 +477,20 @@ body.sv-body { background: #000 !important; }
   <!-- ACTION BUTTONS -->
   <div class="ex-actions">
     <a href="{% url 'ejercicio_detalle' ejercicio_actual.ejercicio.id %}" target="_blank" class="btn-action">
-      <i class="bi bi-play-fill" style="color:#0a84ff;"></i> Guide
+      <i class="bi bi-play-fill" style="color:#0a84ff;"></i> Guía
     </a>
     <form method="post" style="margin:0;">
       {% csrf_token %}
       <input type="hidden" name="action" value="siguiente_ejercicio">
       <button type="submit" class="btn-action">
-        <i class="bi bi-arrow-repeat"></i> Skip
+        <i class="bi bi-arrow-repeat"></i> Saltar
       </button>
     </form>
     <form method="post" style="margin:0;margin-left:auto;">
       {% csrf_token %}
       <input type="hidden" name="action" value="terminar_entrenamiento">
       <button type="submit" class="btn-action delete">
-        <i class="bi bi-x-circle"></i> End
+        <i class="bi bi-x-circle"></i> Terminar
       </button>
     </form>
   </div>
@@ -569,8 +569,8 @@ body.sv-body { background: #000 !important; }
   <!-- ══ FUERZA: TABLA DE SERIES ══ -->
   <div class="sets-section" style="margin-top:8px;">
     <div class="sets-header">
-      <span>SET</span>
-      <span>PREVIOUS</span>
+      <span>SERIE</span>
+      <span>ANTERIOR</span>
       <span>KG</span>
       <span>REPS</span>
       <span></span>
@@ -608,7 +608,7 @@ body.sv-body { background: #000 !important; }
 
     <!-- Add set -->
     <button type="button" class="btn-add-set" onclick="document.getElementById('serieForm').submit()">
-      <i class="bi bi-plus-lg"></i> Add set
+      <i class="bi bi-plus-lg"></i> Agregar serie
     </button>
   </div>
   {% endif %}
@@ -619,11 +619,11 @@ body.sv-body { background: #000 !important; }
     <input type="hidden" name="action" value="siguiente_ejercicio">
     {% if es_ultimo %}
     <button type="submit" class="btn-next finish">
-      <i class="bi bi-trophy-fill me-2"></i> Finish Workout
+      <i class="bi bi-trophy-fill me-2"></i> Finalizar entrenamiento
     </button>
     {% else %}
     <button type="submit" class="btn-next">
-      Next Exercise <i class="bi bi-arrow-right ms-1"></i>
+      Siguiente ejercicio <i class="bi bi-arrow-right ms-1"></i>
     </button>
     {% endif %}
   </form>
