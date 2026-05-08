@@ -126,7 +126,7 @@
         <i class="bi bi-person-fill"></i><span>Mi Perfil</span>
       </a>
 
-      {% if user.profile.rol == 'admin_pro' %}
+      {% if user.is_superuser or user.profile.rol == 'admin_pro' %}
         {# Admin Pro: ve su panel de administración y el panel profesional #}
         <a href="{% url 'admin_pro_dashboard' %}"
            class="{% if 'admin-pro' in request.path %}active{% endif %}">

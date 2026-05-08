@@ -312,7 +312,7 @@
       <a href="{% url 'editar_perfil' %}" class="page-back-btn" style="border-color:rgba(0,212,170,0.4);color:var(--sv-green);background:rgba(0,212,170,0.1);">
         <i class="bi bi-pencil-fill"></i> Editar perfil
       </a>
-      {% if profile.rol == 'admin_pro' %}
+      {% if user.is_superuser or profile.rol == 'admin_pro' %}
         <a href="{% url 'admin_pro_dashboard' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.5);color:#7b9ffb;background:rgba(67,97,238,.15);">
           <i class="bi bi-shield-fill-check"></i> Panel Admin Pro
         </a>
