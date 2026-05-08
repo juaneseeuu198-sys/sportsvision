@@ -894,25 +894,28 @@ def terminos_condiciones(request):
 # VERIFICACIÓN DE TELÉFONO
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _twilio_verify_client():
+    """Retorna (client, service_sid) o (None, None) si no está configurado."""
+    sid     = getattr(settings, 'TWILIO_ACCOUNT_SID',      '').strip()
+    token   = getattr(settings, 'TWILIO_AUTH_TOKEN',       '').strip()
+    svc_sid = getattr(settings, 'TWILIO_VERIFY_SERVICE_SID', '').strip()
+    if sid and token and svc_sid:
+        from twilio.rest import Client
+        return Client(sid, token), svc_sid
+    return None, None
+
+
 def _enviar_codigo_verificacion(user, telefono, codigo):
     """
-    Envía el código de verificación por SMS usando Twilio.
-    Si Twilio no está configurado, cae de vuelta a email.
+    Envía OTP por SMS usando Twilio Verify.
+    Si Twilio Verify no está configurado, cae a email como respaldo.
     """
-    sid   = getattr(settings, 'TWILIO_ACCOUNT_SID',  '').strip()
-    token = getattr(settings, 'TWILIO_AUTH_TOKEN',   '').strip()
-    from_ = getattr(settings, 'TWILIO_PHONE_NUMBER', '').strip()
-
-    if sid and token and from_:
-        from twilio.rest import Client
-        client = Client(sid, token)
-        client.messages.create(
-            body=f'SportsVision: tu código de verificación es {codigo}. Válido 10 min.',
-            from_=from_,
-            to=telefono,
+    client, svc_sid = _twilio_verify_client()
+    if client:
+        client.verify.v2.services(svc_sid).verifications.create(
+            to=telefono, channel='sms'
         )
     else:
-        # Fallback a email si Twilio no está configurado
         html = render_to_string('users/emails/codigo_verificacion_email.html', {
             'user': user, 'codigo': codigo, 'telefono': telefono,
         })
@@ -939,7 +942,6 @@ def verificar_telefono(request):
                 messages.error(request, 'Ingresa un número de teléfono.')
                 return render(request, 'users/verificar_telefono.html', {'profile': profile})
 
-            # Normalizar: asegurar que tenga código de país
             if not telefono.startswith('+'):
                 telefono = '+57' + telefono.lstrip('0')
 
@@ -947,15 +949,14 @@ def verificar_telefono(request):
             profile.telefono_verificado = False
             profile.save(update_fields=['telefono', 'telefono_verificado'])
 
-            # Invalidar códigos anteriores
+            # Generar código local (solo se usa si Twilio Verify no está activo)
             PhoneVerificationCode.objects.filter(user=request.user, is_used=False).update(is_used=True)
-
             codigo = str(random.randint(100000, 999999))
             PhoneVerificationCode.objects.create(user=request.user, codigo=codigo)
 
             try:
                 _enviar_codigo_verificacion(request.user, telefono, codigo)
-                messages.success(request, f'Código enviado a {request.user.email}.')
+                messages.success(request, f'Código SMS enviado a {telefono}.')
             except Exception as e:
                 messages.error(request, f'Error al enviar el código: {e}')
 
@@ -965,6 +966,28 @@ def verificar_telefono(request):
 
         if accion == 'verificar':
             codigo_ingresado = request.POST.get('codigo', '').strip()
+
+            # Verificar con Twilio Verify si está configurado
+            client, svc_sid = _twilio_verify_client()
+            if client:
+                try:
+                    check = client.verify.v2.services(svc_sid).verification_checks.create(
+                        to=profile.telefono, code=codigo_ingresado
+                    )
+                    if check.status == 'approved':
+                        profile.telefono_verificado = True
+                        profile.save(update_fields=['telefono_verificado'])
+                        messages.success(request, '¡Teléfono verificado correctamente!')
+                        return redirect('perfil')
+                    else:
+                        messages.error(request, 'Código incorrecto. Inténtalo de nuevo.')
+                except Exception as e:
+                    messages.error(request, f'Error al verificar: {e}')
+                return render(request, 'users/verificar_telefono.html', {
+                    'profile': profile, 'esperando_codigo': True,
+                })
+
+            # Fallback: verificación local
             code_obj = PhoneVerificationCode.objects.filter(
                 user=request.user, is_used=False
             ).order_by('-created_at').first()
