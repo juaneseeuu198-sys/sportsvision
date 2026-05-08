@@ -279,6 +279,19 @@ def generar_plan_inicial(user, objetivo):
             PlanDia.objects.create(usuario=user, dia=dia, rutina=None, descanso=True)
 
 
+# ---- Set filtros desde bottom sheets ----
+@login_required
+def set_filtros(request):
+    grupos = request.GET.get('grupos', None)
+    equipos = request.GET.get('equipos', None)
+    if grupos is not None:
+        request.session['grupos_seleccionados'] = [grupos] if grupos else []
+    if equipos is not None:
+        request.session['equipos_seleccionados'] = [equipos] if equipos else []
+    from django.http import HttpResponse
+    return HttpResponse('ok')
+
+
 # ---- PASO 1: Selección de equipo ----
 @login_required
 def paso1_equipo(request):
@@ -348,8 +361,24 @@ def paso3_ejercicios(request):
         ('lunes','Lunes'), ('martes','Martes'), ('miercoles','Miércoles'),
         ('jueves','Jueves'), ('viernes','Viernes'), ('sabado','Sábado'), ('domingo','Domingo'),
     ]
+
+    # Ejercicios recientes del usuario (últimas 3 rutinas)
+    ids_recientes = (
+        EjercicioRutina.objects
+        .filter(rutina__usuario=request.user)
+        .order_by('-rutina__id')
+        .values_list('ejercicio_id', flat=True)[:20]
+    )
+    recientes = list(dict.fromkeys(ids_recientes))[:6]
+    ejercicios_recientes = Ejercicio.objects.filter(id__in=recientes)
+
     return render(request, 'routines/paso3_ejercicios.html', {
         'ejercicios': ejercicios,
+        'ejercicios_recientes': ejercicios_recientes,
+        'todos_grupos': GrupoMuscular.objects.all(),
+        'todos_equipos': Equipo.objects.all(),
+        'grupos_activos': grupos_ids,
+        'equipos_activos': equipos_ids,
         'dias_semana': dias_semana,
     })
 
