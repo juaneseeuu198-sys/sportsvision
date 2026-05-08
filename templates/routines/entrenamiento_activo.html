@@ -3,288 +3,302 @@
 
 {% block extra_css %}
 <style>
-  /* ── Layout ───────────────────────────────────────── */
-  .workout-wrap { max-width: 780px; margin: 0 auto; padding: 0 0 40px; }
+/* ── Reset de página ─────────────────────────────── */
+body.sv-body { background: #000 !important; }
+.sv-main { background: #000 !important; }
+.sv-main::before { display: none; }
 
-  /* ── Top bar ──────────────────────────────────────── */
-  .wk-topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 20px;
-    background: var(--sv-bg-card);
-    border-bottom: 1px solid var(--sv-border);
-    gap: 16px; flex-wrap: wrap;
-    position: sticky; top: 0; z-index: 50;
-  }
-  .wk-live { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; color: var(--sv-green); }
-  .wk-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sv-green); animation: pulse 1.4s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-  .wk-stat { text-align: center; }
-  .wk-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; line-height: 1; }
-  .wk-stat-lbl { font-size: 10px; color: #666; font-weight: 700; text-transform: uppercase; }
-  .wk-abandon { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1.5px solid rgba(230,57,70,0.4); border-radius: 8px; background: transparent; color: var(--sv-red); font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-  .wk-abandon:hover { background: rgba(230,57,70,0.12); }
+/* ── Top bar ─────────────────────────────────────── */
+.wk-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: #000;
+  border-bottom: 1px solid #1c1c1e;
+  position: sticky; top: 0; z-index: 50;
+}
+.wk-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #1c1c1e; border: none; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; flex-shrink: 0;
+  text-decoration: none;
+}
+.wk-timer-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.wk-timer-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #1c1c1e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: #8e8e93;
+}
+.wk-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; color: #fff; letter-spacing: 1px;
+}
+.wk-finish-btn {
+  background: #fff; color: #000;
+  font-size: 14px; font-weight: 800;
+  border: none; border-radius: 20px;
+  padding: 8px 20px; cursor: pointer;
+  transition: opacity .2s;
+}
+.wk-finish-btn:hover { opacity: .85; }
 
-  /* ── Progress bar ─────────────────────────────────── */
-  .wk-progress-bar { height: 3px; background: var(--sv-border); }
-  .wk-progress-fill { height: 100%; background: linear-gradient(90deg, var(--sv-purple), var(--sv-green)); transition: width 0.4s ease; }
+/* ── Progress bar ─────────────────────────────────── */
+.wk-progress-bar { height: 2px; background: #1c1c1e; }
+.wk-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7b2ff7, #00d4aa);
+  transition: width .4s ease;
+}
 
-  /* ── Exercise hero card ───────────────────────────── */
-  .ex-hero {
-    margin: 20px 0 16px;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1.5px solid var(--sv-border);
-    background: var(--sv-bg-card);
-  }
-  .ex-hero-banner {
-    position: relative;
-    padding: 28px 24px 24px;
-    display: flex; align-items: center; gap: 20px;
-    overflow: hidden;
-  }
-  .ex-hero-banner::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: var(--grup-bg, rgba(123,47,247,0.12));
-    z-index: 0;
-  }
-  .ex-hero-visual {
-    position: relative; z-index: 1;
-    width: 90px; height: 90px;
-    border-radius: 18px;
-    background: var(--grup-bg2, rgba(123,47,247,0.25));
-    border: 2px solid var(--grup-color, var(--sv-purple));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 44px;
-    flex-shrink: 0;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  }
-  .ex-hero-visual img { width: 100%; height: 100%; object-fit: cover; }
-  .ex-hero-info { position: relative; z-index: 1; flex: 1; }
-  .ex-hero-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; line-height: 1.1; margin-bottom: 8px; }
-  .ex-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-  .ex-badge {
-    padding: 3px 12px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .ex-badge-grupo { background: var(--grup-bg2, rgba(123,47,247,0.3)); color: var(--grup-color, var(--sv-purple-light)); }
-  .ex-badge-nivel-principiante { background: rgba(0,212,170,0.2); color: var(--sv-green); }
-  .ex-badge-nivel-intermedio   { background: rgba(244,162,97,0.2); color: var(--sv-gold); }
-  .ex-badge-nivel-avanzado     { background: rgba(230,57,70,0.2);  color: var(--sv-red); }
-  .ex-desc { font-size: 13px; color: #888; line-height: 1.5; }
-  .ex-instructions-link { font-size: 12px; color: var(--sv-purple-light); text-decoration: none; font-weight: 700; }
-  .ex-instructions-link:hover { color: #fff; }
+/* ── Exercise carousel ───────────────────────────── */
+.ex-carousel {
+  display: flex; gap: 12px; align-items: center;
+  padding: 14px 16px;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.ex-carousel::-webkit-scrollbar { display: none; }
+.ex-carousel-item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  scroll-snap-align: center; flex-shrink: 0;
+  cursor: pointer;
+}
+.ex-carousel-circle {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #1c1c1e; border: 2px solid #2c2c2e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; overflow: hidden;
+  transition: border-color .2s;
+}
+.ex-carousel-circle img { width: 100%; height: 100%; object-fit: cover; }
+.ex-carousel-item.current .ex-carousel-circle {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.15);
+}
+.ex-carousel-item.done .ex-carousel-circle {
+  border-color: #00d4aa;
+  opacity: .6;
+}
+.ex-carousel-label {
+  font-size: 9px; font-weight: 700; color: #8e8e93;
+  text-align: center; max-width: 56px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: .3px;
+}
+.ex-carousel-item.current .ex-carousel-label { color: #fff; }
 
-  /* Grupo muscle colors */
-  .grupo-pecho       { --grup-color:#4361ee; --grup-bg:rgba(67,97,238,0.12);  --grup-bg2:rgba(67,97,238,0.25); }
-  .grupo-espalda     { --grup-color:#00d4aa; --grup-bg:rgba(0,212,170,0.1);   --grup-bg2:rgba(0,212,170,0.22); }
-  .grupo-hombros     { --grup-color:#f97316; --grup-bg:rgba(249,115,22,0.1);  --grup-bg2:rgba(249,115,22,0.22); }
-  .grupo-biceps      { --grup-color:#7b2ff7; --grup-bg:rgba(123,47,247,0.12); --grup-bg2:rgba(123,47,247,0.28); }
-  .grupo-triceps     { --grup-color:#e63946; --grup-bg:rgba(230,57,70,0.1);   --grup-bg2:rgba(230,57,70,0.22); }
-  .grupo-piernas     { --grup-color:#00bcd4; --grup-bg:rgba(0,188,212,0.1);   --grup-bg2:rgba(0,188,212,0.22); }
-  .grupo-gluteos     { --grup-color:#ec4899; --grup-bg:rgba(236,72,153,0.1);  --grup-bg2:rgba(236,72,153,0.22); }
-  .grupo-abdomen     { --grup-color:#f4a261; --grup-bg:rgba(244,162,97,0.1);  --grup-bg2:rgba(244,162,97,0.22); }
-  .grupo-core        { --grup-color:#f4a261; --grup-bg:rgba(244,162,97,0.1);  --grup-bg2:rgba(244,162,97,0.22); }
-  .grupo-pantorrillas{ --grup-color:#9d5cf6; --grup-bg:rgba(157,92,246,0.1);  --grup-bg2:rgba(157,92,246,0.22); }
-  .grupo-antebrazos  { --grup-color:#60a5fa; --grup-bg:rgba(96,165,250,0.1);  --grup-bg2:rgba(96,165,250,0.22); }
-  .grupo-cardio      { --grup-color:#e63946; --grup-bg:rgba(230,57,70,0.1);   --grup-bg2:rgba(230,57,70,0.22); }
-  .grupo-movilidad   { --grup-color:#00d4aa; --grup-bg:rgba(0,212,170,0.08);  --grup-bg2:rgba(0,212,170,0.18); }
+/* ── Exercise image ──────────────────────────────── */
+.ex-image-wrap {
+  width: 100%;
+  background: #0d0d0d;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 220px; max-height: 260px;
+  overflow: hidden;
+  position: relative;
+}
+.ex-image-wrap img {
+  width: 100%; height: 100%;
+  object-fit: contain; max-height: 260px;
+}
+.ex-image-icon {
+  font-size: 80px; line-height: 1;
+}
 
-  /* ── Series completadas ───────────────────────────── */
-  .sets-done { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 24px 16px; }
-  .set-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 20px;
-    background: rgba(0,212,170,0.1); border: 1.5px solid rgba(0,212,170,0.3);
-    font-size: 12px; font-weight: 700; color: var(--sv-green);
-  }
-  .set-chip i { font-size: 11px; }
+/* ── Action buttons ──────────────────────────────── */
+.ex-actions {
+  display: flex; gap: 10px; padding: 14px 16px;
+  border-bottom: 1px solid #1c1c1e;
+}
+.btn-action {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 20px;
+  background: #1c1c1e; border: none;
+  color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background .2s;
+  text-decoration: none;
+}
+.btn-action:hover { background: #2c2c2e; color: #fff; }
+.btn-action.delete { background: rgba(255,59,48,.15); color: #ff3b30; }
+.btn-action.delete:hover { background: rgba(255,59,48,.25); }
 
-  /* ── Nuevo set form ───────────────────────────────── */
-  .new-set-card {
-    margin: 0 16px 16px;
-    background: rgba(123,47,247,0.08);
-    border: 1.5px solid rgba(123,47,247,0.25);
-    border-radius: 16px;
-    padding: 18px;
-  }
-  .new-set-title {
-    display: flex; align-items: center; gap: 10px;
-    font-family: 'Bebas Neue', sans-serif; font-size: 18px;
-    color: var(--sv-purple-light); margin-bottom: 14px;
-  }
-  .new-set-badge {
-    background: var(--sv-purple); color: #fff;
-    padding: 3px 12px; border-radius: 20px;
-    font-size: 12px; font-weight: 700; font-family: 'Barlow', sans-serif;
-  }
-  .set-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .set-input-wrap { display: flex; flex-direction: column; gap: 4px; }
-  .set-input-lbl { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-  .set-extra-btns { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-  .btn-extra {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 7px 14px; border-radius: 20px;
-    border: 1.5px solid rgba(255,255,255,0.12);
-    background: transparent; color: #888; font-size: 12px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .btn-extra:hover { border-color: var(--sv-purple-light); color: var(--sv-purple-light); }
-  .btn-extra.active { border-color: var(--sv-purple); color: var(--sv-purple-light); background: rgba(123,47,247,0.15); }
-  .btn-terminar-serie {
-    width: 100%; padding: 14px; border-radius: 12px;
-    background: linear-gradient(135deg, var(--sv-purple), var(--sv-purple-light));
-    border: none; color: #fff; font-weight: 700; font-size: 15px;
-    cursor: pointer; transition: opacity 0.2s;
-    box-shadow: 0 4px 16px rgba(123,47,247,0.35);
-  }
-  .btn-terminar-serie:hover { opacity: 0.9; }
+/* ── Exercise info ───────────────────────────────── */
+.ex-info {
+  padding: 14px 16px 8px;
+  border-bottom: 1px solid #1c1c1e;
+}
+.ex-info-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 10px; margin-bottom: 6px;
+}
+.ex-name {
+  font-size: 18px; font-weight: 800; color: #fff; line-height: 1.3; flex: 1;
+}
+.ex-timer-badge {
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  background: rgba(10,132,255,.15); border: 1px solid rgba(10,132,255,.3);
+  border-radius: 12px; padding: 4px 10px;
+  font-size: 11px; font-weight: 800; color: #0a84ff;
+}
+.ex-desc {
+  font-size: 13px; color: #8e8e93; line-height: 1.6; margin: 0;
+}
 
-  /* ── Nav buttons ──────────────────────────────────── */
-  .wk-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 16px 20px; }
-  .btn-add-serie {
-    padding: 14px; border-radius: 12px;
-    background: rgba(123,47,247,0.15); border: 1.5px solid rgba(123,47,247,0.35);
-    color: var(--sv-purple-light); font-weight: 700; font-size: 14px;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .btn-add-serie:hover { background: rgba(123,47,247,0.28); color: #fff; }
-  .btn-siguiente {
-    padding: 14px; border-radius: 12px;
-    background: var(--sv-green); border: none;
-    color: #fff; font-weight: 700; font-size: 14px;
-    cursor: pointer; transition: opacity 0.2s;
-    box-shadow: 0 4px 16px rgba(0,212,170,0.3);
-  }
-  .btn-siguiente:hover { opacity: 0.88; }
-  .btn-terminar-final {
-    width: calc(100% - 32px); margin: 0 16px; padding: 16px;
-    border-radius: 12px; background: var(--sv-green); border: none;
-    color: #fff; font-weight: 700; font-size: 15px;
-    cursor: pointer; transition: opacity 0.2s;
-    box-shadow: 0 4px 16px rgba(0,212,170,0.3);
-  }
+/* ── Sets table ──────────────────────────────────── */
+.sets-section { padding: 0 16px 16px; }
+.sets-header {
+  display: grid;
+  grid-template-columns: 36px 1fr 80px 80px 40px;
+  gap: 8px;
+  padding: 10px 0 6px;
+  border-bottom: 1px solid #2c2c2e;
+}
+.sets-header span {
+  font-size: 11px; font-weight: 800; color: #8e8e93;
+  text-transform: uppercase; letter-spacing: .5px; text-align: center;
+}
+.sets-header span:first-child { text-align: left; }
 
-  /* ── Exercise queue ───────────────────────────────── */
-  .ex-queue {
-    margin: 8px 16px 0;
-    background: var(--sv-bg-card);
-    border: 1.5px solid var(--sv-border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  .ex-queue-title {
-    padding: 12px 18px;
-    font-size: 11px; font-weight: 700; color: #555;
-    text-transform: uppercase; letter-spacing: 1px;
-    border-bottom: 1px solid var(--sv-border);
-  }
-  .ex-queue-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 18px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    transition: background 0.2s;
-  }
-  .ex-queue-item:last-child { border-bottom: none; }
-  .ex-queue-item.done  { opacity: 0.4; }
-  .ex-queue-item.current { background: rgba(123,47,247,0.08); }
-  .ex-queue-dot {
-    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 13px;
-    border: 2px solid #333;
-  }
-  .ex-queue-dot.done    { background: var(--sv-green); border-color: var(--sv-green); color: #000; }
-  .ex-queue-dot.current { border-color: var(--sv-purple); color: var(--sv-purple-light); }
-  .ex-queue-dot.pending { color: #444; }
-  .ex-queue-name { font-size: 13px; font-weight: 700; flex: 1; }
-  .ex-queue-item.done .ex-queue-name { color: #555; }
-  .ex-queue-item.current .ex-queue-name { color: #fff; }
-  .ex-queue-item.pending .ex-queue-name { color: #666; }
-  .ex-queue-grupo { font-size: 11px; color: #555; }
+/* Row de serie completada */
+.set-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 80px 80px 40px;
+  gap: 8px; align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #1c1c1e;
+}
+.set-num {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: #1c1c1e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #8e8e93;
+}
+.set-prev {
+  font-size: 13px; color: #8e8e93; text-align: center;
+}
+.set-val {
+  background: #1c1c1e; border-radius: 10px;
+  padding: 8px 10px; text-align: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+}
+.set-check {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+}
+.set-check.done {
+  background: #0a84ff;
+  color: #fff; font-size: 14px;
+}
+.set-check.pending {
+  background: #2c2c2e;
+  color: #8e8e93; font-size: 12px;
+}
 
-  /* ── Cardio timer ─────────────────────────────── */
-  .cardio-block {
-    margin: 0 16px 16px;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 2px solid rgba(230,57,70,.35);
-    background: rgba(230,57,70,.06);
-  }
-  .cardio-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px 20px 10px;
-    border-bottom: 1px solid rgba(230,57,70,.2);
-  }
-  .cardio-header i { color: #e63946; font-size: 18px; }
-  .cardio-header span { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; color: #e63946; }
-  .cardio-header small { color: var(--sv-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+/* Row de nueva serie (inputs) */
+.set-row-new {
+  display: grid;
+  grid-template-columns: 36px 1fr 80px 80px 40px;
+  gap: 8px; align-items: center;
+  padding: 10px 0;
+}
+.set-input {
+  background: #1c1c1e !important;
+  border: 1.5px solid #2c2c2e !important;
+  border-radius: 10px !important;
+  color: #fff !important;
+  font-size: 14px !important; font-weight: 700 !important;
+  text-align: center !important;
+  padding: 8px 6px !important;
+  width: 100% !important;
+}
+.set-input:focus {
+  border-color: #0a84ff !important;
+  outline: none !important;
+}
+.btn-set-confirm {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #2c2c2e; border: none;
+  color: #8e8e93; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; margin: 0 auto;
+  transition: background .2s, color .2s;
+}
+.btn-set-confirm:hover { background: #0a84ff; color: #fff; }
 
-  .cardio-timer-wrap {
-    display: flex; flex-direction: column; align-items: center;
-    padding: 24px 20px 20px;
-  }
-  /* Ring SVG */
-  .cardio-ring-wrap { position: relative; width: 160px; height: 160px; margin-bottom: 18px; }
-  .cardio-ring { transform: rotate(-90deg); }
-  .cardio-ring-bg   { fill: none; stroke: rgba(230,57,70,.15); stroke-width: 10; }
-  .cardio-ring-fill { fill: none; stroke: #e63946; stroke-width: 10;
-                      stroke-linecap: round; transition: stroke-dashoffset .5s linear; }
-  .cardio-ring-center {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
-  .cardio-time-display {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px; line-height: 1; color: #fff; letter-spacing: 2px;
-  }
-  .cardio-time-display.running { color: #e63946; }
-  .cardio-time-display.done    { color: var(--sv-green); }
-  .cardio-time-lbl { font-size: 11px; font-weight: 700; color: var(--sv-muted); text-transform: uppercase; }
+/* ── Add set button ──────────────────────────────── */
+.btn-add-set {
+  width: 100%; padding: 15px;
+  background: #1c1c1e; border: none; border-radius: 14px;
+  color: #fff; font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer; margin: 8px 0 16px;
+  transition: background .2s;
+}
+.btn-add-set:hover { background: #2c2c2e; }
+.btn-add-set i { color: #0a84ff; }
 
-  .cardio-controls { display: flex; gap: 10px; margin-bottom: 16px; }
-  .btn-cardio-start {
-    flex: 1; padding: 14px; border-radius: 12px; border: none;
-    background: #e63946; color: #fff;
-    font-size: 15px; font-weight: 800; cursor: pointer;
-    transition: opacity .2s;
-    box-shadow: 0 4px 16px rgba(230,57,70,.4);
-  }
-  .btn-cardio-start:hover { opacity: .88; }
-  .btn-cardio-reset {
-    padding: 14px 18px; border-radius: 12px;
-    background: rgba(230,57,70,.12); border: 1.5px solid rgba(230,57,70,.3);
-    color: #f87171; font-size: 15px; cursor: pointer;
-    transition: background .2s;
-  }
-  .btn-cardio-reset:hover { background: rgba(230,57,70,.22); }
-  .btn-cardio-complete {
-    width: 100%; padding: 14px; border-radius: 12px; border: none;
-    background: linear-gradient(135deg, var(--sv-green), #4361ee);
-    color: #fff; font-size: 15px; font-weight: 800; cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0,212,170,.35);
-    transition: opacity .2s;
-  }
-  .btn-cardio-complete:hover { opacity: .9; }
+/* ── Nav: siguiente / terminar ───────────────────── */
+.btn-next {
+  width: calc(100% - 32px); margin: 0 16px 16px;
+  padding: 16px; border-radius: 14px; border: none;
+  background: #00d4aa; color: #000;
+  font-size: 16px; font-weight: 800;
+  cursor: pointer; transition: opacity .2s;
+}
+.btn-next:hover { opacity: .88; }
+.btn-next.finish {
+  background: linear-gradient(135deg, #7b2ff7, #00d4aa);
+  color: #fff;
+}
 
-  .cardio-intensity-pills {
-    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center;
-  }
-  .cardio-pill {
-    padding: 5px 14px; border-radius: 20px;
-    font-size: 11px; font-weight: 800; cursor: pointer;
-    border: 1.5px solid rgba(255,255,255,.12);
-    background: transparent; color: var(--sv-muted);
-    transition: all .2s;
-  }
-  .cardio-pill.active { background: rgba(230,57,70,.2); border-color: #e63946; color: #f87171; }
+/* ── Cardio block ────────────────────────────────── */
+.cardio-block {
+  margin: 0 16px 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(230,57,70,.35);
+  background: rgba(230,57,70,.06);
+}
+.cardio-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid rgba(230,57,70,.2);
+}
+.cardio-header i { color: #e63946; font-size: 18px; }
+.cardio-header span { font-family: 'Bebas Neue',sans-serif; font-size: 20px; letter-spacing: 1px; color: #e63946; }
+.cardio-header small { color: #8e8e93; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.cardio-timer-wrap { display:flex;flex-direction:column;align-items:center;padding:24px 20px 20px; }
+.cardio-ring-wrap { position:relative;width:160px;height:160px;margin-bottom:18px; }
+.cardio-ring { transform:rotate(-90deg); }
+.cardio-ring-bg   { fill:none;stroke:rgba(230,57,70,.15);stroke-width:10; }
+.cardio-ring-fill { fill:none;stroke:#e63946;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .5s linear; }
+.cardio-ring-center { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center; }
+.cardio-time-display { font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;color:#fff;letter-spacing:2px; }
+.cardio-time-display.running { color:#e63946; }
+.cardio-time-display.done    { color:#00d4aa; }
+.cardio-time-lbl { font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase; }
+.cardio-controls { display:flex;gap:10px;margin-bottom:16px; }
+.btn-cardio-start { flex:1;padding:14px;border-radius:12px;border:none;background:#e63946;color:#fff;font-size:15px;font-weight:800;cursor:pointer;transition:opacity .2s;box-shadow:0 4px 16px rgba(230,57,70,.4); }
+.btn-cardio-start:hover { opacity:.88; }
+.btn-cardio-reset { padding:14px 18px;border-radius:12px;background:rgba(230,57,70,.12);border:1.5px solid rgba(230,57,70,.3);color:#f87171;font-size:15px;cursor:pointer;transition:background .2s; }
+.btn-cardio-reset:hover { background:rgba(230,57,70,.22); }
+.btn-cardio-complete { width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#00d4aa,#4361ee);color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(0,212,170,.35);transition:opacity .2s; }
+.btn-cardio-complete:hover { opacity:.9; }
+.cardio-intensity-pills { display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;justify-content:center; }
+.cardio-pill { padding:5px 14px;border-radius:20px;font-size:11px;font-weight:800;cursor:pointer;border:1.5px solid #2c2c2e;background:transparent;color:#8e8e93;transition:all .2s; }
+.cardio-pill.active { background:rgba(230,57,70,.2);border-color:#e63946;color:#f87171; }
 
-  @media (max-width: 600px) {
-    .set-inputs { grid-template-columns: 1fr; }
-    .wk-nav { grid-template-columns: 1fr; }
-    .cardio-ring-wrap { width: 130px; height: 130px; }
-    .cardio-time-display { font-size: 34px; }
-  }
+/* ── Grupo colores (para emoji emoji fallback) ─── */
+.grupo-pecho,.grupo-espalda,.grupo-hombros,.grupo-biceps,
+.grupo-triceps,.grupo-piernas,.grupo-gluteos,.grupo-abdomen,
+.grupo-core,.grupo-pantorrillas,.grupo-antebrazos,.grupo-cardio,.grupo-movilidad
+{ --grup-color:#fff; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 </style>
 {% endblock %}
 
@@ -292,72 +306,43 @@
 {% with slug=ejercicio_actual.ejercicio.grupo_muscular.slug|default:"core" %}
 
 {% if mostrar_overlay %}
-<!-- ── Overlay: Entrenamiento listo ── -->
-<div id="overlay-listo" style="
-  position:fixed;inset:0;z-index:9999;
-  background:rgba(0,0,0,.85);backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;padding:24px;">
-  <div style="
-    background:#0d1b2a;border:2px solid rgba(0,212,170,.4);border-radius:28px;
-    padding:40px 36px;max-width:440px;width:100%;text-align:center;
-    box-shadow:0 0 60px rgba(0,212,170,.2);">
+<div id="overlay-listo" style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:#111;border:2px solid rgba(0,212,170,.4);border-radius:28px;padding:40px 36px;max-width:440px;width:100%;text-align:center;box-shadow:0 0 60px rgba(0,212,170,.2);">
     <div style="font-size:64px;margin-bottom:16px;">🏆</div>
-    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin-bottom:8px;letter-spacing:1px;">
-      ¡Último ejercicio completado!
-    </h2>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin-bottom:8px;letter-spacing:1px;">¡Último ejercicio!</h2>
     <p style="color:rgba(255,255,255,.55);font-size:14px;margin-bottom:28px;">
-      Has terminado todos los ejercicios de la rutina.<br>
+      Completaste todos los ejercicios.<br>
       Finalizando en <span id="cuenta-regresiva" style="color:#00d4aa;font-weight:800;font-size:18px;">5</span>s…
     </p>
-
     <form method="post" id="form-finalizar">
       {% csrf_token %}
       <input type="hidden" name="action" value="terminar_entrenamiento">
-      <button type="submit" style="
-        width:100%;padding:16px;border-radius:14px;border:none;
-        background:linear-gradient(135deg,#00d4aa,#4361ee);
-        color:#fff;font-size:16px;font-weight:800;cursor:pointer;
-        box-shadow:0 6px 24px rgba(0,212,170,.4);
-        margin-bottom:12px;">
+      <button type="submit" style="width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#00d4aa,#4361ee);color:#fff;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:12px;">
         <i class="bi bi-trophy-fill me-2"></i> Ver resultados
       </button>
     </form>
-
-    <button onclick="document.getElementById('overlay-listo').style.display='none'"
-            style="background:none;border:none;color:rgba(255,255,255,.4);
-                   font-size:13px;cursor:pointer;font-weight:600;">
+    <button onclick="document.getElementById('overlay-listo').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;font-weight:600;">
       Seguir añadiendo series
     </button>
   </div>
 </div>
 {% endif %}
 
-<div class="sv-page-content workout-page" style="padding:0;max-width:100%;">
+<div style="max-width:600px;margin:0 auto;background:#000;min-height:100vh;">
 
   <!-- TOP BAR -->
   <div class="wk-topbar">
-    <div class="wk-live">
-      <span class="wk-live-dot"></span>
-      <span>EN VIVO · <span id="wk-timer">00:00</span></span>
-    </div>
-    <div class="wk-stat">
-      <div class="wk-stat-val" style="color:var(--sv-purple-light);">{{ ejercicio_idx }}/{{ ejercicios_list|length }}</div>
-      <div class="wk-stat-lbl">Ejercicios</div>
-    </div>
-    <div class="wk-stat">
-      <div class="wk-stat-val" style="color:var(--sv-green);">{{ progreso_pct }}%</div>
-      <div class="wk-stat-lbl">Progreso</div>
-    </div>
-    <div class="wk-stat">
-      <div class="wk-stat-val" style="color:var(--sv-gold);">{{ peso_total }}</div>
-      <div class="wk-stat-lbl">kg totales</div>
+    <a href="{% url 'plan_semanal' %}" class="wk-back-btn">
+      <i class="bi bi-chevron-down"></i>
+    </a>
+    <div class="wk-timer-wrap">
+      <div class="wk-timer-icon"><i class="bi bi-stopwatch-fill"></i></div>
+      <div class="wk-time" id="wk-timer">0:00</div>
     </div>
     <form method="post" style="margin:0;">
       {% csrf_token %}
       <input type="hidden" name="action" value="terminar_entrenamiento">
-      <button type="submit" class="wk-abandon">
-        <i class="bi bi-x-circle"></i> Abandonar
-      </button>
+      <button type="submit" class="wk-finish-btn">Finish</button>
     </form>
   </div>
 
@@ -366,252 +351,201 @@
     <div class="wk-progress-fill" style="width:{{ progreso_pct }}%;"></div>
   </div>
 
-  <div class="workout-wrap">
-
-    <!-- EXERCISE HERO CARD -->
-    <div class="ex-hero grupo-{{ slug }}">
-      <div class="ex-hero-banner">
-        <div class="ex-hero-visual">
-          {% if ejercicio_actual.ejercicio.gif %}
-            <img src="{{ ejercicio_actual.ejercicio.gif.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
-          {% elif ejercicio_actual.ejercicio.imagen %}
-            <img src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
-          {% else %}
-            {% with s=slug %}
-              {% if s == 'pecho' %}💪{% elif s == 'espalda' %}🏋️{% elif s == 'hombros' %}🔝
-              {% elif s == 'biceps' %}💪{% elif s == 'triceps' %}🦾{% elif s == 'piernas' %}🦵
-              {% elif s == 'gluteos' %}⚡{% elif s == 'abdomen' %}🎯{% elif s == 'core' %}🔥
-              {% elif s == 'cardio' %}❤️{% elif s == 'movilidad' %}🧘{% elif s == 'pantorrillas' %}🦶
-              {% else %}🏋️{% endif %}
-            {% endwith %}
-          {% endif %}
-        </div>
-        <div class="ex-hero-info">
-          <div class="ex-badges">
-            <span class="ex-badge ex-badge-grupo">{{ ejercicio_actual.ejercicio.grupo_muscular }}</span>
-            <span class="ex-badge ex-badge-nivel-{{ ejercicio_actual.ejercicio.nivel }}">
-              {{ ejercicio_actual.ejercicio.get_nivel_display }}
-            </span>
-          </div>
-          <div class="ex-hero-name">{{ ejercicio_actual.ejercicio.nombre }}</div>
-          {% if ejercicio_actual.ejercicio.descripcion %}
-          <div class="ex-desc">{{ ejercicio_actual.ejercicio.descripcion|truncatechars:90 }}</div>
-          {% endif %}
-          <a href="{% url 'ejercicio_detalle' ejercicio_actual.ejercicio.id %}" target="_blank" class="ex-instructions-link mt-1 d-inline-block">
-            <i class="bi bi-info-circle me-1"></i>Ver instrucciones completas
-          </a>
-        </div>
+  <!-- EXERCISE CAROUSEL -->
+  <div class="ex-carousel">
+    {% for ej in ejercicios_list %}
+    {% with i=forloop.counter0 %}
+    <div class="ex-carousel-item {% if i < ejercicio_idx %}done{% elif i == ejercicio_idx %}current{% endif %}">
+      <div class="ex-carousel-circle">
+        {% if ej.ejercicio.gif %}
+          <img src="{{ ej.ejercicio.gif.url }}" alt="">
+        {% elif ej.ejercicio.imagen %}
+          <img src="{{ ej.ejercicio.imagen.url }}" alt="">
+        {% else %}
+          {% with s=ej.ejercicio.grupo_muscular.slug|default:"core" %}
+            {% if s == 'pecho' %}💪{% elif s == 'espalda' %}🏋️{% elif s == 'hombros' %}🔝
+            {% elif s == 'biceps' %}💪{% elif s == 'triceps' %}🦾{% elif s == 'piernas' %}🦵
+            {% elif s == 'gluteos' %}⚡{% elif s == 'abdomen' %}🎯{% elif s == 'core' %}🔥
+            {% elif s == 'cardio' %}❤️{% elif s == 'movilidad' %}🧘{% else %}🏋️{% endif %}
+          {% endwith %}
+        {% endif %}
       </div>
+      <span class="ex-carousel-label">{{ ej.ejercicio.nombre|truncatechars:8 }}</span>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
 
-      <!-- SERIES COMPLETADAS -->
-      {% if series %}
-      <div class="sets-done">
-        {% for serie in series %}
-        <div class="set-chip">
-          <i class="bi bi-check-circle-fill"></i>
-          {% if ejercicio_actual.ejercicio.duracion_minutos %}
-            <i class="bi bi-clock-fill" style="font-size:10px;"></i>
-            {{ serie.tiempo_minutos|default:ejercicio_actual.ejercicio.duracion_minutos }}min completado
-          {% else %}
-            SET{{ serie.numero_serie }}
-            {% if serie.repeticiones %}&nbsp;· {{ serie.repeticiones }}reps{% endif %}
-            {% if serie.peso %}&nbsp;· {{ serie.peso }}kg{% endif %}
-            {% if serie.tiempo_minutos %}&nbsp;· {{ serie.tiempo_minutos }}min{% endif %}
-          {% endif %}
-        </div>
-        {% endfor %}
+  <!-- EXERCISE IMAGE -->
+  <div class="ex-image-wrap">
+    {% if ejercicio_actual.ejercicio.gif %}
+      <img src="{{ ejercicio_actual.ejercicio.gif.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
+    {% elif ejercicio_actual.ejercicio.imagen %}
+      <img src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
+    {% else %}
+      <div class="ex-image-icon">
+        {% if slug == 'pecho' %}💪{% elif slug == 'espalda' %}🏋️{% elif slug == 'hombros' %}🔝
+        {% elif slug == 'biceps' %}💪{% elif slug == 'triceps' %}🦾{% elif slug == 'piernas' %}🦵
+        {% elif slug == 'gluteos' %}⚡{% elif slug == 'abdomen' %}🎯{% elif slug == 'core' %}🔥
+        {% elif slug == 'cardio' %}❤️{% elif slug == 'movilidad' %}🧘{% else %}🏋️{% endif %}
       </div>
-      {% endif %}
+    {% endif %}
+  </div>
 
+  <!-- ACTION BUTTONS -->
+  <div class="ex-actions">
+    <a href="{% url 'ejercicio_detalle' ejercicio_actual.ejercicio.id %}" target="_blank" class="btn-action">
+      <i class="bi bi-play-fill" style="color:#0a84ff;"></i> Guide
+    </a>
+    <form method="post" style="margin:0;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="siguiente_ejercicio">
+      <button type="submit" class="btn-action">
+        <i class="bi bi-arrow-repeat"></i> Skip
+      </button>
+    </form>
+    <form method="post" style="margin:0;margin-left:auto;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="terminar_entrenamiento">
+      <button type="submit" class="btn-action delete">
+        <i class="bi bi-x-circle"></i> End
+      </button>
+    </form>
+  </div>
+
+  <!-- EXERCISE INFO -->
+  <div class="ex-info">
+    <div class="ex-info-top">
+      <div class="ex-name">{{ ejercicio_actual.ejercicio.nombre }}</div>
       {% if ejercicio_actual.ejercicio.duracion_minutos %}
-      <!-- ══ BLOQUE CARDIO CON TEMPORIZADOR ══ -->
-      {% if not series %}
-      <div class="cardio-block" id="cardio-block">
-        <div class="cardio-header">
-          <i class="bi bi-heart-pulse-fill"></i>
-          <span>Sección Cardio</span>
-          <small style="margin-left:auto;">{{ ejercicio_actual.ejercicio.duracion_minutos }} min estimados</small>
-        </div>
-        <div class="cardio-timer-wrap">
-
-          <!-- Anillo SVG -->
-          <div class="cardio-ring-wrap">
-            <svg class="cardio-ring" width="160" height="160" viewBox="0 0 160 160">
-              <circle class="cardio-ring-bg" cx="80" cy="80" r="70"/>
-              <circle class="cardio-ring-fill" id="cardio-ring-fill" cx="80" cy="80" r="70"
-                      stroke-dasharray="439.82" stroke-dashoffset="0"/>
-            </svg>
-            <div class="cardio-ring-center">
-              <div class="cardio-time-display" id="cardio-display">
-                {{ ejercicio_actual.ejercicio.duracion_minutos }}:00
-              </div>
-              <div class="cardio-time-lbl" id="cardio-lbl">preparado</div>
-            </div>
-          </div>
-
-          <!-- Selector de intensidad -->
-          <div class="cardio-intensity-pills">
-            <button type="button" class="cardio-pill" onclick="setIntensidad(this, 0.5)">½ tiempo</button>
-            <button type="button" class="cardio-pill active" onclick="setIntensidad(this, 1)">Tiempo completo</button>
-            <button type="button" class="cardio-pill" onclick="setIntensidad(this, 1.5)">+50%</button>
-          </div>
-
-          <!-- Controles -->
-          <div class="cardio-controls">
-            <button type="button" class="btn-cardio-start" id="btn-cardio-start" onclick="toggleTimer()">
-              <i class="bi bi-play-fill me-1"></i> Iniciar
-            </button>
-            <button type="button" class="btn-cardio-reset" onclick="resetTimer()">
-              <i class="bi bi-arrow-counterclockwise"></i>
-            </button>
-          </div>
-
-          <!-- Instrucciones del ejercicio -->
-          {% if ejercicio_actual.ejercicio.instrucciones %}
-          <div style="font-size:12px;color:var(--sv-muted);text-align:center;
-                      background:rgba(230,57,70,.06);border-radius:10px;padding:10px 14px;
-                      margin-bottom:16px;line-height:1.6;max-width:380px;">
-            <i class="bi bi-lightbulb-fill" style="color:#e63946;margin-right:5px;"></i>
-            {{ ejercicio_actual.ejercicio.instrucciones }}
-          </div>
-          {% endif %}
-
-          <!-- Formulario oculto que se envía al completar -->
-          <form method="post" id="cardio-form">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="guardar_serie">
-            <input type="hidden" name="tiempo_minutos" id="cardio-form-min"
-                   value="{{ ejercicio_actual.ejercicio.duracion_minutos }}">
-            <input type="hidden" name="tiempo_segundos" id="cardio-form-seg" value="0">
-            <input type="hidden" name="repeticiones" value="">
-            <input type="hidden" name="peso" value="">
-            <button type="submit" class="btn-cardio-complete" id="btn-cardio-complete">
-              <i class="bi bi-check-circle-fill me-1"></i> Marcar como completado
-            </button>
-          </form>
-        </div>
-      </div>
-      {% else %}
-      <!-- Ya completó, mostrar siguiente -->
-      <div style="margin:0 16px 16px;padding:16px;border-radius:14px;
-                  background:rgba(0,212,170,.08);border:1.5px solid rgba(0,212,170,.25);
-                  text-align:center;">
-        <i class="bi bi-check-circle-fill" style="color:var(--sv-green);font-size:22px;display:block;margin-bottom:6px;"></i>
-        <div style="font-size:13px;font-weight:800;color:var(--sv-green);">
-          ¡Cardio completado! {{ series.0.tiempo_minutos|default:ejercicio_actual.ejercicio.duracion_minutos }} min
-        </div>
+      <div class="ex-timer-badge">
+        <i class="bi bi-stopwatch-fill"></i>
+        {{ ejercicio_actual.ejercicio.duracion_minutos }}min
       </div>
       {% endif %}
+    </div>
+    {% if ejercicio_actual.ejercicio.descripcion %}
+    <p class="ex-desc">{{ ejercicio_actual.ejercicio.descripcion|truncatechars:120 }}</p>
+    {% endif %}
+  </div>
 
-      {% else %}
-      <!-- ══ FORMULARIO NORMAL DE FUERZA ══ -->
-      <form method="post" id="serieForm">
+  {% if ejercicio_actual.ejercicio.duracion_minutos %}
+  <!-- ══ CARDIO ══ -->
+  {% if not series %}
+  <div class="cardio-block" id="cardio-block" style="margin-top:16px;">
+    <div class="cardio-header">
+      <i class="bi bi-heart-pulse-fill"></i>
+      <span>Cardio</span>
+      <small style="margin-left:auto;">{{ ejercicio_actual.ejercicio.duracion_minutos }} min</small>
+    </div>
+    <div class="cardio-timer-wrap">
+      <div class="cardio-ring-wrap">
+        <svg class="cardio-ring" width="160" height="160" viewBox="0 0 160 160">
+          <circle class="cardio-ring-bg" cx="80" cy="80" r="70"/>
+          <circle class="cardio-ring-fill" id="cardio-ring-fill" cx="80" cy="80" r="70"
+                  stroke-dasharray="439.82" stroke-dashoffset="0"/>
+        </svg>
+        <div class="cardio-ring-center">
+          <div class="cardio-time-display" id="cardio-display">{{ ejercicio_actual.ejercicio.duracion_minutos }}:00</div>
+          <div class="cardio-time-lbl" id="cardio-lbl">preparado</div>
+        </div>
+      </div>
+      <div class="cardio-intensity-pills">
+        <button type="button" class="cardio-pill" onclick="setIntensidad(this, 0.5)">½ tiempo</button>
+        <button type="button" class="cardio-pill active" onclick="setIntensidad(this, 1)">Completo</button>
+        <button type="button" class="cardio-pill" onclick="setIntensidad(this, 1.5)">+50%</button>
+      </div>
+      <div class="cardio-controls">
+        <button type="button" class="btn-cardio-start" id="btn-cardio-start" onclick="toggleTimer()">
+          <i class="bi bi-play-fill me-1"></i> Iniciar
+        </button>
+        <button type="button" class="btn-cardio-reset" onclick="resetTimer()">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </button>
+      </div>
+      <form method="post" id="cardio-form">
         {% csrf_token %}
         <input type="hidden" name="action" value="guardar_serie">
-        <div class="new-set-card">
-          <div class="new-set-title">
-            <span class="new-set-badge">SET {{ series|length|add:1 }}</span>
-            Registrar serie
-          </div>
-
-          <div class="set-inputs">
-            <div class="set-input-wrap">
-              <span class="set-input-lbl">Repeticiones</span>
-              {{ form.repeticiones }}
-            </div>
-            <div class="set-input-wrap">
-              <span class="set-input-lbl">Peso (kg)</span>
-              {{ form.peso }}
-            </div>
-          </div>
-
-          <!-- Extras ocultos -->
-          <div id="tiempo-group" style="display:none;margin-bottom:10px;">
-            <div class="set-inputs">
-              <div class="set-input-wrap">
-                <span class="set-input-lbl">Minutos</span>{{ form.tiempo_minutos }}
-              </div>
-              <div class="set-input-wrap">
-                <span class="set-input-lbl">Segundos</span>{{ form.tiempo_segundos }}
-              </div>
-            </div>
-          </div>
-          <div id="pc-group" style="display:none;margin-bottom:10px;">
-            <div class="set-input-wrap">
-              <span class="set-input-lbl">Peso corporal (kg)</span>{{ form.peso_corporal }}
-            </div>
-          </div>
-
-          <div class="set-extra-btns">
-            <button type="button" class="btn-extra" id="btn-tiempo" onclick="toggleExtra('tiempo-group','btn-tiempo')">
-              <i class="bi bi-stopwatch"></i> Tiempo
-            </button>
-            <button type="button" class="btn-extra" id="btn-pc" onclick="toggleExtra('pc-group','btn-pc')">
-              <i class="bi bi-person-fill"></i> Peso corporal
-            </button>
-          </div>
-
-          <button type="submit" class="btn-terminar-serie">
-            <i class="bi bi-check-lg me-2"></i> Terminar Serie
-          </button>
-        </div>
+        <input type="hidden" name="tiempo_minutos" id="cardio-form-min" value="{{ ejercicio_actual.ejercicio.duracion_minutos }}">
+        <input type="hidden" name="tiempo_segundos" id="cardio-form-seg" value="0">
+        <input type="hidden" name="repeticiones" value="">
+        <input type="hidden" name="peso" value="">
+        <button type="submit" class="btn-cardio-complete" id="btn-cardio-complete">
+          <i class="bi bi-check-circle-fill me-1"></i> Marcar completado
+        </button>
       </form>
     </div>
-    {% endif %}{# fin bloque fuerza #}
-
-    <!-- NAV BUTTONS -->
-    <div class="wk-nav">
-      {% if not ejercicio_actual.ejercicio.duracion_minutos %}
-      <button type="button" class="btn-add-serie" onclick="document.getElementById('serieForm').submit()">
-        <i class="bi bi-plus-circle me-1"></i> Agregar Serie
-      </button>
-      {% else %}
-      <div></div>
-      {% endif %}
-      <form method="post" style="margin:0;">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="siguiente_ejercicio">
-        {% if es_ultimo %}
-        <button type="submit" class="btn-siguiente w-100" style="background:linear-gradient(135deg,#7b2ff7,var(--sv-green));">
-          <i class="bi bi-trophy-fill me-1"></i> Terminar
-        </button>
-        {% else %}
-        <button type="submit" class="btn-siguiente w-100">
-          Siguiente <i class="bi bi-arrow-right ms-1"></i>
-        </button>
-        {% endif %}
-      </form>
-    </div>
-
-    <!-- QUEUE -->
-    <div class="ex-queue">
-      <div class="ex-queue-title"><i class="bi bi-list-ol me-1"></i> Cola de ejercicios</div>
-      {% for ej in ejercicios_list %}
-      {% with estado=forloop.counter0 %}
-      <div class="ex-queue-item {% if estado < ejercicio_idx %}done{% elif estado == ejercicio_idx %}current{% else %}pending{% endif %}">
-        <div class="ex-queue-dot {% if estado < ejercicio_idx %}done{% elif estado == ejercicio_idx %}current{% else %}pending{% endif %}">
-          {% if estado < ejercicio_idx %}<i class="bi bi-check-lg"></i>
-          {% elif estado == ejercicio_idx %}<i class="bi bi-circle-fill" style="font-size:8px;"></i>
-          {% else %}{{ forloop.counter }}{% endif %}
-        </div>
-        <div style="flex:1;">
-          <div class="ex-queue-name">{{ ej.ejercicio.nombre }}</div>
-          <div class="ex-queue-grupo">{{ ej.ejercicio.grupo_muscular }}</div>
-        </div>
-        {% if ej.ejercicio.duracion_minutos %}
-        <span style="display:inline-flex;align-items:center;gap:3px;
-                     background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.3);
-                     border-radius:12px;padding:2px 8px;
-                     font-size:10px;font-weight:800;color:#f87171;flex-shrink:0;">
-          <i class="bi bi-clock"></i> {{ ej.ejercicio.duracion_minutos }}min
-        </span>
-        {% endif %}
-      </div>
-      {% endwith %}
-      {% endfor %}
-    </div>
-
   </div>
+  {% else %}
+  <div style="margin:16px 16px 8px;padding:16px;border-radius:14px;background:rgba(0,212,170,.08);border:1.5px solid rgba(0,212,170,.25);text-align:center;">
+    <i class="bi bi-check-circle-fill" style="color:#00d4aa;font-size:22px;display:block;margin-bottom:6px;"></i>
+    <div style="font-size:13px;font-weight:800;color:#00d4aa;">¡Cardio completado! {{ series.0.tiempo_minutos|default:ejercicio_actual.ejercicio.duracion_minutos }} min</div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- ══ FUERZA: TABLA DE SERIES ══ -->
+  <div class="sets-section" style="margin-top:8px;">
+    <div class="sets-header">
+      <span>SET</span>
+      <span>PREVIOUS</span>
+      <span>KG</span>
+      <span>REPS</span>
+      <span></span>
+    </div>
+
+    <!-- Series completadas -->
+    {% for serie in series %}
+    <div class="set-row">
+      <div class="set-num">{{ serie.numero_serie }}</div>
+      <div class="set-prev">—</div>
+      <div class="set-val">{{ serie.peso|default:"—" }}</div>
+      <div class="set-val">{{ serie.repeticiones|default:"—" }}</div>
+      <div class="set-check done"><i class="bi bi-check-lg"></i></div>
+    </div>
+    {% endfor %}
+
+    <!-- Nueva serie -->
+    <form method="post" id="serieForm">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="guardar_serie">
+      <div class="set-row-new">
+        <div class="set-num" style="background:#2c2c2e;color:#0a84ff;">{{ series|length|add:1 }}</div>
+        <div class="set-prev">—</div>
+        <div>
+          {{ form.peso }}
+        </div>
+        <div>
+          {{ form.repeticiones }}
+        </div>
+        <button type="submit" class="btn-set-confirm" title="Confirmar serie">
+          <i class="bi bi-check-lg"></i>
+        </button>
+      </div>
+    </form>
+
+    <!-- Add set -->
+    <button type="button" class="btn-add-set" onclick="document.getElementById('serieForm').submit()">
+      <i class="bi bi-plus-lg"></i> Add set
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- SIGUIENTE / TERMINAR -->
+  <form method="post" style="margin:0;">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="siguiente_ejercicio">
+    {% if es_ultimo %}
+    <button type="submit" class="btn-next finish">
+      <i class="bi bi-trophy-fill me-2"></i> Finish Workout
+    </button>
+    {% else %}
+    <button type="submit" class="btn-next">
+      Next Exercise <i class="bi bi-arrow-right ms-1"></i>
+    </button>
+    {% endif %}
+  </form>
+
 </div>
 {% endwith %}
 {% endblock %}
@@ -619,15 +553,19 @@
 {% block extra_js %}
 <script>
   // Live timer
-  var start = Date.now() - ({{ entrenamiento.iniciado_en|date:"U" }} * 1000 - Date.now() + Date.now());
-  // Simple elapsed from page load as fallback
   var elapsed = 0;
   var timerEl = document.getElementById('wk-timer');
   setInterval(function() {
     elapsed++;
     var m = Math.floor(elapsed / 60), s = elapsed % 60;
-    timerEl.textContent = (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    timerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
   }, 1000);
+
+  // Estilizar inputs de la tabla
+  document.querySelectorAll('#serieForm input[type="number"], #serieForm input[type="text"]').forEach(function(el) {
+    el.classList.add('set-input');
+    el.removeAttribute('style');
+  });
 
   // Toggle extra fields
   function toggleExtra(groupId, btnId) {
@@ -639,20 +577,14 @@
     b.classList.toggle('active', !showing);
   }
 
-  // Style form inputs
-  document.querySelectorAll('#serieForm input[type="number"], #serieForm input[type="text"]').forEach(function(el) {
-    el.classList.add('sv-input');
-    el.style.width = '100%';
-  });
-
-  // ── Cardio Timer ─────────────────────────────────────────────────────────
+  // ── Cardio Timer ─────────────────────────────────
   {% if ejercicio_actual.ejercicio.duracion_minutos and not series %}
   (function() {
     var TOTAL_SEG  = {{ ejercicio_actual.ejercicio.duracion_minutos }} * 60;
     var remaining  = TOTAL_SEG;
     var running    = false;
     var interval   = null;
-    var circumference = 2 * Math.PI * 70; // r=70
+    var circumference = 2 * Math.PI * 70;
 
     var display  = document.getElementById('cardio-display');
     var lbl      = document.getElementById('cardio-lbl');
@@ -668,94 +600,58 @@
       var m = Math.floor(sec / 60), s = sec % 60;
       return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
     }
-
     function updateRing() {
       var pct = remaining / TOTAL_SEG;
       ring.style.strokeDashoffset = circumference * (1 - pct);
-      // Color naranja → verde cuando queda poco
-      if (remaining <= 10) {
-        ring.style.stroke = '#00d4aa';
-        display.classList.remove('running');
-        display.classList.add('done');
-      }
+      if (remaining <= 10) { ring.style.stroke = '#00d4aa'; display.classList.add('done'); }
     }
-
     function tick() {
       if (remaining <= 0) {
-        clearInterval(interval);
-        running = false;
-        display.textContent = '00:00';
-        display.classList.add('done');
+        clearInterval(interval); running = false;
+        display.textContent = '00:00'; display.classList.add('done');
         lbl.textContent = '¡completado!';
         startBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Finalizado';
         startBtn.disabled = true;
         formMin.value = {{ ejercicio_actual.ejercicio.duracion_minutos }};
         formSeg.value = 0;
-        // Vibración en móvil
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
         return;
       }
-      remaining--;
-      display.textContent = fmt(remaining);
-      updateRing();
+      remaining--; display.textContent = fmt(remaining); updateRing();
     }
-
     window.toggleTimer = function() {
       if (running) {
-        clearInterval(interval);
-        running = false;
+        clearInterval(interval); running = false;
         startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Reanudar';
-        lbl.textContent = 'pausado';
-        display.classList.remove('running');
+        lbl.textContent = 'pausado'; display.classList.remove('running');
       } else {
-        running = true;
-        interval = setInterval(tick, 1000);
+        running = true; interval = setInterval(tick, 1000);
         startBtn.innerHTML = '<i class="bi bi-pause-fill me-1"></i> Pausar';
-        lbl.textContent = 'en progreso';
-        display.classList.add('running');
-        display.classList.remove('done');
+        lbl.textContent = 'en progreso'; display.classList.add('running'); display.classList.remove('done');
       }
     };
-
     window.resetTimer = function() {
-      clearInterval(interval);
-      running = false;
-      remaining = TOTAL_SEG;
-      display.textContent = fmt(remaining);
-      display.classList.remove('running', 'done');
-      ring.style.stroke = '#e63946';
-      ring.style.strokeDashoffset = 0;
+      clearInterval(interval); running = false; remaining = TOTAL_SEG;
+      display.textContent = fmt(remaining); display.classList.remove('running','done');
+      ring.style.stroke = '#e63946'; ring.style.strokeDashoffset = 0;
       lbl.textContent = 'preparado';
-      startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Iniciar';
-      startBtn.disabled = false;
+      startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Iniciar'; startBtn.disabled = false;
     };
-
     window.setIntensidad = function(btn, factor) {
-      document.querySelectorAll('.cardio-pill').forEach(function(p) { p.classList.remove('active'); });
+      document.querySelectorAll('.cardio-pill').forEach(function(p){ p.classList.remove('active'); });
       btn.classList.add('active');
-      clearInterval(interval);
-      running = false;
+      clearInterval(interval); running = false;
       TOTAL_SEG = Math.round({{ ejercicio_actual.ejercicio.duracion_minutos }} * 60 * factor);
-      remaining = TOTAL_SEG;
-      display.textContent = fmt(remaining);
-      display.classList.remove('running', 'done');
-      ring.style.stroke = '#e63946';
-      ring.style.strokeDashoffset = 0;
-      lbl.textContent = 'preparado';
-      startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Iniciar';
-      startBtn.disabled = false;
+      remaining = TOTAL_SEG; display.textContent = fmt(remaining);
+      display.classList.remove('running','done'); ring.style.stroke = '#e63946';
+      ring.style.strokeDashoffset = 0; lbl.textContent = 'preparado';
+      startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Iniciar'; startBtn.disabled = false;
       formMin.value = Math.floor(TOTAL_SEG / 60);
     };
-
-    // Actualizar hidden inputs al enviar el formulario
     document.getElementById('cardio-form').addEventListener('submit', function() {
-      var elapsed = TOTAL_SEG - remaining;
-      var minEl = Math.floor(elapsed / 60);
-      var segEl = elapsed % 60;
-      // Si no inició, guardar el tiempo completo estimado
-      if (elapsed === 0) { minEl = {{ ejercicio_actual.ejercicio.duracion_minutos }}; segEl = 0; }
-      formMin.value = minEl;
-      formSeg.value = segEl;
+      var el = TOTAL_SEG - remaining;
+      formMin.value = el === 0 ? {{ ejercicio_actual.ejercicio.duracion_minutos }} : Math.floor(el/60);
+      formSeg.value = el === 0 ? 0 : el % 60;
     });
   })();
   {% endif %}
@@ -766,18 +662,11 @@
     var n = 5;
     var el = document.getElementById('cuenta-regresiva');
     var interval = setInterval(function() {
-      n--;
-      if (el) el.textContent = n;
-      if (n <= 0) {
-        clearInterval(interval);
-        document.getElementById('form-finalizar').submit();
-      }
+      n--; if (el) el.textContent = n;
+      if (n <= 0) { clearInterval(interval); document.getElementById('form-finalizar').submit(); }
     }, 1000);
-
-    // Si el usuario cierra el overlay, cancelar la cuenta
-    document.querySelector('[onclick*="overlay-listo"]').addEventListener('click', function() {
-      clearInterval(interval);
-    });
+    var closeBtn = document.querySelector('[onclick*="overlay-listo"]');
+    if (closeBtn) closeBtn.addEventListener('click', function() { clearInterval(interval); });
   })();
   {% endif %}
 </script>
