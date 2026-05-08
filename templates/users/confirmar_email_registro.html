@@ -79,7 +79,7 @@
 
       <button type="button" id="btn-verificar" disabled
               class="btn-calcular w-100" style="font-size:15px;margin-bottom:16px;"
-              onclick="this.disabled=true;this.innerHTML='<i class=\'bi bi-hourglass-split me-2\'></i> Verificando...';this.closest(\'form\').submit()">
+              onclick="submitOtp(this)">
         <i class="bi bi-check-circle-fill me-2"></i> Verificar código
       </button>
     </form>
@@ -125,6 +125,14 @@
 </style>
 
 <script>
+function submitOtp(btn) {
+  var code = document.getElementById('codigo-hidden').value;
+  if (code.length < 6) return;
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+  document.getElementById('otp-form').submit();
+}
+
 (function() {
   var digits = document.querySelectorAll('.otp-digit');
   digits.forEach(function(inp, i) {
