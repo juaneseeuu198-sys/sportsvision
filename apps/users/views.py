@@ -5,10 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 import random
+import requests as http_requests
 from .forms import RegistroForm, LoginForm, EditarUsuarioForm, EditarPerfilForm
 from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailVerificationToken, PhoneVerificationCode, EmailPreVerification
 
@@ -26,19 +26,26 @@ def auth_choice(request):
 
 
 def _enviar_otp_registro(email, codigo):
-    """Envía el código OTP de verificación antes de crear la cuenta."""
+    """Envía el código OTP vía Brevo HTTP API (no SMTP)."""
     html = render_to_string('users/emails/otp_registro_email.html', {
         'codigo': codigo,
         'email': email,
     })
-    send_mail(
-        subject=f'SportsVision — Tu código de verificación: {codigo}',
-        message=f'Tu código de verificación es: {codigo}. Válido por 15 minutos.',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[email],
-        html_message=html,
-        fail_silently=False,
+    resp = http_requests.post(
+        'https://api.brevo.com/v3/smtp/email',
+        headers={
+            'api-key': settings.BREVO_API_KEY,
+            'Content-Type': 'application/json',
+        },
+        json={
+            'sender': {'name': 'SportsVision', 'email': 'sportsvisionmanager@gmail.com'},
+            'to': [{'email': email}],
+            'subject': f'SportsVision — Tu código de verificación: {codigo}',
+            'htmlContent': html,
+        },
+        timeout=15,
     )
+    resp.raise_for_status()
 
 
 @csrf_exempt
