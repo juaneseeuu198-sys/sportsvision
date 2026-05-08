@@ -5,10 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 import random
-import resend
 from .forms import RegistroForm, LoginForm, EditarUsuarioForm, EditarPerfilForm
 from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailVerificationToken, PhoneVerificationCode, EmailPreVerification
 
@@ -26,18 +26,19 @@ def auth_choice(request):
 
 
 def _enviar_otp_registro(email, codigo):
-    """Envía el código OTP de verificación antes de crear la cuenta (vía Resend)."""
+    """Envía el código OTP de verificación antes de crear la cuenta."""
     html = render_to_string('users/emails/otp_registro_email.html', {
         'codigo': codigo,
         'email': email,
     })
-    resend.api_key = settings.RESEND_API_KEY
-    resend.Emails.send({
-        'from': settings.DEFAULT_FROM_EMAIL,
-        'to': [email],
-        'subject': f'SportsVision — Tu código de verificación: {codigo}',
-        'html': html,
-    })
+    send_mail(
+        subject=f'SportsVision — Tu código de verificación: {codigo}',
+        message=f'Tu código de verificación es: {codigo}. Válido por 15 minutos.',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        html_message=html,
+        fail_silently=False,
+    )
 
 
 @csrf_exempt
