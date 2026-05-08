@@ -77,8 +77,8 @@
       </li>
 
       <li>
-        <a href="{% url 'paso1_equipo' %}"
-           class="{% if request.resolver_match.url_name in 'paso1_equipo paso2_musculos paso3_ejercicios mis_rutinas iniciar_entrenamiento finalizar_entrenamiento eliminar_rutina' %}active{% endif %}">
+        <a href="{% url 'paso3_ejercicios' %}"
+           class="{% if request.resolver_match.url_name in 'paso3_ejercicios mis_rutinas iniciar_entrenamiento finalizar_entrenamiento eliminar_rutina' %}active{% endif %}">
           <i class="bi bi-trophy-fill"></i><span>Nueva Rutina</span>
         </a>
       </li>

@@ -304,7 +304,7 @@
 
 <!-- TOP BAR -->
 <div class="ae-topbar">
-  <a href="{% url 'paso2_musculos' %}" class="ae-topbar-back">
+  <a href="{% url 'mis_rutinas' %}" class="ae-topbar-back">
     <i class="bi bi-arrow-left"></i>
   </a>
   <span class="ae-topbar-title">Agregar ejercicio</span>
@@ -392,7 +392,7 @@
 {% empty %}
 <div class="ae-empty">
   No hay ejercicios para los filtros seleccionados.<br>
-  <a href="{% url 'paso1_equipo' %}" style="color:#4a9eff;">← Cambiar filtros</a>
+  <a href="{% url 'paso3_ejercicios' %}" style="color:#4a9eff;">← Limpiar filtros</a>
 </div>
 {% endfor %}
 </div>

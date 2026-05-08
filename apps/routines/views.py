@@ -317,10 +317,11 @@ def paso2_musculos(request):
 # ---- PASO 3: Selección/personalización de ejercicios ----
 @login_required
 def paso3_ejercicios(request):
-    equipos_ids = request.session.get('equipos_seleccionados', [])
-    grupos_ids = request.session.get('grupos_seleccionados', [])
+    # Filtros opcionales desde session (bottom sheets) o query params
+    equipos_ids = request.GET.getlist('equipos') or request.session.get('equipos_seleccionados', [])
+    grupos_ids = request.GET.getlist('grupos') or request.session.get('grupos_seleccionados', [])
 
-    ejercicios = Ejercicio.objects.all()
+    ejercicios = Ejercicio.objects.all().order_by('nombre')
     if equipos_ids:
         ejercicios = ejercicios.filter(equipos__id__in=equipos_ids).distinct()
     if grupos_ids:
