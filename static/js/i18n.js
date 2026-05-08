@@ -387,6 +387,41 @@
       'Hoy': 'Today',
       'Ayer': 'Yesterday',
 
+      // ── Calendario / Progreso ──
+      '← Selecciona un modo y haz clic en los días': '← Select a mode and click on the days',
+      'Entrenamiento completado': 'Workout completed',
+      'Plan Nutricional Activo': 'Active Nutritional Plan',
+      'Día de trabajo': 'Training day',
+      'Día planeado': 'Planned day',
+      'No entrenado': 'Not trained',
+      'Sin asignar': 'Unassigned',
+      'Editar plan': 'Edit plan',
+      'Entrenamiento': 'Workout',
+      'Borrar': 'Clear',
+
+      // ── Meses del año ──
+      'Enero': 'January',
+      'Febrero': 'February',
+      'Marzo': 'March',
+      'Abril': 'April',
+      'Mayo': 'May',
+      'Junio': 'June',
+      'Julio': 'July',
+      'Agosto': 'August',
+      'Septiembre': 'September',
+      'Octubre': 'October',
+      'Noviembre': 'November',
+      'Diciembre': 'December',
+
+      // ── Días de la semana (abreviados) ──
+      'Lun': 'Mon',
+      'Mar': 'Tue',
+      'Mié': 'Wed',
+      'Jue': 'Thu',
+      'Vie': 'Fri',
+      'Sáb': 'Sat',
+      'Dom': 'Sun',
+
       // ── Palabras cortas (al final para no romper frases largas) ──
       'ejercicios': 'exercises',
       'ejercicio': 'exercise',
