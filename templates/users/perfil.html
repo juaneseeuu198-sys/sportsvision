@@ -595,24 +595,28 @@ function abrirCropDesdeModal() {
   document.getElementById('avatar-file-input').click();
 }
 
-// Selección de archivo → GIF en base64 directo, otros al cropper
+var esMobil = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
 document.getElementById('avatar-file-input').addEventListener('change', function(e) {
   var file = e.target.files[0];
+  this.value = '';
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5 MB.'); this.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5 MB.'); return; }
+
   var reader = new FileReader();
-  if (file.type === 'image/gif') {
-    reader.onload = function(ev) {
-      document.getElementById('avatar_cropped').value = ev.target.result;
-      document.getElementById('form-avatar-crop').submit();
-    };
-    reader.readAsDataURL(file);
-    this.value = '';
-    return;
-  }
   reader.onload = function(ev) {
+    var b64 = ev.target.result;
+
+    // En móvil O GIF → guardar directo sin cropper
+    if (esMobil || file.type === 'image/gif') {
+      document.getElementById('avatar_cropped').value = b64;
+      document.getElementById('form-avatar-crop').submit();
+      return;
+    }
+
+    // En escritorio → cropper
     var img = document.getElementById('crop-image');
-    img.src = ev.target.result;
+    img.src = b64;
     document.getElementById('crop-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
     if (cropper) { cropper.destroy(); cropper = null; }
@@ -627,7 +631,6 @@ document.getElementById('avatar-file-input').addEventListener('change', function
     });
   };
   reader.readAsDataURL(file);
-  this.value = '';
 });
 
 document.getElementById('zoom-slider').addEventListener('input', function() {
