@@ -77,12 +77,17 @@ WSGI_APPLICATION = 'sportsvision.wsgi.application'
 import dj_database_url
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL no está configurada. "
-        "Todos los entornos deben conectarse a Railway PostgreSQL."
-    )
-DATABASES = {'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)}
+if DATABASE_URL:
+    DATABASES = {'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)}
+else:
+    # Sin DATABASE_URL: solo permitido en build-time (collectstatic).
+    # En runtime el startCommand de railway.toml falla en 'migrate' si no hay URL.
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
 
 AUTHENTICATION_BACKENDS = [
     'apps.users.backends.EmailOrUsernameBackend',
