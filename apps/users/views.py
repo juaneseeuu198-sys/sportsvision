@@ -706,6 +706,9 @@ def profesional_dashboard(request):
         return redirect('dashboard')
 
     profile = request.user.profile
+    if not profile.codigo_pro:
+        profile.generar_codigo()
+
     relaciones = RelacionProfesional.objects.filter(
         profesional=request.user
     ).select_related('usuario', 'usuario__profile').order_by('-fecha_solicitud')
@@ -798,6 +801,7 @@ def profesional_cliente(request, user_id):
     return render(request, 'users/profesional_cliente.html', ctx)
 
 
+@csrf_exempt
 @login_required
 def regenerar_codigo(request):
     """Regenera el código de invitación del profesional."""
