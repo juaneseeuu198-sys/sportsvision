@@ -292,6 +292,38 @@
   color: #555;
   font-size: 15px;
 }
+/* ── Tag equipo inline ── */
+.ae-equipo-tag {
+  display: inline-block;
+  background: #2c2c2e;
+  color: #9ca3af;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 1px 7px;
+  margin-left: 5px;
+  font-weight: 600;
+}
+/* ── Chip de filtro activo ── */
+.ae-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 16px 10px;
+}
+.ae-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #3a3a3c;
+  border: 1px solid #555;
+  border-radius: 16px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+}
+.ae-chip i { font-size: 11px; color: #aaa; }
 </style>
 {% endblock %}
 
@@ -331,6 +363,9 @@
   </button>
 </div>
 
+<!-- CHIPS DE FILTROS ACTIVOS -->
+<div class="ae-active-filters" id="active-filters"></div>
+
 <!-- RECIENTES -->
 {% if ejercicios_recientes %}
 <div id="seccion-recientes">
@@ -368,7 +403,9 @@
 <div class="ae-exercise-row ae-item"
      id="row-{{ ej.id }}"
      data-nombre="{{ ej.nombre|lower }}"
+     data-grupo-id="{{ ej.grupo_muscular.id|default:'' }}"
      data-musculo="{{ ej.grupo_muscular.nombre|lower|default:'' }}"
+     data-equipos="{% for eq in ej.equipos.all %}{{ eq.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
      onclick="toggleEjercicio({{ ej.id }}, this)">
   <div class="ae-thumb">
     {% if ej.gif %}<img src="{{ ej.gif.url }}" alt="{{ ej.nombre }}">
@@ -380,6 +417,7 @@
     <div class="ae-exercise-name">{{ ej.nombre }}</div>
     <div class="ae-exercise-muscle">
       {% if ej.grupo_muscular %}{{ ej.grupo_muscular.nombre }}{% endif %}
+      {% for eq in ej.equipos.all %}<span class="ae-equipo-tag">{{ eq.get_nombre_display }}</span>{% endfor %}
     </div>
   </div>
   <div class="ae-check-circle"><i class="bi bi-check"></i></div>
@@ -388,13 +426,14 @@
 </div>
 <div class="ae-divider ae-item"
      data-nombre="{{ ej.nombre|lower }}"
-     data-musculo="{{ ej.grupo_muscular.nombre|lower|default:'' }}"></div>
+     data-grupo-id="{{ ej.grupo_muscular.id|default:'' }}"
+     data-equipos="{% for eq in ej.equipos.all %}{{ eq.id }}{% if not forloop.last %},{% endif %}{% endfor %}"></div>
 {% empty %}
-<div class="ae-empty">
-  No hay ejercicios para los filtros seleccionados.<br>
-  <a href="{% url 'paso3_ejercicios' %}" style="color:#4a9eff;">← Limpiar filtros</a>
-</div>
+<div class="ae-empty">No hay ejercicios en la base de datos.</div>
 {% endfor %}
+<div class="ae-empty" id="sin-resultados" style="display:none">
+  Sin resultados para este filtro.
+</div>
 </div>
 
 </form>
@@ -500,44 +539,86 @@
 
 {% block extra_js %}
 <script>
-var seleccionados = new Set();
+// ── Estado de filtros y selección ──────────────────────────────────────────
+var seleccionados  = new Set();
+var equipoActivo   = null;   // id numérico o null = todos
+var grupoActivo    = null;   // id numérico o null = todos
+var equipoNombre   = '';
+var grupoNombre    = '';
 
+// ── Selección de ejercicios ────────────────────────────────────────────────
 function toggleEjercicio(id, row) {
-  var chk = document.getElementById('chk-' + id);
+  var chk  = document.getElementById('chk-' + id);
   var chkR = document.getElementById('chk-r-' + id);
   var rowR = document.getElementById('row-r-' + id);
-
   if (seleccionados.has(id)) {
     seleccionados.delete(id);
     row.classList.remove('selected');
-    if (chk) chk.checked = false;
+    if (chk)  chk.checked  = false;
     if (chkR) { chkR.checked = false; if (rowR) rowR.classList.remove('selected'); }
   } else {
     seleccionados.add(id);
     row.classList.add('selected');
-    if (chk) chk.checked = true;
+    if (chk)  chk.checked  = true;
     if (chkR) { chkR.checked = true; if (rowR) rowR.classList.add('selected'); }
   }
-
-  var btn = document.getElementById('btn-guardar');
-  var cnt = document.getElementById('count-sel');
-  cnt.textContent = seleccionados.size;
-  btn.disabled = seleccionados.size === 0;
+  document.getElementById('count-sel').textContent = seleccionados.size;
+  document.getElementById('btn-guardar').disabled  = seleccionados.size === 0;
 }
 
-function filtrarEjercicios() {
-  var q = document.getElementById('ae-search').value.toLowerCase();
-  var rows = document.querySelectorAll('.ae-item');
-  rows.forEach(function(el) {
-    var nombre = el.dataset.nombre || '';
+// ── Filtrado central (búsqueda + equipo + grupo) ───────────────────────────
+function aplicarFiltros() {
+  var q       = (document.getElementById('ae-search').value || '').toLowerCase();
+  var visible = 0;
+
+  document.querySelectorAll('.ae-item').forEach(function(el) {
+    var nombre  = el.dataset.nombre  || '';
     var musculo = el.dataset.musculo || '';
-    el.style.display = (nombre.includes(q) || musculo.includes(q)) ? '' : 'none';
+    var grupoId = el.dataset.grupoId || '';
+    var equipos = el.dataset.equipos ? el.dataset.equipos.split(',') : [];
+
+    var okSearch = !q || nombre.includes(q) || musculo.includes(q);
+    var okEquipo = !equipoActivo || equipos.indexOf(String(equipoActivo)) !== -1;
+    var okGrupo  = !grupoActivo  || grupoId === String(grupoActivo);
+
+    var show = okSearch && okEquipo && okGrupo;
+    el.style.display = show ? '' : 'none';
+    if (show && el.classList.contains('ae-exercise-row')) visible++;
   });
+
+  // Ocultar recientes si hay búsqueda o filtro activo
   var secRec = document.getElementById('seccion-recientes');
-  if (secRec) secRec.style.display = q ? 'none' : '';
+  if (secRec) secRec.style.display = (q || equipoActivo || grupoActivo) ? 'none' : '';
+
+  document.getElementById('sin-resultados').style.display = visible === 0 ? '' : 'none';
+  actualizarChips();
 }
 
-// ── Bottom sheets ──
+// ── Chips de filtros activos ────────────────────────────────────────────────
+function actualizarChips() {
+  var wrap = document.getElementById('active-filters');
+  wrap.innerHTML = '';
+  if (equipoActivo) {
+    wrap.innerHTML += '<div class="ae-chip" onclick="limpiarEquipo()">'+equipoNombre+' <i class="bi bi-x"></i></div>';
+  }
+  if (grupoActivo) {
+    wrap.innerHTML += '<div class="ae-chip" onclick="limpiarGrupo()">'+grupoNombre+' <i class="bi bi-x"></i></div>';
+  }
+}
+
+function limpiarEquipo() {
+  equipoActivo = null; equipoNombre = '';
+  // Resetear checkmarks en el sheet
+  document.querySelectorAll('#sheet-equipos .ae-sheet-check').forEach(function(ic,i){ ic.style.display = i===0 ? '' : 'none'; });
+  aplicarFiltros();
+}
+function limpiarGrupo() {
+  grupoActivo = null; grupoNombre = '';
+  document.querySelectorAll('#sheet-musculos .ae-sheet-check').forEach(function(ic,i){ ic.style.display = i===0 ? '' : 'none'; });
+  aplicarFiltros();
+}
+
+// ── Bottom sheets ──────────────────────────────────────────────────────────
 function abrirSheet(id) {
   document.getElementById('backdrop').classList.add('open');
   document.getElementById(id).classList.add('open');
@@ -547,62 +628,71 @@ function cerrarSheets() {
   document.querySelectorAll('.ae-sheet').forEach(function(s){ s.classList.remove('open'); });
 }
 
-function aplicarFiltroMusculos(id, row) {
-  var params = new URLSearchParams(window.location.search);
-  if (id) {
-    // Guardar en sesión vía navegación
-    fetch('/rutinas/set-filtros/?grupos=' + id, {credentials:'include'})
-      .then(function(){ window.location.href = '/rutinas/paso3/'; });
-  } else {
-    fetch('/rutinas/set-filtros/?grupos=', {credentials:'include'})
-      .then(function(){ window.location.href = '/rutinas/paso3/'; });
-  }
-}
 function aplicarFiltroEquipos(id, row) {
+  // Actualizar checkmarks en el sheet
+  document.querySelectorAll('#sheet-equipos .ae-sheet-check').forEach(function(ic){ ic.style.display = 'none'; });
+  var check = row.querySelector('.ae-sheet-check');
+  if (check) check.style.display = '';
+
   if (id) {
-    fetch('/rutinas/set-filtros/?equipos=' + id, {credentials:'include'})
-      .then(function(){ window.location.href = '/rutinas/paso3/'; });
+    equipoActivo  = id;
+    equipoNombre  = row.querySelector('.ae-sheet-label').textContent.trim();
   } else {
-    fetch('/rutinas/set-filtros/?equipos=', {credentials:'include'})
-      .then(function(){ window.location.href = '/rutinas/paso3/'; });
+    equipoActivo  = null;
+    equipoNombre  = '';
   }
+  cerrarSheets();
+  aplicarFiltros();
 }
 
-// ── Guardar ──
-function abrirGuardar() {
-  if (seleccionados.size === 0) {
-    alert('Selecciona al menos un ejercicio.');
-    return;
+function aplicarFiltroMusculos(id, row) {
+  document.querySelectorAll('#sheet-musculos .ae-sheet-check').forEach(function(ic){ ic.style.display = 'none'; });
+  var check = row.querySelector('.ae-sheet-check');
+  if (check) check.style.display = '';
+
+  if (id) {
+    grupoActivo  = id;
+    grupoNombre  = row.querySelector('.ae-sheet-label').textContent.trim();
+  } else {
+    grupoActivo  = null;
+    grupoNombre  = '';
   }
-  document.getElementById('nombre_hidden').value =
-    document.getElementById('nombre-rutina').value || 'Mi Rutina';
+  cerrarSheets();
+  aplicarFiltros();
+}
+
+// ── Búsqueda ──────────────────────────────────────────────────────────────
+function filtrarEjercicios() { aplicarFiltros(); }
+
+// ── Guardar ───────────────────────────────────────────────────────────────
+function abrirGuardar() {
+  if (seleccionados.size === 0) { alert('Selecciona al menos un ejercicio.'); return; }
+  document.getElementById('nombre_hidden').value = document.getElementById('nombre-rutina').value || 'Mi Rutina';
   document.getElementById('modal-programar').style.display = 'flex';
 }
 
 // Modal días
 document.querySelectorAll('.dia-btn').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    document.querySelectorAll('.dia-btn').forEach(function(b) {
-      b.style.borderColor = '#333'; b.style.background = '#2c2c2e'; b.style.color = '#888';
+    document.querySelectorAll('.dia-btn').forEach(function(b){
+      b.style.borderColor='#333'; b.style.background='#2c2c2e'; b.style.color='#888';
     });
-    btn.style.borderColor = '#4caf50'; btn.style.background = 'rgba(76,175,80,.25)'; btn.style.color = '#4caf50';
+    btn.style.borderColor='#4caf50'; btn.style.background='rgba(76,175,80,.25)'; btn.style.color='#4caf50';
     document.getElementById('dia_plan_input').value = btn.dataset.dia;
-    var conf = document.getElementById('btn-confirmar-dia');
-    conf.disabled = false; conf.style.opacity = '1';
+    var c = document.getElementById('btn-confirmar-dia'); c.disabled=false; c.style.opacity='1';
   });
 });
-
-document.getElementById('btn-confirmar-dia').addEventListener('click', function() {
-  document.getElementById('modal-programar').style.display = 'none';
+document.getElementById('btn-confirmar-dia').addEventListener('click', function(){
+  document.getElementById('modal-programar').style.display='none';
   document.getElementById('ae-form').submit();
 });
-document.getElementById('btn-sin-programar').addEventListener('click', function() {
-  document.getElementById('dia_plan_input').value = '';
-  document.getElementById('modal-programar').style.display = 'none';
+document.getElementById('btn-sin-programar').addEventListener('click', function(){
+  document.getElementById('dia_plan_input').value='';
+  document.getElementById('modal-programar').style.display='none';
   document.getElementById('ae-form').submit();
 });
-document.getElementById('modal-programar').addEventListener('click', function(e) {
-  if (e.target === this) this.style.display = 'none';
+document.getElementById('modal-programar').addEventListener('click', function(e){
+  if(e.target===this) this.style.display='none';
 });
 </script>
 {% endblock %}
