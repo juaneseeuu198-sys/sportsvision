@@ -142,13 +142,17 @@ DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', 'SportsVision <norepl
 # URL base para los enlaces en los correos
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
 
+# ── Proxy Railway (HTTPS externo, HTTP interno) ────────────────────────────────
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST    = True
+
 # ── Cookies — compatibilidad con WebView Android ──────────────────────────────
-# 'Lax' bloquea cookies en POSTs desde contextos externos (WebView los trata así).
-# 'None' permite cookies en todos los contextos; SECURE se exige solo en HTTPS.
+# SameSite=None permite que el WebView envíe cookies en todos los contextos POST.
+# Secure=False porque Railway termina TLS en el proxy (Django ve HTTP interno).
 CSRF_COOKIE_SAMESITE    = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE      = True
-SESSION_COOKIE_SECURE   = True
+CSRF_COOKIE_SECURE      = False
+SESSION_COOKIE_SECURE   = False
 
 # ── Twilio (verificación por SMS) ──────────────────────────────────────────────
 TWILIO_ACCOUNT_SID  = os.environ.get('TWILIO_ACCOUNT_SID', '')
