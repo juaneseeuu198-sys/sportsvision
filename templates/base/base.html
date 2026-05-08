@@ -179,8 +179,8 @@
     </div>
 
     <div class="sv-topbar">
-      <!-- Hamburger solo en móvil -->
-      <button class="btn-menu d-md-none" id="btnToggleMobile"><i class="bi bi-list"></i></button>
+      <!-- Hamburger solo en escritorio; en móvil se usa swipe desde el borde -->
+      <button class="btn-menu d-none d-md-block" id="btnToggleMobile"><i class="bi bi-list"></i></button>
 
       <div class="sv-topbar-spacer"></div>
 
@@ -544,8 +544,8 @@
   // ── Swipe gestures ────────────────────────────────────────────────
   var touchStartX = 0;
   var touchStartY = 0;
-  var SWIPE_THRESHOLD   = 50;   // px mínimos para contar como swipe
-  var EDGE_ZONE         = 35;   // px desde el borde izquierdo para abrir
+  var SWIPE_THRESHOLD   = 40;   // px mínimos para contar como swipe
+  var EDGE_ZONE         = 60;   // px desde el borde izquierdo para abrir
 
   document.addEventListener('touchstart', function(e) {
     touchStartX = e.touches[0].clientX;
