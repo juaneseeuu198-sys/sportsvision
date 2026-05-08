@@ -1,4 +1,4 @@
-{% extends 'base/base.html' %}
+﻿{% extends 'base/base.html' %}
 {% block title %}Nueva Rutina — Equipo{% endblock %}
 
 {% block extra_css %}
@@ -34,14 +34,14 @@
     border-radius: inherit;
   }
   .eq-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.35); }
-  .eq-card.selected { border-color: var(--sv-purple); box-shadow: 0 0 0 3px rgba(123,47,247,0.25); }
+  .eq-card.selected { border-color: var(--sv-purple); box-shadow: 0 0 0 3px rgba(107,114,128,0.25); }
   .eq-card.selected::before { opacity: 1; }
 
   /* color accent per equipo */
   .eq-banco::before         { background: linear-gradient(135deg,rgba(67,97,238,.25),rgba(67,97,238,.05)); }
   .eq-peso_corporal::before { background: linear-gradient(135deg,rgba(0,212,170,.22),rgba(0,212,170,.04)); }
   .eq-disco::before         { background: linear-gradient(135deg,rgba(249,115,22,.22),rgba(249,115,22,.04)); }
-  .eq-mancuernas::before    { background: linear-gradient(135deg,rgba(123,47,247,.25),rgba(123,47,247,.05)); }
+  .eq-mancuernas::before    { background: linear-gradient(135deg,rgba(107,114,128,.25),rgba(107,114,128,.05)); }
   .eq-barra::before         { background: linear-gradient(135deg,rgba(230,57,70,.22),rgba(230,57,70,.04)); }
   .eq-barra_dominadas::before { background: linear-gradient(135deg,rgba(0,212,170,.22),rgba(67,97,238,.08)); }
   .eq-kettlebell::before    { background: linear-gradient(135deg,rgba(244,162,97,.25),rgba(244,162,97,.05)); }
@@ -116,8 +116,8 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(123,47,247,0.15);
-    border: 1.5px solid rgba(123,47,247,0.3);
+    background: rgba(107,114,128,0.15);
+    border: 1.5px solid rgba(107,114,128,0.3);
     border-radius: 20px;
     padding: 6px 16px;
     font-size: 13px;
@@ -126,7 +126,7 @@
     margin-bottom: 20px;
     transition: all 0.2s;
   }
-  .eq-counter.has-items { background: rgba(123,47,247,0.25); border-color: var(--sv-purple); color: #fff; }
+  .eq-counter.has-items { background: rgba(107,114,128,0.25); border-color: var(--sv-purple); color: #fff; }
   .eq-counter-num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; }
 
   @media (max-width: 900px) { .eq-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -135,24 +135,24 @@
   /* ── Light mode ──────────────────────────────── */
   html.light-mode .eq-card {
     background: #ffffff;
-    border-color: rgba(123,47,247,0.18);
-    box-shadow: 0 2px 10px rgba(123,47,247,0.06);
+    border-color: rgba(107,114,128,0.18);
+    box-shadow: 0 2px 10px rgba(107,114,128,0.06);
   }
   html.light-mode .eq-card:hover {
-    box-shadow: 0 8px 24px rgba(123,47,247,0.14);
+    box-shadow: 0 8px 24px rgba(107,114,128,0.14);
   }
   html.light-mode .eq-card.selected {
     background: #fdf8f2;
     border-color: var(--sv-purple);
-    box-shadow: 0 0 0 3px rgba(123,47,247,0.18), 0 4px 16px rgba(123,47,247,0.12);
+    box-shadow: 0 0 0 3px rgba(107,114,128,0.18), 0 4px 16px rgba(107,114,128,0.12);
   }
   html.light-mode .eq-label { color: #334155; }
   html.light-mode .eq-card.selected .eq-label { color: var(--sv-purple); }
   html.light-mode .eq-icon { filter: drop-shadow(0 3px 6px rgba(0,0,0,0.1)); }
   html.light-mode .eq-bg-num { color: var(--sv-purple); opacity: 0.04; }
-  html.light-mode .eq-counter { background: rgba(123,47,247,0.07); border-color: rgba(123,47,247,0.22); }
-  html.light-mode .step-circle { background: #f3f0ff; border-color: rgba(123,47,247,0.25); color: #475569; }
-  html.light-mode .step-item.active .step-circle { background: rgba(123,47,247,0.12); border-color: var(--sv-purple); color: var(--sv-purple); }
+  html.light-mode .eq-counter { background: rgba(107,114,128,0.07); border-color: rgba(107,114,128,0.22); }
+  html.light-mode .step-circle { background: #f3f0ff; border-color: rgba(107,114,128,0.25); color: #475569; }
+  html.light-mode .step-item.active .step-circle { background: rgba(107,114,128,0.12); border-color: var(--sv-purple); color: var(--sv-purple); }
   html.light-mode .step-label { color: #64748b; }
   html.light-mode .step-sublabel { color: #94a3b8; }
   html.light-mode .step-line { background: rgba(0,0,0,0.1); }

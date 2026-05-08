@@ -1,4 +1,4 @@
-{% extends 'base/base.html' %}
+﻿{% extends 'base/base.html' %}
 {% block title %}Plan Semanal — SportsVision{% endblock %}
 
 {% block extra_css %}
@@ -31,7 +31,7 @@
   background: rgba(255,255,255,.06);
   transition: background .2s;
 }
-.dia-card.tiene-rutina { border-color: rgba(123,47,247,.35); }
+.dia-card.tiene-rutina { border-color: rgba(107,114,128,.35); }
 .dia-card.tiene-rutina::before { background: linear-gradient(90deg, var(--sv-purple), #4361ee); }
 .dia-card.es-descanso { border-color: rgba(0,212,170,.3); }
 .dia-card.es-descanso::before { background: linear-gradient(90deg, #00d4aa, #0097a7); }
@@ -113,7 +113,7 @@
   border-radius: 8px;
   margin-top: auto;
 }
-.dia-badge.badge-rutina { background: rgba(123,47,247,.2); color: #c084fc; }
+.dia-badge.badge-rutina { background: rgba(107,114,128,.2); color: #d1d5db; }
 .dia-badge.badge-descanso { background: rgba(0,212,170,.15); color: #00d4aa; }
 .dia-badge.badge-libre { background: rgba(255,255,255,.05); color: rgba(255,255,255,.3); }
 
@@ -139,7 +139,7 @@
 /* ── Banner bienvenida ───────────────────────────────── */
 .bienvenida-banner {
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-  background: linear-gradient(135deg, rgba(0,212,170,.12), rgba(123,47,247,.12));
+  background: linear-gradient(135deg, rgba(0,212,170,.12), rgba(107,114,128,.12));
   border: 1.5px solid rgba(0,212,170,.3);
   border-radius: 18px; padding: 20px 24px;
 }
@@ -156,7 +156,7 @@
 }
 .bv-btn:hover { background: rgba(0,212,170,.28); color: #00d4aa; }
 
-html.light-mode .bienvenida-banner { background: linear-gradient(135deg, rgba(0,212,170,.08), rgba(123,47,247,.06)); border-color: rgba(0,212,170,.35); }
+html.light-mode .bienvenida-banner { background: linear-gradient(135deg, rgba(0,212,170,.08), rgba(107,114,128,.06)); border-color: rgba(0,212,170,.35); }
 html.light-mode .bv-title { color: #1a1a2e; }
 html.light-mode .bv-sub   { color: #475569; }
 
@@ -165,7 +165,7 @@ html.light-mode .bv-sub   { color: #475569; }
 .plan-rec-desc     { font-size: 13px; color: rgba(255,255,255,.45); margin-bottom: 16px; }
 
 .preview-dia-card        { border-radius: 10px; padding: 6px 10px; text-align: center; min-width: 70px; }
-.preview-dia-activo      { background: rgba(123,47,247,.2); border: 1.5px solid rgba(123,47,247,.4); }
+.preview-dia-activo      { background: rgba(107,114,128,.2); border: 1.5px solid rgba(107,114,128,.4); }
 .preview-dia-descanso    { background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.1); }
 .preview-dia-nombre      { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .5px; }
 .preview-dia-icon        { font-size: 16px; line-height: 1.4; }
@@ -186,7 +186,7 @@ html.light-mode .bv-sub   { color: #475569; }
 .dias-radio:checked + .modal-pill,
 .nivel-radio:checked + .modal-pill {
   border-color: var(--sv-purple);
-  background: rgba(123,47,247,.22);
+  background: rgba(107,114,128,.22);
   color: #fff;
 }
 .eq-check-label { color: rgba(255,255,255,.7); }
@@ -203,12 +203,12 @@ html.light-mode .preview-dia-descanso   { background: rgba(0,0,0,.04); border-co
 html.light-mode .preview-dia-nombre     { color: #64748b; }
 html.light-mode .preview-dia-rutina     { color: #94a3b8; }
 
-html.light-mode .dia-card               { background: #fdf8f2; border-color: rgba(123,47,247,.22); box-shadow: 0 2px 10px rgba(123,47,247,.06); }
-html.light-mode .dia-card::before       { background: rgba(123,47,247,.08); }
-html.light-mode .dia-card.tiene-rutina  { border-color: rgba(123,47,247,.45); box-shadow: 0 2px 12px rgba(123,47,247,.12); }
+html.light-mode .dia-card               { background: #fdf8f2; border-color: rgba(107,114,128,.22); box-shadow: 0 2px 10px rgba(107,114,128,.06); }
+html.light-mode .dia-card::before       { background: rgba(107,114,128,.08); }
+html.light-mode .dia-card.tiene-rutina  { border-color: rgba(107,114,128,.45); box-shadow: 0 2px 12px rgba(107,114,128,.12); }
 html.light-mode .dia-card.es-descanso   { border-color: rgba(0,212,170,.4); box-shadow: 0 2px 12px rgba(0,212,170,.08); }
 html.light-mode .dia-nombre             { color: #1a1a2e; }
-html.light-mode .dia-select             { background: #f3f0ff; border-color: rgba(123,47,247,.2); color: #1a1a2e; }
+html.light-mode .dia-select             { background: #f3f0ff; border-color: rgba(107,114,128,.2); color: #1a1a2e; }
 html.light-mode .dia-select option      { background: #fff; color: #1a1a2e; }
 html.light-mode .toggle-track          { background: rgba(0,0,0,.12); }
 html.light-mode .descanso-label        { color: #64748b; }
@@ -217,7 +217,7 @@ html.light-mode .legend-item           { color: #475569; }
 html.light-mode .legend-dot[style*="rgba(255,255,255"] { background: #cbd5e1 !important; }
 html.light-mode .modal-pill                              { background: #ede8df; border-color: rgba(0,0,0,.12); color: #64748b; }
 html.light-mode .dias-radio:checked + .modal-pill,
-html.light-mode .nivel-radio:checked + .modal-pill       { background: rgba(123,47,247,.15); border-color: var(--sv-purple); color: var(--sv-purple); }
+html.light-mode .nivel-radio:checked + .modal-pill       { background: rgba(107,114,128,.15); border-color: var(--sv-purple); color: var(--sv-purple); }
 html.light-mode .eq-check-label      { color: #475569; border-color: rgba(0,0,0,.1) !important; background: #f8fafc !important; }
 </style>
 {% endblock %}
@@ -384,7 +384,7 @@ html.light-mode .eq-check-label      { color: #475569; border-color: rgba(0,0,0,
     </div>
 
     {% if not rutinas %}
-    <div style="text-align:center;padding:20px;background:rgba(123,47,247,.07);border:1.5px solid rgba(123,47,247,.2);border-radius:16px;margin-bottom:24px;">
+    <div style="text-align:center;padding:20px;background:rgba(107,114,128,.07);border:1.5px solid rgba(107,114,128,.2);border-radius:16px;margin-bottom:24px;">
       <i class="bi bi-info-circle" style="font-size:24px;color:var(--sv-purple-light);display:block;margin-bottom:8px;"></i>
       <p style="color:rgba(255,255,255,.5);font-size:13px;margin:0;">
         Aún no tienes rutinas.
@@ -404,7 +404,7 @@ html.light-mode .eq-check-label      { color: #475569; border-color: rgba(0,0,0,
 <!-- ═══════════ MODAL GENERADOR AUTOMÁTICO ═══════════ -->
 <div id="modal-auto" style="display:none;position:fixed;inset:0;z-index:9999;
      background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#0d1b2a;border:1.5px solid rgba(123,47,247,.4);border-radius:24px;
+  <div style="background:#0d1b2a;border:1.5px solid rgba(107,114,128,.4);border-radius:24px;
               padding:32px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;
               box-shadow:0 24px 60px rgba(0,0,0,.8);">
 
@@ -477,7 +477,7 @@ html.light-mode .eq-check-label      { color: #475569; border-color: rgba(0,0,0,
         </div>
       </div>
 
-      <div style="background:rgba(123,47,247,.08);border:1.5px solid rgba(123,47,247,.2);
+      <div style="background:rgba(107,114,128,.08);border:1.5px solid rgba(107,114,128,.2);
                   border-radius:12px;padding:12px;margin-bottom:20px;font-size:12px;color:rgba(255,255,255,.5);">
         <i class="bi bi-info-circle me-1" style="color:var(--sv-purple-light);"></i>
         Esto creará nuevas rutinas y reemplazará el plan semanal actual.

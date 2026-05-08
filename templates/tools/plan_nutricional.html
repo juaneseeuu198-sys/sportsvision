@@ -1,4 +1,4 @@
-{% extends 'base/base.html' %}
+﻿{% extends 'base/base.html' %}
 {% block title %}Plan Nutricional — SportsVision{% endblock %}
 
 {% block extra_css %}
@@ -68,8 +68,8 @@
     transition: all 0.2s;
   }
   .objetivo-btn i { display: block; font-size: 28px; margin-bottom: 8px; }
-  .objetivo-btn:hover { border-color: var(--sv-purple); color: #fff; background: rgba(123,47,247,0.12); }
-  .objetivo-btn.selected { border-color: var(--sv-purple); background: rgba(123,47,247,0.25); color: #fff; }
+  .objetivo-btn:hover { border-color: var(--sv-purple); color: #fff; background: rgba(107,114,128,0.12); }
+  .objetivo-btn.selected { border-color: var(--sv-purple); background: rgba(107,114,128,0.25); color: #fff; }
 
   .restriction-grid { display: flex; flex-wrap: wrap; gap: 10px; }
   .restriction-pill {
@@ -123,7 +123,7 @@
   }
   .meal-item:hover { border-color: var(--sv-purple); }
   .meal-time-badge {
-    background: rgba(123,47,247,0.2); color: var(--sv-purple-light);
+    background: rgba(107,114,128,0.2); color: var(--sv-purple-light);
     border-radius: 10px; padding: 6px 12px;
     font-size: 12px; font-weight: 700;
     white-space: nowrap; min-width: 80px; text-align: center;
@@ -139,8 +139,8 @@
   .pill-cal { background: rgba(0,212,170,0.2); color: var(--sv-green); }
 
   .cal-summary {
-    background: linear-gradient(135deg, rgba(123,47,247,0.2), rgba(67,97,238,0.2));
-    border: 1.5px solid rgba(123,47,247,0.4);
+    background: linear-gradient(135deg, rgba(107,114,128,0.2), rgba(67,97,238,0.2));
+    border: 1.5px solid rgba(107,114,128,0.4);
     border-radius: 16px; padding: 20px 24px;
     display: flex; align-items: center; justify-content: space-between;
     gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
@@ -172,7 +172,7 @@
   .pn-loading { text-align: center; padding: 60px 20px; }
   .pn-spinner {
     width: 56px; height: 56px;
-    border: 4px solid rgba(123,47,247,0.2);
+    border: 4px solid rgba(107,114,128,0.2);
     border-top-color: var(--sv-purple);
     border-radius: 50%;
     animation: spin 0.9s linear infinite;
@@ -329,7 +329,7 @@
           <i class="bi bi-bar-chart-fill" style="color:#00d4aa;"></i>Mantenerse
         </button>
         <button type="button" class="objetivo-btn" data-obj="definicion" onclick="setObjetivo(this)">
-          <i class="bi bi-person-fill" style="color:#9d5cf6;"></i>Definición
+          <i class="bi bi-person-fill" style="color:#9ca3af;"></i>Definición
         </button>
         <button type="button" class="objetivo-btn" data-obj="volumen" onclick="setObjetivo(this)">
           <i class="bi bi-graph-up-arrow" style="color:#4361ee;"></i>Volumen máximo
@@ -484,7 +484,7 @@
 <div id="modal-guardar-plan" style="display:none;position:fixed;inset:0;z-index:9999;
      background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
      align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#0d1b2a;border:1.5px solid rgba(123,47,247,.4);border-radius:24px;
+  <div style="background:#0d1b2a;border:1.5px solid rgba(107,114,128,.4);border-radius:24px;
               padding:32px 28px;max-width:440px;width:100%;
               box-shadow:0 24px 60px rgba(0,0,0,.8);">
     <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:#fff;margin:0 0 8px;">

@@ -1,4 +1,4 @@
-/* ============================================
+﻿/* ============================================
    SPORTSVISION — Main Stylesheet
    Dark theme | Bootstrap 5 base
    ============================================ */
@@ -10,8 +10,8 @@
   --sv-bg-card:      #16213e;
   --sv-bg-panel:     #0d1b2a;
   --sv-sidebar-bg:   #1e1e2e;
-  --sv-purple:       #7b2ff7;
-  --sv-purple-light: #9d5cf6;
+  --sv-purple:       #6b7280;
+  --sv-purple-light: #9ca3af;
   --sv-green:        #00d4aa;
   --sv-red:          #e63946;
   --sv-orange:       #f97316;
@@ -105,7 +105,7 @@ body.sv-body {
   width: 52px; height: 52px;
   border-radius: 50%;
   overflow: hidden;
-  background: rgba(123,47,247,0.2);
+  background: rgba(107,114,128,0.2);
   border: 2px solid var(--sv-purple);
   display: flex; align-items: center; justify-content: center;
   font-size: 24px; color: var(--sv-purple-light);
@@ -190,7 +190,7 @@ body.sv-body {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 340px;
-  background: linear-gradient(180deg, rgba(123,47,247,0.09) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(107,114,128,0.09) 0%, transparent 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -219,7 +219,7 @@ body.sv-body {
 .topbar-avatar-btn {
   width: 40px; height: 40px;
   border-radius: 50%;
-  background: rgba(123,47,247,0.2);
+  background: rgba(107,114,128,0.2);
   border: 2px solid var(--sv-purple);
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; color: var(--sv-purple-light);
@@ -230,7 +230,7 @@ body.sv-body {
 }
 .topbar-avatar-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 0 0 4px rgba(123,47,247,0.25);
+  box-shadow: 0 0 0 4px rgba(107,114,128,0.25);
   border-color: var(--sv-purple-light);
 }
 .topbar-avatar-btn img {
@@ -240,7 +240,7 @@ body.sv-body {
 .topbar-logo, .logo-placeholder-sm {
   width: 40px; height: 40px;
   border-radius: 50%;
-  background: rgba(123,47,247,0.2);
+  background: rgba(107,114,128,0.2);
   border: 2px solid var(--sv-purple);
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; color: var(--sv-purple-light);
@@ -464,7 +464,7 @@ body.sv-body {
 }
 .sv-input:focus {
   border-color: var(--sv-purple-light) !important;
-  box-shadow: 0 0 0 3px rgba(123,47,247,0.2) !important;
+  box-shadow: 0 0 0 3px rgba(107,114,128,0.2) !important;
   outline: none !important;
   background: rgba(255,255,255,0.08) !important;
 }
@@ -506,8 +506,8 @@ body.sv-body {
   padding: 0 40px;
   height: 60px;
   z-index: 100;
-  background: linear-gradient(135deg, #4a0e8f, #7b2ff7);
-  box-shadow: 0 4px 24px rgba(123,47,247,0.45);
+  background: linear-gradient(135deg, #374151, #6b7280);
+  box-shadow: 0 4px 24px rgba(107,114,128,0.45);
 }
 .nav-links { display: flex; gap: 28px; }
 .nav-links a { color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; cursor: pointer; transition: color 0.2s; }
@@ -665,7 +665,7 @@ body.sv-body {
   color: #555;
   transition: all 0.3s;
 }
-.step-item.active .step-circle  { border-color: var(--sv-purple); color: var(--sv-purple); background: rgba(123,47,247,0.15); }
+.step-item.active .step-circle  { border-color: var(--sv-purple); color: var(--sv-purple); background: rgba(107,114,128,0.15); }
 .step-item.done .step-circle    { border-color: var(--sv-green); background: var(--sv-green); color: #000; }
 .step-label { font-size: 12px; font-weight: 700; color: #666; text-align: center; }
 .step-item.active .step-label { color: var(--sv-purple-light); }
@@ -700,7 +700,7 @@ body.sv-body {
   transition: border-color 0.2s, transform 0.2s;
   overflow: hidden;
 }
-.equip-card.selected { border-color: var(--sv-purple) !important; background: rgba(123,47,247,0.15); }
+.equip-card.selected { border-color: var(--sv-purple) !important; background: rgba(107,114,128,0.15); }
 .equip-card:hover { transform: translateY(-3px); }
 
 .sel-dot {
@@ -740,7 +740,7 @@ body.sv-body {
   cursor: pointer;
   transition: all 0.2s;
 }
-.muscle-btn.active { border-color: var(--sv-purple); color: var(--sv-purple-light); background: rgba(123,47,247,0.15); }
+.muscle-btn.active { border-color: var(--sv-purple); color: var(--sv-purple-light); background: rgba(107,114,128,0.15); }
 
 /* Exercises list */
 .exercises-list-wrap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
@@ -753,7 +753,7 @@ body.sv-body {
   padding: 12px 16px; gap: 12px;
   transition: border-color 0.2s;
 }
-.exercise-row.selected { border-color: var(--sv-purple); background: rgba(123,47,247,0.08); }
+.exercise-row.selected { border-color: var(--sv-purple); background: rgba(107,114,128,0.08); }
 .ex-thumb {
   width: 50px; height: 50px;
   border-radius: 8px; overflow: hidden; flex-shrink: 0;
@@ -891,7 +891,7 @@ body.sv-body {
   margin-bottom: 10px;
   transition: background 0.2s;
 }
-.btn-add-attr:hover { background: rgba(123,47,247,0.2); }
+.btn-add-attr:hover { background: rgba(107,114,128,0.2); }
 
 .btn-finish-set {
   width: 100%; padding: 13px;
@@ -935,13 +935,13 @@ body.sv-body {
 }
 .finish-box {
   background: rgba(8, 10, 22, 0.92);
-  border: 1.5px solid rgba(123,47,247,0.35);
+  border: 1.5px solid rgba(107,114,128,0.35);
   border-radius: 28px;
   padding: 56px 48px 48px;
   width: 100%;
   max-width: 700px;
   text-align: center;
-  box-shadow: 0 0 60px rgba(123,47,247,0.12), 0 24px 80px rgba(0,0,0,0.6);
+  box-shadow: 0 0 60px rgba(107,114,128,0.12), 0 24px 80px rgba(0,0,0,0.6);
   position: relative;
   overflow: hidden;
 }
@@ -955,7 +955,7 @@ body.sv-body {
   align-items: center;
   justify-content: center;
   width: 110px; height: 110px;
-  background: linear-gradient(135deg, rgba(123,47,247,0.25), rgba(0,230,180,0.12));
+  background: linear-gradient(135deg, rgba(107,114,128,0.25), rgba(0,230,180,0.12));
   border: 2px solid rgba(245,197,24,0.4);
   border-radius: 50%;
   margin-bottom: 28px;
@@ -1036,8 +1036,8 @@ body.sv-body {
 .finish-sets-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .finish-set-pill {
   display: flex; align-items: center; gap: 6px;
-  background: rgba(123,47,247,0.15);
-  border: 1px solid rgba(123,47,247,0.3);
+  background: rgba(107,114,128,0.15);
+  border: 1px solid rgba(107,114,128,0.3);
   border-radius: 20px;
   padding: 5px 14px;
   font-size: 13px; font-weight: 700;
@@ -1142,7 +1142,7 @@ html.light-mode .gender-btn-f.active { background: rgba(236,72,153,0.1); color: 
   font-weight: 700; font-size: 15px; cursor: pointer;
   transition: all 0.2s;
 }
-.level-btn.active { border-color: var(--sv-purple); background: rgba(123,47,247,0.2); color: #fff; }
+.level-btn.active { border-color: var(--sv-purple); background: rgba(107,114,128,0.2); color: #fff; }
 
 .sv-range {
   width: 100%;
@@ -1279,11 +1279,11 @@ html.light-mode .gender-btn-f.active { background: rgba(236,72,153,0.1); color: 
 }
 .cal-cell:hover { background: rgba(255,255,255,0.03); }
 .cal-cell:nth-child(7n) { border-right: none; }
-.cal-cell.has-workout { background: rgba(123,47,247,0.05); }
-.cal-cell.selected-day { background: rgba(123,47,247,0.12); }
+.cal-cell.has-workout { background: rgba(107,114,128,0.05); }
+.cal-cell.selected-day { background: rgba(107,114,128,0.12); }
 .cal-dot { width: 10px; height: 10px; border-radius: 50%; margin-bottom: 4px; }
 .dot-purple { background: var(--sv-purple); }
-.dot-outline { background: transparent; border: 2px solid rgba(123,47,247,0.5); }
+.dot-outline { background: transparent; border: 2px solid rgba(107,114,128,0.5); }
 .cal-number { position: absolute; bottom: 6px; right: 8px; font-size: 18px; font-weight: 900; color: var(--sv-purple); }
 
 .day-detail-panel {
@@ -1291,7 +1291,7 @@ html.light-mode .gender-btn-f.active { background: rgba(236,72,153,0.1); color: 
   border: 1.5px solid var(--sv-border);
   border-radius: 16px; padding: 24px;
 }
-.day-workout-card { background: rgba(123,47,247,0.08); border-radius: 12px; padding: 16px; }
+.day-workout-card { background: rgba(107,114,128,0.08); border-radius: 12px; padding: 16px; }
 .muscle-tag { font-size: 11px; color: var(--sv-purple-light); font-weight: 600; margin-left: 6px; }
 .day-serie { color: var(--sv-muted); font-size: 12px; margin-left: 12px; }
 .no-workout-msg {
@@ -1395,7 +1395,7 @@ html.light-mode .gender-btn-f.active { background: rgba(236,72,153,0.1); color: 
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 320px;
-  background: linear-gradient(180deg, rgba(123,47,247,0.09) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(107,114,128,0.09) 0%, transparent 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -1437,8 +1437,8 @@ html.light-mode .gender-btn-f.active { background: rgba(236,72,153,0.1); color: 
   align-items: center;
   gap: 7px;
   padding: 9px 18px;
-  background: rgba(123,47,247,0.15);
-  border: 1.5px solid rgba(123,47,247,0.4);
+  background: rgba(107,114,128,0.15);
+  border: 1.5px solid rgba(107,114,128,0.4);
   border-radius: 30px;
   color: var(--sv-purple-light);
   text-decoration: none;
@@ -1447,7 +1447,7 @@ html.light-mode .gender-btn-f.active { background: rgba(236,72,153,0.1); color: 
   white-space: nowrap;
   transition: all 0.2s;
 }
-.page-back-btn:hover { background: rgba(123,47,247,0.3); color: #fff; border-color: var(--sv-purple); }
+.page-back-btn:hover { background: rgba(107,114,128,0.3); color: #fff; border-color: var(--sv-purple); }
 .page-back-btn i { font-size: 15px; }
 
 /* ============================================
@@ -1469,20 +1469,20 @@ html.light-mode body.sv-body {
 
 /* Main */
 html.light-mode .sv-main { background: #f3ede4; }
-html.light-mode .sv-main::before { background: linear-gradient(180deg, rgba(123,47,247,0.05) 0%, transparent 100%); }
+html.light-mode .sv-main::before { background: linear-gradient(180deg, rgba(107,114,128,0.05) 0%, transparent 100%); }
 
 /* Sidebar */
 html.light-mode .sv-sidebar { background: #ffffff; border-right: 1px solid rgba(0,0,0,0.08); box-shadow: 2px 0 12px rgba(0,0,0,0.06); }
 html.light-mode .btn-menu { color: #1a1a2e !important; }
 html.light-mode .sidebar-nav a { color: #475569; }
 html.light-mode .sidebar-nav a:hover,
-html.light-mode .sidebar-nav a.active { color: var(--sv-purple); background: rgba(123,47,247,0.07); }
+html.light-mode .sidebar-nav a.active { color: var(--sv-purple); background: rgba(107,114,128,0.07); }
 html.light-mode .sidebar-bottom { border-top-color: rgba(0,0,0,0.08); }
 html.light-mode .sidebar-top { border-bottom-color: rgba(0,0,0,0.08); }
 
 /* Topbar mobile */
 html.light-mode .sv-topbar { background: #ffffff; border-bottom-color: rgba(0,0,0,0.08); }
-html.light-mode .topbar-avatar-btn { background: rgba(123,47,247,0.1); }
+html.light-mode .topbar-avatar-btn { background: rgba(107,114,128,0.1); }
 
 /* Typography — override hardcoded whites */
 html.light-mode .sv-welcome,
@@ -1497,9 +1497,9 @@ html.light-mode .rutina-info  { color: #7a6a58; }
 html.light-mode .text-muted   { color: #7a6a58 !important; }
 
 /* Cards & panels — borde morado claro en light mode */
-html.light-mode .sv-panel         { background: #fdf8f2; border-color: rgba(123,47,247,0.22); color: #1a1a2e; box-shadow: 0 2px 12px rgba(123,47,247,0.06); }
-html.light-mode .rutina-card      { background: #fdf8f2; border-color: rgba(123,47,247,0.2); }
-html.light-mode .dash-stat        { background: #fdf8f2; border-color: rgba(123,47,247,0.2); box-shadow: 0 2px 10px rgba(123,47,247,0.05); }
+html.light-mode .sv-panel         { background: #fdf8f2; border-color: rgba(107,114,128,0.22); color: #1a1a2e; box-shadow: 0 2px 12px rgba(107,114,128,0.06); }
+html.light-mode .rutina-card      { background: #fdf8f2; border-color: rgba(107,114,128,0.2); }
+html.light-mode .dash-stat        { background: #fdf8f2; border-color: rgba(107,114,128,0.2); box-shadow: 0 2px 10px rgba(107,114,128,0.05); }
 html.light-mode .dash-stat-val    { color: var(--sv-purple); }
 html.light-mode .dash-stat-lbl    { color: #64748b; }
 html.light-mode .dash-stat-icon   { color: var(--sv-purple); }
@@ -1529,52 +1529,52 @@ html.light-mode .set-detail      { color: #64748b; }
 html.light-mode .set-card               { background: #f5efe6; border-color: rgba(0,0,0,0.1); }
 html.light-mode .set-card.active        { background: #ffffff; }
 html.light-mode .ex-name                { color: #1a1a2e; }
-html.light-mode .ex-muscle-tag          { background: rgba(123,47,247,0.1); color: var(--sv-purple); }
+html.light-mode .ex-muscle-tag          { background: rgba(107,114,128,0.1); color: var(--sv-purple); }
 
 /* Finish screen */
-html.light-mode .finish-box             { background: #fdf8f2; border-color: rgba(123,47,247,0.3); box-shadow: 0 8px 40px rgba(123,47,247,0.1); }
+html.light-mode .finish-box             { background: #fdf8f2; border-color: rgba(107,114,128,0.3); box-shadow: 0 8px 40px rgba(107,114,128,0.1); }
 html.light-mode .finish-title           { background: linear-gradient(135deg, #1a1a2e 30%, var(--sv-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 html.light-mode .finish-subtitle        { color: #64748b; }
-html.light-mode .finish-stat-card       { background: #fdf8f2; border-color: rgba(123,47,247,0.18); }
+html.light-mode .finish-stat-card       { background: #fdf8f2; border-color: rgba(107,114,128,0.18); }
 html.light-mode .finish-stat-card .fsc-label { color: #64748b; }
-html.light-mode .finish-summary-panel   { background: #fdf8f2; border-color: rgba(123,47,247,0.16); }
+html.light-mode .finish-summary-panel   { background: #fdf8f2; border-color: rgba(107,114,128,0.16); }
 html.light-mode .finish-summary-panel h5 { color: #64748b; }
-html.light-mode .finish-ex-card         { background: #ffffff; border-color: rgba(123,47,247,0.14); }
-html.light-mode .finish-set-pill        { background: rgba(123,47,247,0.08); border-color: rgba(123,47,247,0.2); }
+html.light-mode .finish-ex-card         { background: #ffffff; border-color: rgba(107,114,128,0.14); }
+html.light-mode .finish-set-pill        { background: rgba(107,114,128,0.08); border-color: rgba(107,114,128,0.2); }
 html.light-mode .finish-set-pill .set-data { color: #64748b; }
 
 /* Plan semanal */
-html.light-mode .plan-day-card       { background: #fdf8f2; border-color: rgba(123,47,247,0.2); color: #1a1a2e; }
+html.light-mode .plan-day-card       { background: #fdf8f2; border-color: rgba(107,114,128,0.2); color: #1a1a2e; }
 html.light-mode .plan-day-card:hover { border-color: var(--sv-purple); }
 
 /* Tools */
-html.light-mode .tool-card              { background: #fdf8f2; border-color: rgba(123,47,247,0.2); color: #1a1a2e; box-shadow: 0 2px 10px rgba(123,47,247,0.05); }
-html.light-mode .tool-card:hover        { border-color: var(--sv-purple); color: #1a1a2e; box-shadow: 0 4px 18px rgba(123,47,247,0.12); }
+html.light-mode .tool-card              { background: #fdf8f2; border-color: rgba(107,114,128,0.2); color: #1a1a2e; box-shadow: 0 2px 10px rgba(107,114,128,0.05); }
+html.light-mode .tool-card:hover        { border-color: var(--sv-purple); color: #1a1a2e; box-shadow: 0 4px 18px rgba(107,114,128,0.12); }
 html.light-mode .tool-title             { color: #1a1a2e; }
 html.light-mode .tool-desc              { color: #64748b; }
-html.light-mode .result-card            { background: #fdf8f2; border-color: rgba(123,47,247,0.18); color: #1a1a2e; }
-html.light-mode .macro-card             { background: #fdf8f2; border-color: rgba(123,47,247,0.18); color: #1a1a2e; }
+html.light-mode .result-card            { background: #fdf8f2; border-color: rgba(107,114,128,0.18); color: #1a1a2e; }
+html.light-mode .macro-card             { background: #fdf8f2; border-color: rgba(107,114,128,0.18); color: #1a1a2e; }
 html.light-mode .result-val             { color: #1a1a2e; }
 html.light-mode .result-lbl             { color: #64748b; }
 html.light-mode .imc-circle-label       { color: rgba(0,0,0,0.6); }
-html.light-mode .level-btn              { color: #1a1a2e; border-color: rgba(123,47,247,0.2); background: #fdf8f2; }
+html.light-mode .level-btn              { color: #1a1a2e; border-color: rgba(107,114,128,0.2); background: #fdf8f2; }
 html.light-mode .level-btn.active       { color: #fff; background: var(--sv-purple); border-color: var(--sv-purple); }
 
 /* Progress / calendar */
-html.light-mode .calendar-day           { background: #fdf8f2; border-color: rgba(123,47,247,0.15); color: #1a1a2e; }
-html.light-mode .calendar-day.has-training { background: rgba(123,47,247,0.1); }
+html.light-mode .calendar-day           { background: #fdf8f2; border-color: rgba(107,114,128,0.15); color: #1a1a2e; }
+html.light-mode .calendar-day.has-training { background: rgba(107,114,128,0.1); }
 html.light-mode .calendar-title         { color: #1a1a2e; }
 
 /* Equipment / muscle selector */
-html.light-mode .equip-card             { background: #fdf8f2; border-color: rgba(123,47,247,0.18); color: #1a1a2e; }
+html.light-mode .equip-card             { background: #fdf8f2; border-color: rgba(107,114,128,0.18); color: #1a1a2e; }
 html.light-mode .equip-card span        { color: #475569; }
 
 /* Decoración de fondo — casi invisible en modo claro */
 html.light-mode .fitness-bg-deco i { opacity: 0.008 !important; }
 
 /* Page navigation */
-html.light-mode .page-back-btn          { color: var(--sv-purple); background: rgba(123,47,247,0.06); border-color: rgba(123,47,247,0.25); }
-html.light-mode .page-back-btn:hover    { background: rgba(123,47,247,0.15); color: var(--sv-purple); border-color: var(--sv-purple); }
+html.light-mode .page-back-btn          { color: var(--sv-purple); background: rgba(107,114,128,0.06); border-color: rgba(107,114,128,0.25); }
+html.light-mode .page-back-btn:hover    { background: rgba(107,114,128,0.15); color: var(--sv-purple); border-color: var(--sv-purple); }
 html.light-mode .page-breadcrumb        { color: #64748b; }
 html.light-mode .page-breadcrumb a      { color: var(--sv-purple); }
 
@@ -1594,7 +1594,7 @@ html.light-mode .alert-warning { background: rgba(245,158,11,0.08); border-color
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 22px;
-  background: linear-gradient(135deg, #4361ee, #7b2ff7);
+  background: linear-gradient(135deg, #4361ee, #6b7280);
   color: #fff;
   box-shadow: 0 4px 20px rgba(67,97,238,0.45);
   transition: transform .2s, box-shadow .2s;
@@ -1604,7 +1604,7 @@ html.light-mode .alert-warning { background: rgba(245,158,11,0.08); border-color
   transform: scale(1.1);
   box-shadow: 0 6px 28px rgba(67,97,238,0.65);
 }
-html.light-mode .help-fab { background: linear-gradient(135deg, #4361ee, #7b2ff7); }
+html.light-mode .help-fab { background: linear-gradient(135deg, #4361ee, #6b7280); }
 
 /* ── Modal del manual ── */
 .manual-overlay {
@@ -1709,7 +1709,7 @@ html.light-mode .help-fab { background: linear-gradient(135deg, #4361ee, #7b2ff7
 /* light mode */
 html.light-mode .manual-modal { background: #fdf8f2; }
 html.light-mode .manual-search { background: rgba(0,0,0,.04); }
-html.light-mode .manual-item { background: rgba(123,47,247,.03); border-color: rgba(123,47,247,.12); }
+html.light-mode .manual-item { background: rgba(107,114,128,.03); border-color: rgba(107,114,128,.12); }
 html.light-mode .manual-item:hover { background: rgba(67,97,238,.07); }
 
 /* Theme toggle FAB */
@@ -1729,12 +1729,12 @@ html.light-mode .manual-item:hover { background: rgba(67,97,238,.07); }
   z-index: 1200;
   background: var(--sv-purple);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(123,47,247,0.45);
+  box-shadow: 0 4px 20px rgba(107,114,128,0.45);
   transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .theme-fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 28px rgba(123,47,247,0.6);
+  box-shadow: 0 6px 28px rgba(107,114,128,0.6);
 }
 html.light-mode .theme-fab {
   background: #1a1a2e;

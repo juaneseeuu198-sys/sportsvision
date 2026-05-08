@@ -1,4 +1,4 @@
-{% extends 'base/base.html' %}
+﻿{% extends 'base/base.html' %}
 {% load static %}
 {% block title %}Dashboard — SportsVision{% endblock %}
 
@@ -48,7 +48,7 @@
   text-align: center;
   transition: border-color .2s, transform .2s;
 }
-.dash-stat:hover { border-color: rgba(123,47,247,.4); transform: translateY(-2px); }
+.dash-stat:hover { border-color: rgba(107,114,128,.4); transform: translateY(-2px); }
 .dash-stat-val {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 40px;
@@ -101,8 +101,8 @@
 .card-green::before { background: #00d4aa; }
 .card-red   { background: linear-gradient(145deg,#3a1a1a,#2a1010); border-color: rgba(230,57,70,.35); }
 .card-red::before { background: #e63946; }
-.card-purple{ background: linear-gradient(145deg,#2a1a4a,#1e1035); border-color: rgba(123,47,247,.35); }
-.card-purple::before { background: #7b2ff7; }
+.card-purple{ background: linear-gradient(145deg,#2a1a4a,#1e1035); border-color: rgba(107,114,128,.35); }
+.card-purple::before { background: #6b7280; }
 
 .ac-icon {
   width: 56px; height: 56px;
@@ -114,7 +114,7 @@
 .card-blue .ac-icon   { background: rgba(67,97,238,.22);  color: #7b9ffb; }
 .card-green .ac-icon  { background: rgba(0,212,170,.18);  color: #00d4aa; }
 .card-red .ac-icon    { background: rgba(230,57,70,.18);  color: #f87171; }
-.card-purple .ac-icon { background: rgba(123,47,247,.2);  color: #c084fc; }
+.card-purple .ac-icon { background: rgba(107,114,128,.2);  color: #d1d5db; }
 
 .ac-title {
   font-weight: 800;
@@ -175,11 +175,11 @@
   height: 3px;
   border-radius: 18px 18px 0 0;
 }
-.rutina-card2:hover { border-color: rgba(123,47,247,.35); transform: translateY(-3px); }
+.rutina-card2:hover { border-color: rgba(107,114,128,.35); transform: translateY(-3px); }
 
 .rutina-card2.nivel-principiante::before { background: linear-gradient(90deg,#00d4aa,#4361ee); }
 .rutina-card2.nivel-intermedio::before   { background: linear-gradient(90deg,#f97316,#f59e0b); }
-.rutina-card2.nivel-avanzado::before     { background: linear-gradient(90deg,#e63946,#7b2ff7); }
+.rutina-card2.nivel-avanzado::before     { background: linear-gradient(90deg,#e63946,#6b7280); }
 
 .rcard-name {
   font-weight: 800;
@@ -263,14 +263,14 @@ html.light-mode .dash-greeting          { color: #64748b; }
 html.light-mode .dash-name              { background: linear-gradient(135deg, #1a1a2e 30%, var(--sv-purple) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 html.light-mode .dash-subtitle          { color: #64748b; }
 
-html.light-mode .dash-stat              { background: #fdf8f2; border-color: rgba(123,47,247,0.22); box-shadow: 0 2px 10px rgba(123,47,247,0.06); }
+html.light-mode .dash-stat              { background: #fdf8f2; border-color: rgba(107,114,128,0.22); box-shadow: 0 2px 10px rgba(107,114,128,0.06); }
 html.light-mode .dash-stat-val          { color: var(--sv-purple); }
 html.light-mode .dash-stat-lbl          { color: #64748b; }
 
 html.light-mode .dash-section-title     { color: #1a1a2e; }
 
-html.light-mode .rutina-card2           { background: #fdf8f2; border-color: rgba(123,47,247,0.22); box-shadow: 0 2px 10px rgba(123,47,247,0.05); }
-html.light-mode .rutina-card2:hover     { border-color: var(--sv-purple); box-shadow: 0 4px 18px rgba(123,47,247,0.12); }
+html.light-mode .rutina-card2           { background: #fdf8f2; border-color: rgba(107,114,128,0.22); box-shadow: 0 2px 10px rgba(107,114,128,0.05); }
+html.light-mode .rutina-card2:hover     { border-color: var(--sv-purple); box-shadow: 0 4px 18px rgba(107,114,128,0.12); }
 html.light-mode .rcard-name             { color: #1a1a2e; }
 html.light-mode .rcard-meta             { color: #64748b; }
 

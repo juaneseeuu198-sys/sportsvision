@@ -1,4 +1,4 @@
-{% extends 'base/base.html' %}
+﻿{% extends 'base/base.html' %}
 {% load plan_tags %}
 {% block title %}Tu Progreso — SportsVision{% endblock %}
 
@@ -72,7 +72,7 @@
 }
 .cal-days-header {
   display: grid; grid-template-columns: repeat(7,1fr);
-  background: rgba(123,47,247,.08);
+  background: rgba(107,114,128,.08);
   border-bottom: 1.5px solid var(--sv-border);
 }
 .cal-day-name {
@@ -94,7 +94,7 @@
   position: relative;
 }
 .cal-cell:nth-child(7n) { border-right: none; }
-.cal-cell:hover:not(.cal-empty) { background: rgba(123,47,247,.06); }
+.cal-cell:hover:not(.cal-empty) { background: rgba(107,114,128,.06); }
 
 .cal-empty { cursor: default; background: rgba(0,0,0,.02); }
 
@@ -108,11 +108,11 @@
 
 /* ── Workout cell ──────────────────────────────── */
 .cal-cell.has-workout {
-  background: linear-gradient(145deg, rgba(123,47,247,.14), rgba(67,97,238,.08));
-  border-color: rgba(123,47,247,.25);
+  background: linear-gradient(145deg, rgba(107,114,128,.14), rgba(67,97,238,.08));
+  border-color: rgba(107,114,128,.25);
 }
 .cal-cell.has-workout .cal-num { color: var(--sv-purple-light); }
-.cal-cell.has-workout:hover { background: linear-gradient(145deg, rgba(123,47,247,.22), rgba(67,97,238,.14)); }
+.cal-cell.has-workout:hover { background: linear-gradient(145deg, rgba(107,114,128,.22), rgba(67,97,238,.14)); }
 
 .workout-chip {
   background: var(--sv-purple);
@@ -159,8 +159,8 @@
   color: var(--sv-text);
 }
 .day-workout-card {
-  background: rgba(123,47,247,.06);
-  border: 1px solid rgba(123,47,247,.18);
+  background: rgba(107,114,128,.06);
+  border: 1px solid rgba(107,114,128,.18);
   border-radius: 12px; padding: 16px; margin-bottom: 12px;
 }
 .day-workout-header {
@@ -177,8 +177,8 @@
 .day-ex-muscle { font-size: 10px; color: var(--sv-muted); background: var(--sv-bg-panel); padding: 2px 7px; border-radius: 10px; }
 .day-series-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 .day-serie-pill {
-  background: rgba(123,47,247,.12);
-  border: 1px solid rgba(123,47,247,.2);
+  background: rgba(107,114,128,.12);
+  border: 1px solid rgba(107,114,128,.2);
   border-radius: 12px; padding: 3px 10px;
   font-size: 11px; font-weight: 700; color: var(--sv-purple-light);
 }
@@ -194,19 +194,19 @@ html.light-mode .cal-month-title {
 }
 html.light-mode .cal-nav-btn   { background: #fff; color: #475569; border-color: rgba(0,0,0,.12); }
 html.light-mode .cal-nav-btn:hover { border-color: var(--sv-purple); color: var(--sv-purple); }
-html.light-mode .cal-days-header { background: rgba(123,47,247,.06); }
-html.light-mode .cal-grid { border-color: rgba(123,47,247,.22); box-shadow: 0 2px 16px rgba(123,47,247,.08); }
-html.light-mode .cal-cell { border-color: rgba(123,47,247,.1); }
-html.light-mode .cal-cell:hover:not(.cal-empty) { background: rgba(123,47,247,.06); }
+html.light-mode .cal-days-header { background: rgba(107,114,128,.06); }
+html.light-mode .cal-grid { border-color: rgba(107,114,128,.22); box-shadow: 0 2px 16px rgba(107,114,128,.08); }
+html.light-mode .cal-cell { border-color: rgba(107,114,128,.1); }
+html.light-mode .cal-cell:hover:not(.cal-empty) { background: rgba(107,114,128,.06); }
 html.light-mode .cal-empty { background: rgba(0,0,0,.015); }
 html.light-mode .cal-num { color: #94a3b8; }
 html.light-mode .cal-cell.day-today .cal-num { color: var(--sv-purple); }
-html.light-mode .cal-cell.has-workout { background: linear-gradient(145deg, rgba(123,47,247,.1), rgba(67,97,238,.06)) !important; border-color: rgba(123,47,247,.22) !important; }
-html.light-mode .cal-legend { background: #fdf8f2; border-color: rgba(123,47,247,.18); }
+html.light-mode .cal-cell.has-workout { background: linear-gradient(145deg, rgba(107,114,128,.1), rgba(67,97,238,.06)) !important; border-color: rgba(107,114,128,.22) !important; }
+html.light-mode .cal-legend { background: #fdf8f2; border-color: rgba(107,114,128,.18); }
 html.light-mode .cal-legend-item { color: #475569; }
 html.light-mode .mode-btn { background: #fff; border-color: rgba(0,0,0,.1); color: #475569; }
-html.light-mode .day-detail-panel { background: #fdf8f2; border-color: rgba(123,47,247,.22); box-shadow: 0 2px 14px rgba(123,47,247,.07); }
-html.light-mode .day-workout-card { background: rgba(123,47,247,.05); border-color: rgba(123,47,247,.15); }
+html.light-mode .day-detail-panel { background: #fdf8f2; border-color: rgba(107,114,128,.22); box-shadow: 0 2px 14px rgba(107,114,128,.07); }
+html.light-mode .day-workout-card { background: rgba(107,114,128,.05); border-color: rgba(107,114,128,.15); }
 html.light-mode .day-exercise-row { border-top-color: rgba(0,0,0,.07); }
 html.light-mode .day-ex-name { color: #1a1a2e; }
 html.light-mode .day-ex-muscle { background: #f1f5f9; color: #64748b; }
@@ -216,14 +216,14 @@ html.light-mode .day-ex-muscle { background: #f1f5f9; color: #64748b; }
   display: flex; align-items: flex-start; gap: 14px;
   border-radius: 14px; padding: 16px 18px; margin-bottom: 12px;
 }
-.plan-dia-rutina  { background: rgba(123,47,247,.08); border: 1.5px solid rgba(123,47,247,.25); }
+.plan-dia-rutina  { background: rgba(107,114,128,.08); border: 1.5px solid rgba(107,114,128,.25); }
 .plan-dia-descanso{ background: rgba(52,211,153,.07); border: 1.5px solid rgba(52,211,153,.25); }
 .plan-dia-icon    { font-size: 28px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
 .plan-dia-label   { font-weight: 800; font-size: 15px; color: var(--sv-text); margin-bottom: 3px; }
 .plan-dia-sub     { font-size: 12px; color: var(--sv-muted); margin-bottom: 10px; }
 .plan-dia-ejercicios { display: flex; flex-wrap: wrap; gap: 6px; }
 .plan-ej-tag {
-  background: rgba(123,47,247,.12); border: 1px solid rgba(123,47,247,.2);
+  background: rgba(107,114,128,.12); border: 1px solid rgba(107,114,128,.2);
   border-radius: 20px; padding: 3px 10px;
   font-size: 11px; font-weight: 600; color: var(--sv-purple-light);
 }
@@ -242,7 +242,7 @@ html.light-mode .day-ex-muscle { background: #f1f5f9; color: #64748b; }
   text-transform: uppercase; color: var(--sv-muted);
   margin-bottom: 10px;
 }
-html.light-mode .plan-dia-rutina   { background: rgba(123,47,247,.05); border-color: rgba(123,47,247,.2); }
+html.light-mode .plan-dia-rutina   { background: rgba(107,114,128,.05); border-color: rgba(107,114,128,.2); }
 html.light-mode .plan-dia-descanso { background: rgba(52,211,153,.05); border-color: rgba(52,211,153,.2); }
 html.light-mode .plan-dia-label    { color: #1a1a2e; }
 

@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,14 +8,14 @@
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#7b2ff7">
+  <meta name="theme-color" content="#6b7280">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SportsVision">
   <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
   <meta name="application-name" content="SportsVision">
-  <meta name="msapplication-TileColor" content="#7b2ff7">
+  <meta name="msapplication-TileColor" content="#6b7280">
   <meta name="msapplication-TileImage" content="{% static 'images/logo.png' %}">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -48,7 +48,7 @@
       justify-content: center;
       transition: background 0.2s;
     }
-    .btn-sidebar-open:hover { background: rgba(123,47,247,0.3); }
+    .btn-sidebar-open:hover { background: rgba(107,114,128,0.3); }
 
     .sv-main { transition: margin-left 0.3s ease; }
     .sv-layout.sidebar-collapsed .sv-main { margin-left: 0 !important; }
@@ -236,7 +236,7 @@
         <div class="manual-section-title"><i class="bi bi-layout-sidebar"></i> Navegación</div>
         <div class="manual-items">
           <div class="manual-item">
-            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-layout-sidebar"></i></div>
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-layout-sidebar"></i></div>
             <div class="manual-item-info">
               <div class="manual-item-name">Barra lateral (Sidebar)</div>
               <div class="manual-item-desc">Acerca el mouse al <strong>borde izquierdo</strong> de la pantalla para que se deslice automáticamente. En móvil usa el botón ☰ del topbar.</div>
@@ -264,7 +264,7 @@
         <div class="manual-section-title"><i class="bi bi-person-fill"></i> Mi Perfil</div>
         <div class="manual-items">
           <div class="manual-item">
-            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-camera-fill"></i></div>
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-camera-fill"></i></div>
             <div class="manual-item-info">
               <div class="manual-item-name">Cambiar foto de perfil</div>
               <div class="manual-item-desc">Haz clic en tu avatar → <em>Editar</em>. Se abre un editor de recorte con <strong>zoom y arrastre</strong> para encuadrar exactamente la parte que quieres. Los GIFs se suben directamente conservando la animación.</div>
@@ -292,7 +292,7 @@
         <div class="manual-section-title"><i class="bi bi-trophy-fill"></i> Crear Rutina</div>
         <div class="manual-items">
           <div class="manual-item">
-            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-1-circle-fill"></i></div>
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-1-circle-fill"></i></div>
             <div class="manual-item-info">
               <div class="manual-item-name">Paso 1 — Selecciona tu equipo</div>
               <div class="manual-item-desc">Indica qué material tienes disponible (mancuernas, barra, banda, etc.). Esto filtra los ejercicios que puedes realizar.</div>
@@ -327,7 +327,7 @@
         <div class="manual-section-title"><i class="bi bi-play-circle-fill"></i> Entrenamiento Activo</div>
         <div class="manual-items">
           <div class="manual-item">
-            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-check-circle-fill"></i></div>
             <div class="manual-item-info">
               <div class="manual-item-name">Registrar series</div>
               <div class="manual-item-desc">Por cada ejercicio ingresa repeticiones y peso. Puedes agregar varias series antes de pasar al siguiente ejercicio.</div>
@@ -355,7 +355,7 @@
         <div class="manual-section-title"><i class="bi bi-calendar-week-fill"></i> Plan Semanal</div>
         <div class="manual-items">
           <div class="manual-item">
-            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-magic"></i></div>
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-magic"></i></div>
             <div class="manual-item-info">
               <div class="manual-item-name">Generar plan automático</div>
               <div class="manual-item-desc">Botón <em>Generar automáticamente</em>: elige nivel, días de entrenamiento y equipo. El sistema crea el split semanal y lo adapta a tus limitaciones de salud.</div>
@@ -383,7 +383,7 @@
         <div class="manual-section-title"><i class="bi bi-calendar-check-fill"></i> Progreso</div>
         <div class="manual-items">
           <div class="manual-item">
-            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-calendar3"></i></div>
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-calendar3"></i></div>
             <div class="manual-item-info">
               <div class="manual-item-name">Calendario de progreso</div>
               <div class="manual-item-desc">Visualiza qué días entrenaste, tus rutinas asignadas y tus anotaciones. Haz clic en un día para ver el detalle o agregar una nota.</div>
@@ -425,7 +425,7 @@
             </div>
           </div>
           <div class="manual-item">
-            <div class="manual-item-icon" style="background:rgba(123,47,247,.2);color:#9d5cf6;"><i class="bi bi-bookmark-heart-fill"></i></div>
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-bookmark-heart-fill"></i></div>
             <div class="manual-item-info">
               <div class="manual-item-name">Mis Dietas</div>
               <div class="manual-item-desc">Guarda tu plan nutricional con un nombre. Puedes tener múltiples planes guardados, ver el detalle completo de cada comida por día, activar el que quieras usar y eliminar los que no necesites.</div>

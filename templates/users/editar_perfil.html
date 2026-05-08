@@ -1,4 +1,4 @@
-{% extends 'base/base.html' %}
+﻿{% extends 'base/base.html' %}
 {% block title %}Editar Perfil — SportsVision{% endblock %}
 
 {% block extra_css %}
@@ -15,7 +15,7 @@
     width: 110px; height: 110px;
     border-radius: 50%;
     border: 3px solid var(--sv-purple);
-    background: rgba(123,47,247,0.15);
+    background: rgba(107,114,128,0.15);
     display: flex; align-items: center; justify-content: center;
     font-size: 46px; color: var(--sv-purple-light);
     overflow: hidden;
@@ -26,15 +26,15 @@
     align-items: center;
     gap: 6px;
     padding: 8px 18px;
-    border: 1.5px solid rgba(123,47,247,0.4);
+    border: 1.5px solid rgba(107,114,128,0.4);
     border-radius: 20px;
-    background: rgba(123,47,247,0.1);
+    background: rgba(107,114,128,0.1);
     color: var(--sv-purple-light);
     font-size: 13px; font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
   }
-  .avatar-upload-btn:hover { background: rgba(123,47,247,0.25); color: #fff; }
+  .avatar-upload-btn:hover { background: rgba(107,114,128,0.25); color: #fff; }
   #id_avatar { display: none; }
 
   .form-section-title {
@@ -57,7 +57,7 @@
   .crop-overlay.open { display: flex; }
   .crop-modal {
     background: var(--sv-bg-card);
-    border: 1.5px solid rgba(123,47,247,.35);
+    border: 1.5px solid rgba(107,114,128,.35);
     border-radius: 24px;
     width: 100%; max-width: 480px;
     overflow: hidden;
@@ -124,7 +124,7 @@
     background: linear-gradient(135deg, var(--sv-purple), var(--sv-purple-light));
     color: #fff; font-size: 13px; font-weight: 800;
     cursor: pointer; transition: opacity .2s;
-    box-shadow: 0 4px 16px rgba(123,47,247,.4);
+    box-shadow: 0 4px 16px rgba(107,114,128,.4);
   }
   .btn-crop-apply:hover { opacity: .88; }
 
