@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.webkit.*
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -18,7 +19,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
 
-    // Permisos según versión de Android
     private val permisos: Array<String>
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.CAMERA)
@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
         }
 
-    // Launcher para seleccionar imagen de galería
     private val galeriaLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -37,7 +36,6 @@ class MainActivity : AppCompatActivity() {
         fileChooserCallback = null
     }
 
-    // Launcher para pedir permisos
     private val permisosLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { resultados ->
@@ -72,11 +70,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView,
+                    request: WebResourceRequest
+                ): Boolean {
                     val url = request.url.toString()
-                    // Abrir links externos en el navegador
                     return if (url.startsWith("https://web-production-f0f4b.up.railway.app")) {
-                        false  // cargar en WebView
+                        false
                     } else {
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                         true
@@ -100,7 +100,25 @@ class MainActivity : AppCompatActivity() {
             loadUrl("https://web-production-f0f4b.up.railway.app")
         }
 
+        // Habilitar cookies — necesario para que Django valide el token CSRF en formularios POST
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(webView, true)
+        }
+
         setContentView(webView)
+
+        // Botón atrás del sistema (reemplaza onBackPressed() obsoleto en API 33+)
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     private fun solicitarPermisosYAbrir() {
@@ -121,10 +139,5 @@ class MainActivity : AppCompatActivity() {
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false)
         }
         galeriaLauncher.launch(Intent.createChooser(intent, "Seleccionar foto"))
-    }
-
-    override fun onBackPressed() {
-        if (webView.canGoBack()) webView.goBack()
-        else super.onBackPressed()
     }
 }

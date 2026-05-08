@@ -142,6 +142,14 @@ DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', 'SportsVision <norepl
 # URL base para los enlaces en los correos
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
 
+# ── Cookies — compatibilidad con WebView Android ──────────────────────────────
+# 'Lax' bloquea cookies en POSTs desde contextos externos (WebView los trata así).
+# 'None' permite cookies en todos los contextos; SECURE se exige solo en HTTPS.
+CSRF_COOKIE_SAMESITE    = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE      = True
+SESSION_COOKIE_SECURE   = True
+
 # ── Twilio (verificación por SMS) ──────────────────────────────────────────────
 TWILIO_ACCOUNT_SID  = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN   = os.environ.get('TWILIO_AUTH_TOKEN', '')
