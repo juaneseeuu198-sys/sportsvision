@@ -128,6 +128,7 @@ class MainActivity : AppCompatActivity() {
                 loader.visibility = android.view.View.GONE
             }
 
+            @Suppress("OVERRIDE_DEPRECATION")
             override fun onReceivedError(
                 view: WebView,
                 errorCode: Int,
