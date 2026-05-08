@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -40,6 +41,7 @@ def _enviar_otp_registro(email, codigo):
     )
 
 
+@csrf_exempt
 def iniciar_registro(request):
     """Paso 1 — El usuario ingresa su email y recibe un código OTP."""
     if request.user.is_authenticated:
@@ -68,6 +70,7 @@ def iniciar_registro(request):
     return render(request, 'users/inicio_registro.html', {'error': error})
 
 
+@csrf_exempt
 def confirmar_email_registro(request):
     """Paso 2 — El usuario ingresa el código OTP recibido por correo."""
     if request.user.is_authenticated:
@@ -116,6 +119,7 @@ def confirmar_email_registro(request):
     })
 
 
+@csrf_exempt
 def registro(request):
     """Paso 3 — Completar los datos de la cuenta (email ya verificado)."""
     if request.user.is_authenticated:
@@ -164,6 +168,7 @@ def bienvenido(request):
     return render(request, 'users/bienvenido.html')
 
 
+@csrf_exempt
 def login_view(request):
     """Inicio de sesión — acepta usuario o correo."""
     if request.user.is_authenticated:
