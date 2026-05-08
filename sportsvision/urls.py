@@ -17,6 +17,7 @@ urlpatterns = [
         content_type='application/javascript',
     ), name='sw'),
 
+    path('i18n/', include('django.conf.urls.i18n')),  # set_language
     path('admin/', admin.site.urls),
     path('', user_views.landing, name='landing'),
     path('dashboard/', user_views.dashboard, name='dashboard'),

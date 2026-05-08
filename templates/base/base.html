@@ -1,6 +1,6 @@
-﻿{% load static %}
+﻿{% load static i18n %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -79,36 +79,35 @@
       <li>
         <a href="{% url 'paso3_ejercicios' %}"
            class="{% if request.resolver_match.url_name in 'paso3_ejercicios mis_rutinas iniciar_entrenamiento finalizar_entrenamiento eliminar_rutina' %}active{% endif %}">
-          <i class="bi bi-trophy-fill"></i><span>Nueva Rutina</span>
+          <i class="bi bi-trophy-fill"></i><span>{% trans "Nueva Rutina" %}</span>
         </a>
       </li>
-
 
       <li>
         <a href="{% url 'calendario_progreso' %}"
            class="{% if '/progreso/' in request.path %}active{% endif %}">
-          <i class="bi bi-calendar-check-fill"></i><span>Progreso</span>
+          <i class="bi bi-calendar-check-fill"></i><span>{% trans "Progreso" %}</span>
         </a>
       </li>
 
       <li>
         <a href="{% url 'plan_semanal' %}"
            class="{% if '/rutinas/plan-semanal/' in request.path %}active{% endif %}">
-          <i class="bi bi-calendar-week-fill"></i><span>Plan Semanal</span>
+          <i class="bi bi-calendar-week-fill"></i><span>{% trans "Plan Semanal" %}</span>
         </a>
       </li>
 
       <li>
         <a href="{% url 'herramientas' %}"
            class="{% if '/herramientas/' in request.path and request.resolver_match.url_name != 'mis_dietas' %}active{% endif %}">
-          <i class="bi bi-wrench-adjustable-circle-fill"></i><span>Herramientas</span>
+          <i class="bi bi-wrench-adjustable-circle-fill"></i><span>{% trans "Herramientas" %}</span>
         </a>
       </li>
 
       <li>
         <a href="{% url 'mis_dietas' %}"
            class="{% if request.resolver_match.url_name == 'mis_dietas' %}active{% endif %}">
-          <i class="bi bi-bookmark-heart-fill"></i><span>Mis Dietas</span>
+          <i class="bi bi-bookmark-heart-fill"></i><span>{% trans "Mis Dietas" %}</span>
         </a>
       </li>
 
@@ -117,43 +116,40 @@
     <div class="sidebar-bottom">
       <a href="{% url 'perfil' %}"
          class="{% if '/usuarios/perfil' in request.path and 'privacidad' not in request.path %}active{% endif %}">
-        <i class="bi bi-person-fill"></i><span>Mi Perfil</span>
+        <i class="bi bi-person-fill"></i><span>{% trans "Mi Perfil" %}</span>
       </a>
 
       {% if user.is_superuser or user.profile.rol == 'admin_pro' %}
-        {# Admin Pro: ve su panel de administración y el panel profesional #}
         <a href="{% url 'admin_pro_dashboard' %}"
            class="{% if 'admin-pro' in request.path %}active{% endif %}">
           <i class="bi bi-shield-fill-check"></i><span>Admin Pro</span>
         </a>
         <a href="{% url 'profesional_dashboard' %}"
            class="{% if 'profesional/dashboard' in request.path or 'profesional/cliente' in request.path %}active{% endif %}">
-          <i class="bi bi-patch-check-fill"></i><span>Panel Pro</span>
+          <i class="bi bi-patch-check-fill"></i><span>{% trans "Panel Pro" %}</span>
         </a>
       {% elif user.profile.rol == 'profesional' %}
-        {# Profesional aprobado: solo ve su panel #}
         <a href="{% url 'profesional_dashboard' %}"
            class="{% if 'profesional/dashboard' in request.path or 'profesional/cliente' in request.path %}active{% endif %}">
-          <i class="bi bi-patch-check-fill"></i><span>Panel Pro</span>
+          <i class="bi bi-patch-check-fill"></i><span>{% trans "Panel Pro" %}</span>
         </a>
         <a href="{% url 'privacidad' %}"
            class="{% if 'privacidad' in request.path %}active{% endif %}">
-          <i class="bi bi-shield-lock-fill"></i><span>Privacidad</span>
+          <i class="bi bi-shield-lock-fill"></i><span>{% trans "Privacidad" %}</span>
         </a>
       {% else %}
-        {# Usuario normal: puede solicitar ser profesional y gestionar privacidad #}
         <a href="{% url 'solicitar_profesional' %}"
            class="{% if 'solicitar' in request.path %}active{% endif %}">
-          <i class="bi bi-patch-check"></i><span>Ser profesional</span>
+          <i class="bi bi-patch-check"></i><span>{% trans "Ser profesional" %}</span>
         </a>
         <a href="{% url 'privacidad' %}"
            class="{% if 'privacidad' in request.path %}active{% endif %}">
-          <i class="bi bi-shield-lock-fill"></i><span>Privacidad</span>
+          <i class="bi bi-shield-lock-fill"></i><span>{% trans "Privacidad" %}</span>
         </a>
       {% endif %}
 
       <a href="{% url 'logout' %}" class="sidebar-logout">
-        <i class="bi bi-power"></i><span>Cerrar Sesión</span>
+        <i class="bi bi-power"></i><span>{% trans "Cerrar Sesión" %}</span>
       </a>
     </div>
   </nav>

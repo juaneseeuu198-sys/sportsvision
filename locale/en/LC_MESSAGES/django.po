@@ -1,0 +1,231 @@
+# English translations for SportsVision
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "Nueva Rutina"
+msgstr "New Routine"
+
+msgid "Progreso"
+msgstr "Progress"
+
+msgid "Plan Semanal"
+msgstr "Weekly Plan"
+
+msgid "Herramientas"
+msgstr "Tools"
+
+msgid "Mis Dietas"
+msgstr "My Diets"
+
+msgid "Mi Perfil"
+msgstr "My Profile"
+
+msgid "Cerrar Sesión"
+msgstr "Log Out"
+
+msgid "Admin Pro"
+msgstr "Admin Pro"
+
+msgid "Panel Pro"
+msgstr "Pro Panel"
+
+msgid "Ser profesional"
+msgstr "Become a Pro"
+
+msgid "Privacidad"
+msgstr "Privacy"
+
+msgid "Finalizar"
+msgstr "Finish"
+
+msgid "Guía"
+msgstr "Guide"
+
+msgid "Saltar"
+msgstr "Skip"
+
+msgid "Terminar"
+msgstr "End"
+
+msgid "SERIE"
+msgstr "SET"
+
+msgid "ANTERIOR"
+msgstr "PREVIOUS"
+
+msgid "Agregar serie"
+msgstr "Add set"
+
+msgid "Siguiente ejercicio"
+msgstr "Next exercise"
+
+msgid "Finalizar entrenamiento"
+msgstr "Finish workout"
+
+msgid "Descanso"
+msgstr "Rest"
+
+msgid "Prepárate para la siguiente serie"
+msgstr "Get ready for the next set"
+
+msgid "Continuar"
+msgstr "Continue"
+
+msgid "Agregar ejercicio"
+msgstr "Add exercise"
+
+msgid "Crear"
+msgstr "Create"
+
+msgid "Buscar ejercicio..."
+msgstr "Search exercise..."
+
+msgid "Músculos"
+msgstr "Muscles"
+
+msgid "Equipo"
+msgstr "Equipment"
+
+msgid "Recientes"
+msgstr "Recent"
+
+msgid "Todos los ejercicios"
+msgstr "All exercises"
+
+msgid "Guardar rutina"
+msgstr "Save routine"
+
+msgid "Grupo Muscular"
+msgstr "Muscle Group"
+
+msgid "Equipamiento"
+msgstr "Equipment"
+
+msgid "Limpiar"
+msgstr "Clear"
+
+msgid "Nombre de la rutina..."
+msgstr "Routine name..."
+
+msgid "BIENVENIDO DE VUELTA"
+msgstr "WELCOME BACK"
+
+msgid "¿Con qué iniciamos hoy?"
+msgstr "What are we starting today?"
+
+msgid "ENTRENAMIENTOS"
+msgstr "WORKOUTS"
+
+msgid "RUTINAS"
+msgstr "ROUTINES"
+
+msgid "SERIES COMPLETADAS"
+msgstr "SETS COMPLETED"
+
+msgid "KG LEVANTADOS"
+msgstr "KG LIFTED"
+
+msgid "Crea tu propia rutina"
+msgstr "Create your own routine"
+
+msgid "Organiza tu semana"
+msgstr "Organize your week"
+
+msgid "Tu progreso"
+msgstr "Your progress"
+
+msgid "Historial de entrenamientos"
+msgstr "Training history"
+
+msgid "Calculadoras fitness"
+msgstr "Fitness calculators"
+
+msgid "TUS RUTINAS"
+msgstr "YOUR ROUTINES"
+
+msgid "Iniciar"
+msgstr "Start"
+
+msgid "Editar perfil"
+msgstr "Edit profile"
+
+msgid "Actualizar datos"
+msgstr "Update data"
+
+msgid "Edad"
+msgstr "Age"
+
+msgid "Peso"
+msgstr "Weight"
+
+msgid "Altura"
+msgstr "Height"
+
+msgid "Guardar"
+msgstr "Save"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+msgid "Iniciar sesión"
+msgstr "Log in"
+
+msgid "Registrarse"
+msgstr "Sign up"
+
+msgid "Entrar"
+msgstr "Enter"
+
+msgid "Guardar cambios"
+msgstr "Save changes"
+
+msgid "Eliminar"
+msgstr "Delete"
+
+msgid "Confirmar"
+msgstr "Confirm"
+
+msgid "Volver"
+msgstr "Back"
+
+msgid "Sin conexión"
+msgstr "No connection"
+
+msgid "Verifica tu conexión a internet."
+msgstr "Check your internet connection."
+
+msgid "Reintentar"
+msgstr "Retry"
+
+msgid "Nueva"
+msgstr "New"
+
+msgid "Datos Personales"
+msgstr "Personal Data"
+
+msgid "Actividad Reciente"
+msgstr "Recent Activity"
+
+msgid "Aún no hay entrenamientos registrados"
+msgstr "No workouts recorded yet"
+
+msgid "años"
+msgstr "years"
+
+msgid "kg"
+msgstr "kg"
+
+msgid "cm"
+msgstr "cm"
+
+msgid "Completar datos"
+msgstr "Complete data"
+
+msgid "Actualizar datos"
+msgstr "Update data"
