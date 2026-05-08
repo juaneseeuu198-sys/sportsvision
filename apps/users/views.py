@@ -61,7 +61,7 @@ def iniciar_registro(request):
         if not email:
             error = 'Ingresa tu correo electrónico.'
         elif User.objects.filter(email=email).exists():
-            error = 'Este correo ya tiene una cuenta. ¿Quieres iniciar sesión?'
+            error = 'Este correo ya se encuentra registrado. ¿Quieres iniciar sesión?'
         else:
             # Invalidar códigos anteriores para este email
             EmailPreVerification.objects.filter(email=email, is_used=False).update(is_used=True)
