@@ -175,13 +175,14 @@
             <i class="bi bi-person-fill" id="avatar-icon"></i>
           {% endif %}
         </div>
-        <label class="avatar-upload-btn" for="id_avatar">
+        <button type="button" class="avatar-upload-btn"
+                onclick="document.getElementById('id_avatar').click()">
           <i class="bi bi-camera-fill"></i> Elegir foto / GIF
-        </label>
-        <input type="file" name="avatar" id="id_avatar"
-               accept="image/*" style="display:none;">
+        </button>
+        <input type="file" name="avatar" id="id_avatar" accept="image/*"
+               style="visibility:hidden;position:absolute;width:0;height:0;">
         <input type="hidden" name="avatar_cropped" id="avatar_cropped">
-        <!-- Botón confirmar visible solo en móvil tras seleccionar foto -->
+        <!-- Botón confirmar visible en móvil tras seleccionar foto -->
         <button type="submit" id="btn-confirmar-foto"
                 style="display:none;align-items:center;gap:8px;margin-top:12px;
                        background:linear-gradient(135deg,#00d4aa,#00b896);

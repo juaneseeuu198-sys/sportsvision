@@ -489,7 +489,8 @@
 </div>
 
 <!-- Input oculto para seleccionar nueva foto -->
-<input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
+<input type="file" id="avatar-file-input" accept="image/*"
+       style="visibility:hidden;position:absolute;width:0;height:0;">
 
 <!-- ══ Modal: ver imagen ══ -->
 <div class="avatar-modal-overlay" id="avatar-modal"
@@ -592,7 +593,9 @@ function cerrarModalAvatar() {
 
 function abrirCropDesdeModal() {
   cerrarModalAvatar();
-  document.getElementById('avatar-file-input').click();
+  setTimeout(function() {
+    document.getElementById('avatar-file-input').click();
+  }, 300);
 }
 
 var esMobil = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
