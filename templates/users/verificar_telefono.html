@@ -118,13 +118,37 @@
 
         <label class="sv-label">Número de teléfono</label>
         <div class="vt-phone-row">
-          <div class="vt-prefix">🇨🇴 +57</div>
-          <input type="tel" name="telefono"
+          <select id="pais-select" style="
+              background:var(--sv-bg-panel);border:1.5px solid var(--sv-border);
+              border-radius:12px;padding:0 12px;font-size:15px;font-weight:700;
+              color:var(--sv-text);height:48px;cursor:pointer;flex-shrink:0;
+              appearance:none;-webkit-appearance:none;min-width:100px;outline:none;">
+            <option value="+57">🇨🇴 +57</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+52">🇲🇽 +52</option>
+            <option value="+34">🇪🇸 +34</option>
+            <option value="+55">🇧🇷 +55</option>
+            <option value="+54">🇦🇷 +54</option>
+            <option value="+56">🇨🇱 +56</option>
+            <option value="+51">🇵🇪 +51</option>
+            <option value="+58">🇻🇪 +58</option>
+            <option value="+593">🇪🇨 +593</option>
+            <option value="+595">🇵🇾 +595</option>
+            <option value="+598">🇺🇾 +598</option>
+            <option value="+591">🇧🇴 +591</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+33">🇫🇷 +33</option>
+            <option value="+49">🇩🇪 +49</option>
+            <option value="+39">🇮🇹 +39</option>
+            <option value="+351">🇵🇹 +351</option>
+          </select>
+          <input type="tel" id="numero-input"
                  class="sv-input"
                  placeholder="300 000 0000"
                  value="{{ profile.telefono|slice:'3:' }}"
                  inputmode="numeric" maxlength="15"
                  style="flex:1;">
+          <input type="hidden" name="telefono" id="telefono-completo">
         </div>
 
         <div style="background:rgba(107,114,128,.08);border:1px solid rgba(107,114,128,.2);
@@ -135,10 +159,39 @@
           Nunca lo compartas con nadie.
         </div>
 
-        <button type="submit" class="btn-calcular w-100">
+        <button type="button" class="btn-calcular w-100" onclick="enviarCodigo(this)">
           <i class="bi bi-send-fill me-2"></i> Enviar código SMS
         </button>
       </form>
+
+      <script>
+      // Preseleccionar prefijo si ya hay número guardado
+      (function() {
+        var tel = "{{ profile.telefono }}";
+        var sel = document.getElementById('pais-select');
+        var inp = document.getElementById('numero-input');
+        if (tel && sel) {
+          var opts = sel.options;
+          for (var i = 0; i < opts.length; i++) {
+            if (tel.startsWith(opts[i].value)) {
+              sel.selectedIndex = i;
+              inp.value = tel.slice(opts[i].value.length);
+              break;
+            }
+          }
+        }
+      })();
+
+      function enviarCodigo(btn) {
+        var prefijo = document.getElementById('pais-select').value;
+        var numero  = document.getElementById('numero-input').value.trim().replace(/\s/g,'');
+        if (!numero) { alert('Ingresa tu número de teléfono.'); return; }
+        document.getElementById('telefono-completo').value = prefijo + numero;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Enviando...';
+        btn.closest('form').submit();
+      }
+      </script>
 
     {% else %}
       <!-- PASO 2: ingresar código -->

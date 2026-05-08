@@ -944,6 +944,8 @@ def verificar_telefono(request):
 
             if not telefono.startswith('+'):
                 telefono = '+57' + telefono.lstrip('0')
+            # Limpiar espacios y guiones
+            telefono = telefono.replace(' ', '').replace('-', '')
 
             profile.telefono = telefono
             profile.telefono_verificado = False
