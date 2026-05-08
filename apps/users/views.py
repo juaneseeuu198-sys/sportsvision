@@ -352,6 +352,8 @@ def eliminar_avatar(request):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _es_profesional(user):
+    if user.is_superuser:
+        return True
     try:
         return user.profile.rol in ('profesional', 'admin_pro')
     except Exception:
@@ -359,6 +361,8 @@ def _es_profesional(user):
 
 
 def _es_admin_pro(user):
+    if user.is_superuser:
+        return True
     try:
         return user.profile.rol == 'admin_pro'
     except Exception:
