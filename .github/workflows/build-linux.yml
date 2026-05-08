@@ -43,6 +43,7 @@ jobs:
         run: python manage.py collectstatic --noinput
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Build Linux binary
         run: pyinstaller SportsVision.spec --clean
@@ -85,6 +86,7 @@ jobs:
         run: python manage.py collectstatic --noinput
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Build Windows executable
         run: pyinstaller SportsVision.spec --clean

@@ -77,16 +77,12 @@ WSGI_APPLICATION = 'sportsvision.wsgi.application'
 import dj_database_url
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    # Railway provee PostgreSQL automáticamente
-    DATABASES = {'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)}
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.environ.get('SPORTSVISION_DB', BASE_DIR / 'db.sqlite3'),
-        }
-    }
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL no está configurada. "
+        "Todos los entornos deben conectarse a Railway PostgreSQL."
+    )
+DATABASES = {'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)}
 
 AUTHENTICATION_BACKENDS = [
     'apps.users.backends.EmailOrUsernameBackend',
