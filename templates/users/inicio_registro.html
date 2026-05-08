@@ -66,10 +66,21 @@
                style="width:100%;">
       </div>
 
-      <button type="submit" class="btn-calcular w-100" style="font-size:15px;">
+      <button type="button" class="btn-calcular w-100" style="font-size:15px;"
+              onclick="submitRegistro(this)">
         <i class="bi bi-send-fill me-2"></i> Enviar código de verificación
       </button>
     </form>
+
+    <script>
+    function submitRegistro(btn) {
+      var email = document.querySelector('input[name="email"]').value.trim();
+      if (!email) { alert('Ingresa tu correo electrónico.'); return; }
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Enviando...';
+      btn.closest('form').submit();
+    }
+    </script>
 
     <p style="margin-top:20px;color:rgba(255,255,255,.35);font-size:13px;">
       ¿Ya tienes cuenta?

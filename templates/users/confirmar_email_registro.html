@@ -77,8 +77,9 @@
         <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
       </div>
 
-      <button type="submit" id="btn-verificar" disabled
-              class="btn-calcular w-100" style="font-size:15px;margin-bottom:16px;">
+      <button type="button" id="btn-verificar" disabled
+              class="btn-calcular w-100" style="font-size:15px;margin-bottom:16px;"
+              onclick="this.disabled=true;this.innerHTML='<i class=\'bi bi-hourglass-split me-2\'></i> Verificando...';this.closest(\'form\').submit()">
         <i class="bi bi-check-circle-fill me-2"></i> Verificar código
       </button>
     </form>
@@ -87,9 +88,10 @@
     <form method="post" style="display:inline;">
       {% csrf_token %}
       <input type="hidden" name="accion" value="reenviar">
-      <button type="submit"
+      <button type="button"
               style="background:none;border:none;color:rgba(255,255,255,.35);
-                     font-size:13px;cursor:pointer;font-weight:700;">
+                     font-size:13px;cursor:pointer;font-weight:700;"
+              onclick="this.closest('form').submit()">
         <i class="bi bi-arrow-clockwise me-1"></i> Reenviar código
       </button>
     </form>
