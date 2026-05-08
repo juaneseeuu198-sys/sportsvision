@@ -154,6 +154,7 @@ EMAIL_USE_TLS       = os.environ.get('EMAIL_USE_TLS',  'True') == 'True'
 EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', 'SportsVision <noreply@sportsvision.app>')
+EMAIL_TIMEOUT       = 10  # segundos — evita que gunicorn se cuelgue esperando SMTP
 
 # URL base para los enlaces en los correos
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
