@@ -292,6 +292,57 @@ body.sv-body { background: #000 !important; }
 .cardio-pill { padding:5px 14px;border-radius:20px;font-size:11px;font-weight:800;cursor:pointer;border:1.5px solid #2c2c2e;background:transparent;color:#8e8e93;transition:all .2s; }
 .cardio-pill.active { background:rgba(230,57,70,.2);border-color:#e63946;color:#f87171; }
 
+/* ── Rest timer overlay ──────────────────────────── */
+.rest-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(0,0,0,.88);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.rest-card {
+  background: #111; border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 28px; padding: 36px 28px;
+  max-width: 360px; width: 100%; text-align: center;
+}
+.rest-ring-wrap {
+  position: relative; width: 160px; height: 160px;
+  margin: 0 auto 24px;
+}
+.rest-ring { transform: rotate(-90deg); }
+.rest-ring-bg   { fill: none; stroke: #1c1c1e; stroke-width: 10; }
+.rest-ring-fill { fill: none; stroke: #6b7280; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .9s linear; }
+.rest-ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.rest-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px; color: #fff; line-height: 1; letter-spacing: 2px;
+}
+.rest-lbl { font-size: 11px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 1px; }
+.rest-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.rest-sub   { font-size: 13px; color: #8e8e93; margin-bottom: 24px; }
+.rest-actions { display: flex; gap: 10px; }
+.btn-rest-extra {
+  flex: 1; padding: 13px;
+  background: rgba(255,255,255,.07);
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 14px; color: #fff;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: background .15s;
+}
+.btn-rest-extra:hover { background: rgba(255,255,255,.12); }
+.btn-rest-skip {
+  flex: 2; padding: 13px;
+  background: #00d4aa; border: none;
+  border-radius: 14px; color: #000;
+  font-size: 15px; font-weight: 800; cursor: pointer;
+  transition: opacity .2s;
+}
+.btn-rest-skip:hover { opacity: .88; }
+
 /* ── Grupo colores (para emoji emoji fallback) ─── */
 .grupo-pecho,.grupo-espalda,.grupo-hombros,.grupo-biceps,
 .grupo-triceps,.grupo-piernas,.grupo-gluteos,.grupo-abdomen,
@@ -328,6 +379,32 @@ body.sv-body { background: #000 !important; }
 </div>
 {% endif %}
 
+{% if mostrar_descanso %}
+<div class="rest-overlay" id="rest-overlay">
+  <div class="rest-card">
+    <p class="rest-title">Descanso</p>
+    <p class="rest-sub">Prepárate para la siguiente serie</p>
+    <div class="rest-ring-wrap">
+      <svg class="rest-ring" width="160" height="160" viewBox="0 0 160 160">
+        <circle class="rest-ring-bg"   cx="80" cy="80" r="70"/>
+        <circle class="rest-ring-fill" cx="80" cy="80" r="70" id="rest-ring-fill"
+                stroke-dasharray="439.82" stroke-dashoffset="0"/>
+      </svg>
+      <div class="rest-ring-center">
+        <div class="rest-time" id="rest-time">1:30</div>
+        <div class="rest-lbl">descanso</div>
+      </div>
+    </div>
+    <div class="rest-actions">
+      <button type="button" class="btn-rest-extra" onclick="addRestTime(10)">+10s</button>
+      <button type="button" class="btn-rest-skip" onclick="skipRest()">
+        <i class="bi bi-skip-forward-fill me-1"></i> Continuar
+      </button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <div style="max-width:600px;margin:0 auto;background:#000;min-height:100vh;">
 
   <!-- TOP BAR -->
@@ -355,23 +432,28 @@ body.sv-body { background: #000 !important; }
   <div class="ex-carousel">
     {% for ej in ejercicios_list %}
     {% with i=forloop.counter0 %}
-    <div class="ex-carousel-item {% if i < ejercicio_idx %}done{% elif i == ejercicio_idx %}current{% endif %}">
-      <div class="ex-carousel-circle">
-        {% if ej.ejercicio.gif %}
-          <img src="{{ ej.ejercicio.gif.url }}" alt="">
-        {% elif ej.ejercicio.imagen %}
-          <img src="{{ ej.ejercicio.imagen.url }}" alt="">
-        {% else %}
-          {% with s=ej.ejercicio.grupo_muscular.slug|default:"core" %}
-            {% if s == 'pecho' %}💪{% elif s == 'espalda' %}🏋️{% elif s == 'hombros' %}🔝
-            {% elif s == 'biceps' %}💪{% elif s == 'triceps' %}🦾{% elif s == 'piernas' %}🦵
-            {% elif s == 'gluteos' %}⚡{% elif s == 'abdomen' %}🎯{% elif s == 'core' %}🔥
-            {% elif s == 'cardio' %}❤️{% elif s == 'movilidad' %}🧘{% else %}🏋️{% endif %}
-          {% endwith %}
-        {% endif %}
-      </div>
-      <span class="ex-carousel-label">{{ ej.ejercicio.nombre|truncatechars:8 }}</span>
-    </div>
+    <form method="post" style="margin:0;display:contents;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="ir_a_ejercicio">
+      <input type="hidden" name="idx" value="{{ i }}">
+      <button type="submit" class="ex-carousel-item {% if i < ejercicio_idx %}done{% elif i == ejercicio_idx %}current{% endif %}" style="background:none;border:none;padding:0;cursor:pointer;">
+        <div class="ex-carousel-circle">
+          {% if ej.ejercicio.gif %}
+            <img src="{{ ej.ejercicio.gif.url }}" alt="">
+          {% elif ej.ejercicio.imagen %}
+            <img src="{{ ej.ejercicio.imagen.url }}" alt="">
+          {% else %}
+            {% with s=ej.ejercicio.grupo_muscular.slug|default:"core" %}
+              {% if s == 'pecho' %}💪{% elif s == 'espalda' %}🏋️{% elif s == 'hombros' %}🔝
+              {% elif s == 'biceps' %}💪{% elif s == 'triceps' %}🦾{% elif s == 'piernas' %}🦵
+              {% elif s == 'gluteos' %}⚡{% elif s == 'abdomen' %}🎯{% elif s == 'core' %}🔥
+              {% elif s == 'cardio' %}❤️{% elif s == 'movilidad' %}🧘{% else %}🏋️{% endif %}
+            {% endwith %}
+          {% endif %}
+        </div>
+        <span class="ex-carousel-label">{{ ej.ejercicio.nombre|truncatechars:8 }}</span>
+      </button>
+    </form>
     {% endwith %}
     {% endfor %}
   </div>
@@ -668,6 +750,48 @@ body.sv-body { background: #000 !important; }
     var closeBtn = document.querySelector('[onclick*="overlay-listo"]');
     if (closeBtn) closeBtn.addEventListener('click', function() { clearInterval(interval); });
   })();
+  {% endif %}
+
+  // ── Rest timer ──────────────────────────────────────
+  {% if mostrar_descanso %}
+  (function() {
+    var INITIAL  = 90;
+    var remaining = INITIAL;
+    var circ     = 2 * Math.PI * 70;   // 439.82
+    var ring     = document.getElementById('rest-ring-fill');
+    var timeEl   = document.getElementById('rest-time');
+    var interval = null;
+
+    ring.style.strokeDasharray  = circ;
+    ring.style.strokeDashoffset = 0;
+
+    function fmt(sec) {
+      var m = Math.floor(sec / 60), s = sec % 60;
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+    function tick() {
+      remaining--;
+      timeEl.textContent = fmt(Math.max(remaining, 0));
+      ring.style.strokeDashoffset = circ * (1 - remaining / INITIAL);
+      if (remaining <= 0) { clearInterval(interval); skipRest(); }
+    }
+    interval = setInterval(tick, 1000);
+
+    window.addRestTime = function(secs) {
+      remaining += secs;
+      INITIAL   += secs;
+      timeEl.textContent = fmt(remaining);
+    };
+    window.skipRest = function() {
+      clearInterval(interval);
+      document.getElementById('rest-overlay').style.display = 'none';
+    };
+
+    if (navigator.vibrate) navigator.vibrate(200);
+  })();
+  {% else %}
+  window.addRestTime = function() {};
+  window.skipRest    = function() {};
   {% endif %}
 </script>
 {% endblock %}

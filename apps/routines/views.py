@@ -464,9 +464,16 @@ def iniciar_entrenamiento(request, rutina_id):
                 # Si es el último ejercicio, redirigir con flag para mostrar overlay
                 if ejercicio_idx == len(ejercicios_list) - 1:
                     return redirect(f"{request.path}?ejercicio={ejercicio_idx}&listo=1")
+                return redirect(f"{request.path}?ejercicio={ejercicio_idx}&descanso=1")
 
         elif action == 'siguiente_ejercicio':
-            return redirect(f"{request.path}?ejercicio={ejercicio_idx + 1}")
+            next_idx = min(ejercicio_idx + 1, len(ejercicios_list) - 1)
+            return redirect(f"{request.path}?ejercicio={next_idx}")
+
+        elif action == 'ir_a_ejercicio':
+            idx = int(request.POST.get('idx', ejercicio_idx))
+            idx = max(0, min(idx, len(ejercicios_list) - 1))
+            return redirect(f"{request.path}?ejercicio={idx}")
 
         elif action == 'terminar_entrenamiento':
             return redirect('finalizar_entrenamiento', entrenamiento_id=entrenamiento.id)
@@ -498,6 +505,7 @@ def iniciar_entrenamiento(request, rutina_id):
         'peso_total': round(peso_total, 1),
         'es_ultimo': ejercicio_idx == len(ejercicios_list) - 1,
         'mostrar_overlay': request.GET.get('listo') == '1' and ejercicio_idx == len(ejercicios_list) - 1,
+        'mostrar_descanso': request.GET.get('descanso') == '1',
     }
     return render(request, 'routines/entrenamiento_activo.html', context)
 
