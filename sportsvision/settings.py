@@ -165,8 +165,10 @@ USE_X_FORWARDED_HOST    = True
 # ── Cookies ────────────────────────────────────────────────────────────────────
 # SameSite=Lax (default Django): válido en Chrome/WebView sin necesitar Secure.
 # El CookieManager del WebView Android acepta estas cookies correctamente.
-CSRF_COOKIE_SAMESITE    = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE      = False
-SESSION_COOKIE_SECURE   = False
+# SameSite=None + Secure=True: máxima compatibilidad con Safari iOS, Android WebView,
+# y Chrome. SECURE_PROXY_SSL_HEADER garantiza que Django sepa que está en HTTPS.
+CSRF_COOKIE_SAMESITE    = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE      = True
+SESSION_COOKIE_SECURE   = True
 
