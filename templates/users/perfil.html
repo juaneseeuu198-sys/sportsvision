@@ -488,57 +488,8 @@
 
 </div>
 
-<!-- Inputs ocultos: galería y cámara -->
+<!-- Input oculto para seleccionar nueva foto -->
 <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
-<input type="file" id="avatar-camara-input" accept="image/*" capture="environment" style="display:none;">
-
-<!-- ══ Bottom sheet: selector de foto ══ -->
-<div id="foto-sheet-overlay"
-     style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.6);"
-     onclick="cerrarSelectorFotoPerfil()">
-</div>
-<div id="foto-sheet"
-     style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;
-            background:var(--sv-bg-card);border-radius:24px 24px 0 0;
-            padding:20px 20px 32px;box-shadow:0 -8px 32px rgba(0,0,0,.5);
-            transform:translateY(100%);transition:transform .3s ease;">
-  <div style="width:40px;height:4px;background:rgba(255,255,255,.2);
-              border-radius:2px;margin:0 auto 20px;"></div>
-  <p style="color:var(--sv-muted);font-size:12px;text-align:center;
-             text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;font-weight:700;">
-    Foto de perfil
-  </p>
-  <button type="button" onclick="elegirCamaraPerfil()"
-          style="width:100%;display:flex;align-items:center;gap:16px;
-                 background:rgba(123,47,247,.1);border:1.5px solid rgba(123,47,247,.3);
-                 border-radius:14px;padding:16px 20px;margin-bottom:10px;cursor:pointer;
-                 color:var(--sv-text);font-size:15px;font-weight:700;">
-    <span style="width:44px;height:44px;border-radius:12px;background:rgba(123,47,247,.2);
-                 display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📷</span>
-    <div style="text-align:left;">
-      <div>Tomar foto</div>
-      <div style="font-size:12px;color:var(--sv-muted);font-weight:400;">Usar la cámara del celular</div>
-    </div>
-  </button>
-  <button type="button" onclick="elegirGaleriaPerfil()"
-          style="width:100%;display:flex;align-items:center;gap:16px;
-                 background:rgba(0,212,170,.08);border:1.5px solid rgba(0,212,170,.25);
-                 border-radius:14px;padding:16px 20px;margin-bottom:10px;cursor:pointer;
-                 color:var(--sv-text);font-size:15px;font-weight:700;">
-    <span style="width:44px;height:44px;border-radius:12px;background:rgba(0,212,170,.15);
-                 display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🖼️</span>
-    <div style="text-align:left;">
-      <div>Elegir de la galería</div>
-      <div style="font-size:12px;color:var(--sv-muted);font-weight:400;">Fotos y GIFs guardados</div>
-    </div>
-  </button>
-  <button type="button" onclick="cerrarSelectorFotoPerfil()"
-          style="width:100%;padding:14px;border-radius:14px;margin-top:4px;
-                 background:rgba(255,255,255,.05);border:1.5px solid var(--sv-border);
-                 color:var(--sv-muted);font-size:14px;font-weight:700;cursor:pointer;">
-    Cancelar
-  </button>
-</div>
 
 <!-- ══ Modal: ver imagen ══ -->
 <div class="avatar-modal-overlay" id="avatar-modal"
@@ -565,8 +516,8 @@
       <div class="avatar-modal-name">{{ user.first_name|default:user.username }}</div>
       <div class="avatar-modal-btns">
         <!-- Editar: abre el cropper directamente -->
-        <button type="button" class="btn-av btn-av-edit" onclick="cerrarModalAvatar(); abrirSelectorFotoPerfil()">
-          <i class="bi bi-camera-fill"></i> Cambiar foto
+        <button type="button" class="btn-av btn-av-edit" onclick="abrirCropDesdeModal()">
+          <i class="bi bi-pencil-fill"></i> Editar
         </button>
         {% if profile.avatar %}
         <!-- Descargar -->
@@ -639,48 +590,16 @@ function cerrarModalAvatar() {
   document.getElementById('avatar-modal').classList.remove('open');
 }
 
-// ── Bottom sheet selector de foto ─────────────────────────────────────
-function abrirSelectorFotoPerfil() {
-  var sheet = document.getElementById('foto-sheet');
-  var ov    = document.getElementById('foto-sheet-overlay');
-  sheet.style.display = 'block';
-  ov.style.display    = 'block';
-  setTimeout(function() { sheet.style.transform = 'translateY(0)'; }, 10);
-}
-
-function cerrarSelectorFotoPerfil() {
-  var sheet = document.getElementById('foto-sheet');
-  var ov    = document.getElementById('foto-sheet-overlay');
-  sheet.style.transform = 'translateY(100%)';
-  setTimeout(function() { sheet.style.display = 'none'; ov.style.display = 'none'; }, 300);
-}
-
-async function elegirCamaraPerfil() {
-  cerrarSelectorFotoPerfil();
-  if (navigator.permissions) {
-    try {
-      var perm = await navigator.permissions.query({ name: 'camera' });
-      if (perm.state === 'denied') {
-        alert('Permiso de cámara denegado. Ve a Ajustes > Aplicaciones > Chrome y activa la cámara.');
-        return;
-      }
-    } catch(e) {}
-  }
-  document.getElementById('avatar-camara-input').click();
-}
-
-function elegirGaleriaPerfil() {
-  cerrarSelectorFotoPerfil();
+function abrirCropDesdeModal() {
+  cerrarModalAvatar();
   document.getElementById('avatar-file-input').click();
 }
-// ─────────────────────────────────────────────────────────────────────
 
-// Procesar imagen seleccionada (galería o cámara)
-function procesarAvatar(file) {
+// Selección de archivo → GIF en base64 directo, otros al cropper
+document.getElementById('avatar-file-input').addEventListener('change', function(e) {
+  var file = e.target.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) {
-    alert('La imagen no puede superar 5 MB.'); return;
-  }
+  if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5 MB.'); this.value = ''; return; }
   var reader = new FileReader();
   if (file.type === 'image/gif') {
     reader.onload = function(ev) {
@@ -688,6 +607,7 @@ function procesarAvatar(file) {
       document.getElementById('form-avatar-crop').submit();
     };
     reader.readAsDataURL(file);
+    this.value = '';
     return;
   }
   reader.onload = function(ev) {
@@ -707,13 +627,7 @@ function procesarAvatar(file) {
     });
   };
   reader.readAsDataURL(file);
-}
-
-document.getElementById('avatar-file-input').addEventListener('change', function(e) {
-  procesarAvatar(e.target.files[0]); this.value = '';
-});
-document.getElementById('avatar-camara-input').addEventListener('change', function(e) {
-  procesarAvatar(e.target.files[0]); this.value = '';
+  this.value = '';
 });
 
 document.getElementById('zoom-slider').addEventListener('input', function() {
