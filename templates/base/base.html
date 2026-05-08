@@ -85,16 +85,16 @@
       </li>
 
       <li>
-        <a href="{% url 'calendario_progreso' %}"
-           class="{% if '/progreso/' in request.path %}active{% endif %}">
-          <i class="bi bi-calendar-check-fill"></i><span>{% trans "Progreso" %}</span>
+        <a href="{% url 'plan_semanal' %}"
+           class="{% if '/rutinas/plan-semanal/' in request.path %}active{% endif %}">
+          <i class="bi bi-calendar-week-fill"></i><span>{% trans "Plan Semanal" %}</span>
         </a>
       </li>
 
       <li>
-        <a href="{% url 'plan_semanal' %}"
-           class="{% if '/rutinas/plan-semanal/' in request.path %}active{% endif %}">
-          <i class="bi bi-calendar-week-fill"></i><span>{% trans "Plan Semanal" %}</span>
+        <a href="{% url 'calendario_progreso' %}"
+           class="{% if '/progreso/' in request.path %}active{% endif %}">
+          <i class="bi bi-calendar-check-fill"></i><span>{% trans "Progreso" %}</span>
         </a>
       </li>
 
