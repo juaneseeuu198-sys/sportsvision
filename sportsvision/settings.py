@@ -151,11 +151,11 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST    = True
 
-# ── Cookies — compatibilidad con WebView Android ──────────────────────────────
-# SameSite=None permite que el WebView envíe cookies en todos los contextos POST.
-# Secure=False porque Railway termina TLS en el proxy (Django ve HTTP interno).
-CSRF_COOKIE_SAMESITE    = 'None'
-SESSION_COOKIE_SAMESITE = 'None'
+# ── Cookies ────────────────────────────────────────────────────────────────────
+# SameSite=Lax (default Django): válido en Chrome/WebView sin necesitar Secure.
+# El CookieManager del WebView Android acepta estas cookies correctamente.
+CSRF_COOKIE_SAMESITE    = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE      = False
 SESSION_COOKIE_SECURE   = False
 
