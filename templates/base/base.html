@@ -215,6 +215,120 @@
   <i class="bi bi-sun-fill" id="themeIcon"></i>
 </button>
 
+{% if user.is_authenticated %}
+<!-- FitBot FAB -->
+<button class="fitbot-fab" id="fitbotFab" title="FitBot — Asistente IA">
+  <i class="bi bi-robot"></i>
+</button>
+
+<!-- FitBot Mini Widget -->
+<div class="fitbot-widget" id="fitbotWidget"
+     data-url="{% url 'chatbot' %}"
+     data-csrf="{{ csrf_token }}">
+  <div class="fitbot-widget-header">
+    <div class="fitbot-widget-title">
+      <span class="fitbot-dot"></span>
+      <i class="bi bi-robot"></i> FitBot
+    </div>
+    <button class="fitbot-widget-close" id="fitbotClose" title="Cerrar">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+  <div class="fitbot-widget-messages" id="fitbotMessages"></div>
+  <div class="fitbot-widget-input">
+    <input type="text" id="fitbotInput" placeholder="Escríbeme algo…" maxlength="400" autocomplete="off">
+    <button id="fitbotSend"><i class="bi bi-send-fill"></i></button>
+  </div>
+</div>
+
+<script>
+(function() {
+  var fab      = document.getElementById('fitbotFab');
+  var widget   = document.getElementById('fitbotWidget');
+  var closeBtn = document.getElementById('fitbotClose');
+  var input    = document.getElementById('fitbotInput');
+  var sendBtn  = document.getElementById('fitbotSend');
+  var msgs     = document.getElementById('fitbotMessages');
+  var opened   = false;
+  var busy     = false;
+  var URL_CHAT = widget.dataset.url;
+  var CSRF     = widget.dataset.csrf;
+
+  function scrollBot() { msgs.scrollTop = msgs.scrollHeight; }
+
+  function addMsg(role, text) {
+    var d = document.createElement('div');
+    d.className = 'fmsg ' + role;
+    var b = document.createElement('div');
+    b.className = 'fmsg-bubble';
+    b.textContent = text;
+    d.appendChild(b);
+    msgs.appendChild(d);
+    scrollBot();
+    return b;
+  }
+
+  function showTyping() {
+    var d = document.createElement('div');
+    d.className = 'fmsg bot'; d.id = 'fbTyping';
+    d.innerHTML = '<div class="fmsg-bubble fmsg-typing"><span></span><span></span><span></span></div>';
+    msgs.appendChild(d); scrollBot();
+  }
+  function hideTyping() { var t=document.getElementById('fbTyping'); if(t) t.remove(); }
+
+  function open() {
+    widget.classList.add('open');
+    fab.classList.add('active');
+    opened = true;
+    if (!msgs.children.length) {
+      addMsg('bot', '¡Hola, {{ user.first_name|default:user.username }}! 👋 Soy FitBot. Puedo analizar tu progreso de peso y calorías, o responder cualquier pregunta de fitness. ¿En qué te ayudo?');
+    }
+    setTimeout(function(){ input.focus(); }, 250);
+  }
+
+  function close() {
+    widget.classList.remove('open');
+    fab.classList.remove('active');
+    opened = false;
+  }
+
+  fab.addEventListener('click', function() { opened ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+
+  async function send() {
+    var msg = input.value.trim();
+    if (!msg || busy) return;
+    busy = true;
+    input.value = '';
+    sendBtn.disabled = true;
+    addMsg('user', msg);
+    showTyping();
+    try {
+      var r = await fetch(URL_CHAT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ message: msg })
+      });
+      var data = await r.json();
+      hideTyping();
+      addMsg('bot', data.response || 'Error al responder.');
+    } catch(e) {
+      hideTyping();
+      addMsg('bot', 'Sin conexión. Intenta de nuevo.');
+    }
+    busy = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  sendBtn.addEventListener('click', send);
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); send(); }
+  });
+})();
+</script>
+{% endif %}
+
 <!-- ══ Modal Manual de Usuario ══ -->
 <div class="manual-overlay" id="manual-overlay"
      onclick="if(event.target===this) this.classList.remove('open')">
