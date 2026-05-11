@@ -88,7 +88,11 @@ class MainActivity : AppCompatActivity() {
                 setSupportZoom(false)
                 builtInZoomControls    = false
                 displayZoomControls    = false
+                // Siempre descarga HTML/CSS fresco — evita caché con URLs de CSS viejas (con hash)
+                cacheMode              = android.webkit.WebSettings.LOAD_NO_CACHE
             }
+            // Limpia caché al iniciar para que nunca use HTML antiguo con URLs de CSS obsoletas
+            clearCache(true)
         }
 
         // Spinner de carga centrado
