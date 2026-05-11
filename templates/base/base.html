@@ -59,7 +59,7 @@
 </head>
 
 {% with p=request.resolver_match.url_name %}
-<body class="sv-body {% if p == 'dashboard' %}page-home{% elif p == 'perfil' or p == 'editar_perfil' %}page-perfil{% elif p == 'mis_rutinas' or p == 'paso1_equipo' or p == 'paso2_musculos' or p == 'paso3_ejercicios' %}page-rutinas{% elif p == 'plan_semanal' %}page-plan{% elif p == 'calendario_progreso' %}page-progreso{% elif p == 'herramientas' or p == 'calculadora_calorias' or p == 'calculadora_imc' or p == 'plan_nutricional' or p == 'mis_dietas' %}page-tools{% elif p == 'ejercicios_lista' or p == 'ejercicio_detalle' %}page-ejercicios{% elif p == 'profesional_dashboard' or p == 'admin_pro_dashboard' %}page-pro{% endif %}">
+<body class="sv-body {% if p == 'dashboard' %}page-home{% elif p == 'perfil' or p == 'editar_perfil' or p == 'solicitar_profesional' or p == 'privacidad' %}page-perfil{% elif p == 'mis_rutinas' or p == 'paso1_equipo' or p == 'paso2_musculos' or p == 'paso3_ejercicios' or p == 'iniciar_entrenamiento' or p == 'finalizar_entrenamiento' or p == 'eliminar_rutina' or p == 'auto_generador' %}page-rutinas{% elif p == 'plan_semanal' %}page-plan{% elif p == 'calendario_progreso' %}page-progreso{% elif p == 'herramientas' or p == 'calculadora_calorias' or p == 'calculadora_imc' or p == 'plan_nutricional' or p == 'mis_dietas' or p == 'chatbot' %}page-tools{% elif p == 'ejercicios_lista' or p == 'ejercicio_detalle' %}page-ejercicios{% elif p == 'profesional_dashboard' or p == 'admin_pro_dashboard' or p == 'admin_ver_usuario' or p == 'admin_crear_rutina' or p == 'profesional_cliente' %}page-pro{% endif %}">
 {% endwith %}
 
 
