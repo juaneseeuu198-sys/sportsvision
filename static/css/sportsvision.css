@@ -1824,155 +1824,122 @@ html.light-mode .theme-fab:hover {
   color: #fff;
 }
 
-/* ══ FitBot Widget ═══════════════════════════════════════════════════════════ */
-.fitbot-widget {
-  position: fixed;
-  bottom: 230px;   /* encima de los 3 FABs */
-  right: 16px;
-  width: 320px;
-  height: 460px;
-  background: rgba(7,8,26,0.95);
-  border: 1px solid rgba(67,97,238,0.35);
-  border-radius: 20px;
-  backdrop-filter: blur(28px);
-  display: flex;
-  flex-direction: column;
-  z-index: 1150;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
-  transform: scale(0.88) translateY(12px);
-  opacity: 0;
-  pointer-events: none;
-  transform-origin: bottom right;
-  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
-  visibility: hidden;
+/* ══ FitBot Overlay + Panel (igual al manual de usuario) ════════════════════ */
+.fitbot-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
+  align-items: flex-end; justify-content: flex-end;
+  padding: 24px;
 }
-.fitbot-widget.open {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-  pointer-events: all;
-  visibility: visible;
+.fitbot-overlay.open { display: flex; }
+
+.fitbot-widget {
+  width: 100%; max-width: 520px;
+  max-height: 80vh;
+  background: var(--sv-bg-card);
+  border: 1.5px solid rgba(67,97,238,.35);
+  border-radius: 24px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.6);
+  animation: slideUpModal .3s cubic-bezier(.4,0,.2,1);
 }
 
 .fitbot-widget-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--sv-border);
   flex-shrink: 0;
 }
 .fitbot-widget-title {
-  display: flex; align-items: center; gap: 8px;
-  font-weight: 600; font-size: .95rem; color: #fff;
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem; letter-spacing: 1px; color: #fff;
 }
 .fitbot-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: #00d4aa;
-  box-shadow: 0 0 6px #00d4aa;
-  animation: pulse 2s infinite;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #00d4aa; box-shadow: 0 0 6px #00d4aa;
+  animation: pulse 2s infinite; flex-shrink: 0;
 }
-@keyframes pulse {
-  0%,100% { opacity:1; } 50% { opacity:.4; }
-}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
 .fitbot-widget-close {
-  background: none; border: none; color: var(--sv-muted);
-  font-size: 14px; cursor: pointer; padding: 4px;
-  border-radius: 6px; transition: color .2s, background .2s;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,.07); border: none;
+  color: var(--sv-muted); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, color .2s;
 }
-.fitbot-widget-close:hover { color: #fff; background: rgba(255,255,255,.08); }
+.fitbot-widget-close:hover { background: rgba(255,255,255,.14); color: #fff; }
 
 /* Messages */
 .fitbot-widget-messages {
   flex: 1; overflow-y: auto;
-  padding: 14px 14px 8px;
-  display: flex; flex-direction: column; gap: 10px;
+  padding: 16px 20px 10px;
+  display: flex; flex-direction: column; gap: 12px;
   scroll-behavior: smooth;
 }
-.fitbot-widget-messages::-webkit-scrollbar { width: 3px; }
-.fitbot-widget-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+.fitbot-widget-messages::-webkit-scrollbar { width: 4px; }
+.fitbot-widget-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
 
-.fmsg { display: flex; max-width: 88%; }
+.fmsg { display: flex; max-width: 85%; }
 .fmsg.user { align-self: flex-end; justify-content: flex-end; }
 .fmsg.bot  { align-self: flex-start; }
 
 .fmsg-bubble {
-  padding: 9px 13px;
-  border-radius: 16px;
-  font-size: .86rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
+  padding: 10px 15px; border-radius: 18px;
+  font-size: .9rem; line-height: 1.55;
+  white-space: pre-wrap; word-break: break-word;
 }
 .fmsg.user .fmsg-bubble {
-  background: linear-gradient(135deg, rgba(67,97,238,.75), rgba(123,47,247,.5));
-  border-bottom-right-radius: 4px;
-  color: #fff;
+  background: linear-gradient(135deg,rgba(67,97,238,.8),rgba(123,47,247,.6));
+  border-bottom-right-radius: 4px; color: #fff;
 }
 .fmsg.bot .fmsg-bubble {
   background: rgba(255,255,255,.07);
-  border: 1px solid rgba(255,255,255,.08);
-  border-bottom-left-radius: 4px;
-  color: var(--sv-text);
+  border: 1px solid rgba(255,255,255,.1);
+  border-bottom-left-radius: 4px; color: var(--sv-text);
 }
 
 /* Typing dots */
-.fmsg-typing {
-  display: flex; gap: 5px; align-items: center;
-  padding: 12px 14px;
-}
+.fmsg-typing { display:flex; gap:5px; align-items:center; padding:12px 15px; }
 .fmsg-typing span {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--sv-green);
+  width:7px; height:7px; border-radius:50%;
+  background: var(--sv-green); display:inline-block;
   animation: fbDot .9s infinite;
-  display: inline-block;
 }
-.fmsg-typing span:nth-child(2) { animation-delay: .2s; }
-.fmsg-typing span:nth-child(3) { animation-delay: .4s; }
+.fmsg-typing span:nth-child(2){animation-delay:.2s}
+.fmsg-typing span:nth-child(3){animation-delay:.4s}
 @keyframes fbDot {
-  0%,60%,100% { transform:translateY(0); opacity:.5; }
-  30%          { transform:translateY(-5px); opacity:1; }
+  0%,60%,100%{transform:translateY(0);opacity:.5}
+  30%{transform:translateY(-6px);opacity:1}
 }
 
 /* Input */
 .fitbot-widget-input {
-  display: flex; gap: 8px; align-items: center;
-  padding: 10px 12px 12px;
-  border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; gap: 10px; align-items: center;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--sv-border);
   flex-shrink: 0;
 }
 .fitbot-widget-input input {
-  flex: 1;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 10px;
-  padding: 9px 12px;
-  color: #fff; font-size: .86rem; outline: none;
+  flex: 1; background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 10px 14px;
+  color: #fff; font-size: .9rem; outline: none;
   transition: border-color .2s;
 }
-.fitbot-widget-input input:focus { border-color: rgba(67,97,238,.5); }
+.fitbot-widget-input input:focus { border-color: rgba(67,97,238,.6); }
 .fitbot-widget-input input::placeholder { color: var(--sv-muted); }
-
 .fitbot-widget-input button {
-  width: 36px; height: 36px; border-radius: 10px;
+  width: 40px; height: 40px; border-radius: 12px;
   background: linear-gradient(135deg,#4361ee,#7b2ff7);
-  border: none; color: #fff; font-size: 15px;
+  border: none; color: #fff; font-size: 17px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: opacity .2s;
-  flex-shrink: 0;
+  cursor: pointer; transition: opacity .2s; flex-shrink: 0;
 }
-.fitbot-widget-input button:hover    { opacity: .85; }
-.fitbot-widget-input button:disabled { opacity: .35; cursor: not-allowed; }
-
-/* Mobile */
-@media (max-width: 480px) {
-  .fitbot-widget {
-    right: 8px; left: 8px;
-    width: auto;
-    bottom: 240px;
-    height: 55vh;
-    border-radius: 16px;
-  }
-}
+.fitbot-widget-input button:hover    { opacity:.85; }
+.fitbot-widget-input button:disabled { opacity:.35; cursor:not-allowed; }
 
 .page-breadcrumb {
   display: flex;
