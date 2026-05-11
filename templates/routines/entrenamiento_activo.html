@@ -131,16 +131,16 @@ body.sv-body { background: #000 !important; }
   filter: blur(8px);
 }
 
-/* ── Exercise image (compacta, encima del card) ── */
+/* ── Exercise image (flotante encima del card) ── */
 .ex-image-wrap {
   width: 100%; background: transparent;
   display: flex; align-items: center; justify-content: center;
-  min-height: 160px; max-height: 200px;
+  min-height: 200px; max-height: 260px;
   overflow: hidden; position: relative;
 }
 .ex-image-wrap img {
   width: 100%; height: 100%;
-  object-fit: contain; max-height: 200px;
+  object-fit: contain; max-height: 260px;
   filter: drop-shadow(0 8px 32px rgba(0,0,0,.6));
 }
 .ex-image-icon { font-size: 90px; line-height: 1; }
@@ -606,7 +606,10 @@ body.sv-body { background: #000 !important; }
   <!-- EXERCISE IMAGE (flotante, encima del card) -->
   <div class="ex-image-wrap" style="margin:8px 0 -12px;">
     {% if ejercicio_actual.ejercicio.gif %}
-      <img src="{{ ejercicio_actual.ejercicio.gif.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
+      <video autoplay loop muted playsinline preload="auto"
+             style="width:100%;max-height:240px;object-fit:contain;filter:drop-shadow(0 8px 32px rgba(0,0,0,.6));">
+        <source src="{{ ejercicio_actual.ejercicio.gif.url }}">
+      </video>
     {% elif ejercicio_actual.ejercicio.imagen %}
       <img src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
     {% else %}
