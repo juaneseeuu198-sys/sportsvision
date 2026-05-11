@@ -58,19 +58,15 @@
   {% block extra_css %}{% endblock %}
 </head>
 
-<body class="sv-body
-  {% with p=request.resolver_match.url_name %}
-  {% if p == 'dashboard' %}page-home
-  {% elif p == 'perfil' or p == 'editar_perfil' %}page-perfil
-  {% elif p == 'mis_rutinas' or p == 'paso1_equipo' or p == 'paso2_musculos' or p == 'paso3_ejercicios' %}page-rutinas
-  {% elif p == 'plan_semanal' %}page-plan
-  {% elif p == 'calendario_progreso' %}page-progreso
-  {% elif p == 'herramientas' or p == 'calculadora_calorias' or p == 'calculadora_imc' or p == 'plan_nutricional' or p == 'mis_dietas' %}page-tools
-  {% elif p == 'ejercicios_lista' or p == 'ejercicio_detalle' %}page-ejercicios
-  {% elif p == 'profesional_dashboard' or p == 'admin_pro_dashboard' %}page-pro
-  {% endif %}
-  {% endwith %}
-">
+{% with p=request.resolver_match.url_name %}
+<body class="sv-body {% if p == 'dashboard' %}page-home{% elif p == 'perfil' or p == 'editar_perfil' %}page-perfil{% elif p == 'mis_rutinas' or p == 'paso1_equipo' or p == 'paso2_musculos' or p == 'paso3_ejercicios' %}page-rutinas{% elif p == 'plan_semanal' %}page-plan{% elif p == 'calendario_progreso' %}page-progreso{% elif p == 'herramientas' or p == 'calculadora_calorias' or p == 'calculadora_imc' or p == 'plan_nutricional' or p == 'mis_dietas' %}page-tools{% elif p == 'ejercicios_lista' or p == 'ejercicio_detalle' %}page-ejercicios{% elif p == 'profesional_dashboard' or p == 'admin_pro_dashboard' %}page-pro{% endif %}">
+{% endwith %}
+
+<!-- Fondo global fijo con orbes de color -->
+<div class="sv-page-bg" aria-hidden="true">
+  <div class="orb1"></div>
+  <div class="orb2"></div>
+</div>
 
 {% if user.is_authenticated %}
 <div class="sv-layout" id="svLayout">

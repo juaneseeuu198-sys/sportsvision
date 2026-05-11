@@ -27,7 +27,7 @@
 
 body.sv-body {
   font-family: 'Barlow', sans-serif;
-  background: var(--sv-bg);
+  background: #07081a;
   color: var(--sv-text);
   min-height: 100vh;
   margin: 0;
@@ -182,68 +182,69 @@ body.sv-body {
   margin-left: 0;
   flex: 1;
   min-height: 100vh;
-  background: #07081a;
+  background: transparent;
   position: relative;
 }
-
-/* Orbe 1 — color principal de la sección */
-.sv-main::before {
-  content: '';
-  position: fixed;
-  top: -10%; left: -10%;
-  width: 60%; height: 70%;
-  border-radius: 50%;
-  filter: blur(90px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: .55;
-}
-
-/* Orbe 2 — acento secundario */
-.sv-main::after {
-  content: '';
-  position: fixed;
-  bottom: -10%; right: -10%;
-  width: 55%; height: 65%;
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: .35;
-}
-
-/* ── Colores por sección ── */
-.page-home    .sv-main::before { background: radial-gradient(circle, rgba(67,97,238,.9), transparent 70%); }
-.page-home    .sv-main::after  { background: radial-gradient(circle, rgba(0,212,170,.7), transparent 70%); }
-
-.page-perfil  .sv-main::before { background: radial-gradient(circle, rgba(139,92,246,.9), transparent 70%); }
-.page-perfil  .sv-main::after  { background: radial-gradient(circle, rgba(67,97,238,.7), transparent 70%); }
-
-.page-rutinas .sv-main::before { background: radial-gradient(circle, rgba(16,185,129,.85), transparent 70%); }
-.page-rutinas .sv-main::after  { background: radial-gradient(circle, rgba(0,212,170,.65), transparent 70%); }
-
-.page-plan    .sv-main::before { background: radial-gradient(circle, rgba(67,97,238,.85), transparent 70%); }
-.page-plan    .sv-main::after  { background: radial-gradient(circle, rgba(139,92,246,.6), transparent 70%); }
-
-.page-progreso .sv-main::before { background: radial-gradient(circle, rgba(245,158,11,.8), transparent 70%); }
-.page-progreso .sv-main::after  { background: radial-gradient(circle, rgba(239,68,68,.55), transparent 70%); }
-
-.page-tools   .sv-main::before { background: radial-gradient(circle, rgba(6,182,212,.85), transparent 70%); }
-.page-tools   .sv-main::after  { background: radial-gradient(circle, rgba(16,185,129,.6), transparent 70%); }
-
-.page-ejercicios .sv-main::before { background: radial-gradient(circle, rgba(16,185,129,.85), transparent 70%); }
-.page-ejercicios .sv-main::after  { background: radial-gradient(circle, rgba(6,182,212,.6), transparent 70%); }
-
-.page-pro     .sv-main::before { background: radial-gradient(circle, rgba(251,191,36,.8), transparent 70%); }
-.page-pro     .sv-main::after  { background: radial-gradient(circle, rgba(245,158,11,.55), transparent 70%); }
-
-/* Fallback para páginas sin clase */
-body:not([class*="page-"]) .sv-main::before { background: radial-gradient(circle, rgba(107,114,128,.7), transparent 70%); }
-body:not([class*="page-"]) .sv-main::after  { background: radial-gradient(circle, rgba(75,85,99,.5), transparent 70%); }
 .sv-main-content {
   position: relative;
   z-index: 1;
 }
+
+/* ── Fondo global fijo (detrás de todo) ── */
+.sv-page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: #07081a;
+}
+.sv-page-bg .orb1,
+.sv-page-bg .orb2 {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.sv-page-bg .orb1 {
+  top: -15%; left: -10%;
+  width: 65%; height: 70%;
+  filter: blur(90px);
+  opacity: .5;
+}
+.sv-page-bg .orb2 {
+  bottom: -15%; right: -10%;
+  width: 60%; height: 65%;
+  filter: blur(100px);
+  opacity: .35;
+}
+
+/* ── Colores por sección ── */
+.page-home     .orb1 { background: rgba(67,97,238,.9); }
+.page-home     .orb2 { background: rgba(0,212,170,.8); }
+
+.page-perfil   .orb1 { background: rgba(139,92,246,.9); }
+.page-perfil   .orb2 { background: rgba(67,97,238,.75); }
+
+.page-rutinas  .orb1 { background: rgba(16,185,129,.85); }
+.page-rutinas  .orb2 { background: rgba(0,212,170,.7); }
+
+.page-plan     .orb1 { background: rgba(67,97,238,.85); }
+.page-plan     .orb2 { background: rgba(139,92,246,.7); }
+
+.page-progreso .orb1 { background: rgba(245,158,11,.85); }
+.page-progreso .orb2 { background: rgba(239,68,68,.65); }
+
+.page-tools    .orb1 { background: rgba(6,182,212,.85); }
+.page-tools    .orb2 { background: rgba(16,185,129,.7); }
+
+.page-ejercicios .orb1 { background: rgba(16,185,129,.85); }
+.page-ejercicios .orb2 { background: rgba(6,182,212,.65); }
+
+.page-pro      .orb1 { background: rgba(251,191,36,.85); }
+.page-pro      .orb2 { background: rgba(245,158,11,.6); }
+
+/* Fallback */
+.sv-page-bg .orb1:not([style*="background"]) { background: rgba(107,114,128,.6); }
+.sv-page-bg .orb2:not([style*="background"]) { background: rgba(75,85,99,.45); }
 
 .sv-topbar {
   display: flex;
