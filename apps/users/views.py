@@ -9,8 +9,8 @@ from django.template.loader import render_to_string
 from django.conf import settings
 import random
 import requests as http_requests
-from .forms import RegistroForm, LoginForm, EditarUsuarioForm, EditarPerfilForm
-from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailVerificationToken, PhoneVerificationCode, EmailPreVerification
+from .forms import RegistroForm, EditarUsuarioForm, EditarPerfilForm
+from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailPreVerification
 
 
 def landing(request):

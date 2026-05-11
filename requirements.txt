@@ -1,12 +1,12 @@
 ﻿Django==6.0.4
 python-dotenv==1.2.2
-twilio==9.4.3
 psycopg2-binary==2.9.12
 gunicorn==23.0.0
 whitenoise==6.9.0
 Pillow==12.2.0
 dj-database-url==2.3.0
-sqlparse==0.5.5
-asgiref==3.11.1
-tzdata==2026.1
+sqlparse==0.5.3
+asgiref==3.8.1
+tzdata==2024.2
 polib==1.2.0
+requests==2.32.3

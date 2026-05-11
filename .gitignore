@@ -15,3 +15,7 @@ db_config.txt
 .idea/
 .DS_Store
 Thumbs.db
+android/.gradle/
+android/local.properties
+android/app/release/
+*.spec
