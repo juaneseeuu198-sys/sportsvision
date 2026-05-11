@@ -25,6 +25,8 @@
 /* ---- RESET & BASE ---- */
 * { box-sizing: border-box; }
 
+html, body { margin: 0; padding: 0; }
+
 body.sv-body {
   font-family: 'Barlow', sans-serif;
   background: #07081a;
@@ -245,6 +247,7 @@ body.page-pro {
   align-items: center;
   gap: 12px;
   padding: 10px 20px;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
   background: var(--sv-sidebar-bg);
   border-bottom: 1px solid var(--sv-border);
   position: sticky;
