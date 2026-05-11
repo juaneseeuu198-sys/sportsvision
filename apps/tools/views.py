@@ -668,6 +668,7 @@ def chatbot(request):
                 ctx.append(f"Tendencia: {tendencia}")
 
         # Cálculo calórico activo
+        calculo = None
         try:
             calculo = CalculoCaloria.objects.filter(usuario=user).latest('calculado_en')
             ctx.append(f"Meta calórica diaria: {calculo.getd} kcal")
@@ -707,31 +708,171 @@ INSTRUCCIONES:
         history = request.session.get('fitbot_history', [])
         history.append({'role': 'user', 'content': user_message})
 
-        # ── Llamada a Claude API ──────────────────────────────────────────────
+        # ── Motor local de respuestas ─────────────────────────────────────────
+        def _respuesta_local(msg, profile, pesos, calculo, n_entrenos):
+            m = msg.lower()
+            nombre = (profile.user.first_name if profile and profile.user.first_name else user.username)
+
+            # Progreso de peso
+            if any(w in m for w in ['peso', 'progreso', 'adelgaz', 'engord', 'kilos', 'bajado', 'subido']):
+                if not pesos:
+                    return f"Hola {nombre}! 👋 Aún no tienes registros de peso. Ve a **Tu Progreso → Registrar peso** para empezar a hacer seguimiento. ¡Cada dato cuenta! 📊"
+                ultimo = pesos[0].peso
+                resp = f"📊 Tu último peso registrado es **{ultimo} kg**.\n\n"
+                if len(pesos) >= 2:
+                    diff = round(pesos[0].peso - pesos[-1].peso, 1)
+                    if diff < 0:
+                        resp += f"✅ ¡Excelente! Has bajado **{abs(diff)} kg** desde tu primer registro. ¡Vas por buen camino!\n\nConsejo: mantén un déficit calórico moderado (300-500 kcal/día) y sigue entrenando con consistencia para seguir bajando sin perder músculo. 💪"
+                    elif diff > 0:
+                        resp += f"📈 Has subido **{diff} kg** desde tu primer registro.\n\nSi tu objetivo es ganar músculo, ¡es una buena señal! Si quieres perder peso, revisa tus calorías diarias y asegúrate de estar en déficit. Recuerda que el progreso no siempre es lineal. 🎯"
+                    else:
+                        resp += "⚖️ Tu peso se ha mantenido estable. Si quieres cambiar tu composición corporal, ajusta tus calorías: déficit para perder grasa, superávit para ganar músculo."
+                if profile and profile.altura:
+                    imc = round(ultimo / (profile.altura / 100) ** 2, 1)
+                    cat = 'Bajo peso' if imc < 18.5 else 'Normal' if imc < 25 else 'Sobrepeso' if imc < 30 else 'Obesidad'
+                    resp += f"\n\n🔢 Tu IMC actual es **{imc}** ({cat})."
+                return resp
+
+            # Calorías
+            if any(w in m for w in ['caloria', 'caloría', 'kcal', 'dieta', 'comer', 'alimenta', 'nutri', 'macro']):
+                if calculo:
+                    obj_labels = {'perder_rapido':'perder peso rápido','perder':'perder peso','mantener':'mantener tu peso','ganar':'ganar masa muscular','ganar_rapido':'ganar masa rápido'}
+                    obj = obj_labels.get(calculo.objetivo, calculo.objetivo)
+                    return (f"🔥 Según tu cálculo, necesitas **{int(calculo.getd)} kcal/día** para {obj}.\n\n"
+                            f"📊 Distribución de macros diarios:\n"
+                            f"• Proteínas: **{calculo.proteinas_g}g** (músculo y saciedad)\n"
+                            f"• Carbohidratos: **{calculo.carbos_g}g** (energía principal)\n"
+                            f"• Grasas: **{calculo.grasas_g}g** (hormonas y absorción)\n\n"
+                            f"💡 Tip: distribuye las calorías en 3-5 comidas. Prioriza proteína en cada comida para preservar músculo.")
+                return ("Para calcular tus calorías personalizadas, ve a **Herramientas → Calculadora de Calorías**. 🔢\n\n"
+                        "En general, una mujer activa necesita ~1800-2200 kcal/día y un hombre activo ~2200-2800 kcal/día. "
+                        "Ajusta según tu objetivo: déficit de 300-500 kcal para perder grasa, superávit de 200-400 kcal para ganar músculo.")
+
+            # Proteína
+            if any(w in m for w in ['proteina', 'proteína', 'protein', 'pollo', 'carne', 'huevo']):
+                if profile and profile.peso:
+                    p_min = round(profile.peso * 1.6, 0)
+                    p_max = round(profile.peso * 2.2, 0)
+                    return (f"💪 Para tu peso de **{profile.peso} kg**, necesitas entre **{int(p_min)}g y {int(p_max)}g de proteína al día**.\n\n"
+                            f"Mejores fuentes de proteína:\n"
+                            f"• 🐔 Pechuga de pollo (31g/100g)\n"
+                            f"• 🥚 Huevos (6g por huevo)\n"
+                            f"• 🐟 Atún/salmón (25-28g/100g)\n"
+                            f"• 🫘 Legumbres (8-15g/100g)\n"
+                            f"• 🥛 Yogur griego (10g/100g)\n\n"
+                            f"Distribuye la proteína en todas tus comidas para maximizar la síntesis muscular. 🎯")
+                return ("La recomendación general es **1.6-2.2g de proteína por kg de peso corporal** al día.\n\n"
+                        "Para ganar músculo: apunta a 2g/kg. Para mantener: 1.6g/kg. Para perder grasa preservando músculo: 2-2.4g/kg.\n\n"
+                        "Fuentes top: pollo, huevos, atún, salmón, legumbres, yogur griego y claras de huevo. 🥚")
+
+            # Ganar músculo
+            if any(w in m for w in ['musculo', 'músculo', 'masa', 'volumen', 'ganar', 'crecer', 'hipertrofia']):
+                return ("💪 Para ganar músculo necesitas 3 pilares:\n\n"
+                        "**1. Entrenamiento:** Haz pesas 3-5 días/semana con progresión de carga. Enfócate en ejercicios compuestos: sentadilla, peso muerto, press banca y remo.\n\n"
+                        "**2. Nutrición:** Superávit calórico de 200-400 kcal/día. Consume 1.8-2.2g de proteína por kg de peso. No te saltes carbohidratos — son el combustible de tus músculos.\n\n"
+                        "**3. Descanso:** Duerme 7-9 horas. Los músculos crecen mientras descansas, no mientras entrenas. 😴\n\n"
+                        "La paciencia es clave: espera resultados visibles en 8-12 semanas de consistencia. 🎯")
+
+            # Perder grasa
+            if any(w in m for w in ['perder', 'bajar', 'adelgazar', 'quemar', 'grasa', 'definir', 'delgado']):
+                return ("🔥 Para perder grasa de forma efectiva y sostenible:\n\n"
+                        "**Calorías:** Déficit de 300-500 kcal/día (no más, para no perder músculo).\n\n"
+                        "**Proteína alta:** 2-2.4g/kg de peso para preservar músculo mientras pierdes grasa.\n\n"
+                        "**Ejercicio:** Combina pesas (preserva músculo) con cardio moderado (3-4 días/semana, 30-45 min). El HIIT es muy efectivo.\n\n"
+                        "**Hidratación:** Bebe 2-3 litros de agua al día. A veces la sensación de hambre es en realidad sed.\n\n"
+                        "⚠️ Evita déficits extremos: perder más de 1kg/semana suele ser agua y músculo, no grasa. 📉")
+
+            # Ejercicios del día / rutina
+            if any(w in m for w in ['ejercicio', 'rutina', 'entrena', 'workout', 'hacer hoy', 'hoy', 'empezar']):
+                if n_entrenos >= 5:
+                    return (f"🏆 ¡Llevas {n_entrenos} entrenamientos este mes, genial! \n\n"
+                            "Asegúrate de incluir días de descanso (al menos 1-2 por semana). Si llevas varios días seguidos, considera un día de recuperación activa: caminar, estirar o yoga. 🧘\n\n"
+                            "Para hoy puedes hacer:\n• Estiramientos profundos 15 min\n• Foam roller en grupos musculares trabajados\n• Caminata de 30 min a ritmo moderado")
+                return ("💪 Un buen plan de entrenamiento para principiantes/intermedios:\n\n"
+                        "**Lunes:** Pecho + Tríceps (press, aperturas, fondos)\n"
+                        "**Martes:** Espalda + Bíceps (jalones, remo, curl)\n"
+                        "**Miércoles:** Descanso o cardio suave\n"
+                        "**Jueves:** Hombros + Core (press militar, elevaciones, plancha)\n"
+                        "**Viernes:** Piernas (sentadilla, peso muerto, prensa)\n"
+                        "**Sábado:** Cardio HIIT 20-30 min\n"
+                        "**Domingo:** Descanso activo\n\n"
+                        "Ve a **Nueva Rutina** para crear tu plan personalizado en SportsVision. 🎯")
+
+            # Suplementos
+            if any(w in m for w in ['suplemento', 'proteina en polvo', 'whey', 'creatina', 'bcaa', 'pre-entreno', 'vitamina']):
+                return ("🧪 Suplementos más respaldados por la ciencia:\n\n"
+                        "**Creatina monohidrato** ⭐⭐⭐: El más estudiado. Aumenta fuerza y masa muscular. 3-5g/día, cualquier momento.\n\n"
+                        "**Proteína whey** ⭐⭐⭐: Conveniente si no llegas a tus metas de proteína con comida. No es mágica, es comida en polvo.\n\n"
+                        "**Cafeína** ⭐⭐: Mejora rendimiento y concentración. 3-6mg/kg, 30-60 min antes de entrenar.\n\n"
+                        "**Vitamina D** ⭐⭐: Muchas personas tienen déficit. Importante para huesos, hormonas e inmunidad.\n\n"
+                        "⚠️ BCAA, glutamina y la mayoría de pre-entrenos tienen evidencia limitada. Prioriza nutrición real primero. 🥗")
+
+            # Descanso / sueño
+            if any(w in m for w in ['descanso', 'dormir', 'sueño', 'recupera', 'cansado', 'fatiga']):
+                return ("😴 El descanso es tan importante como el entrenamiento:\n\n"
+                        "**Sueño:** 7-9 horas por noche. Durante el sueño profundo se libera hormona de crecimiento que repara y construye músculo.\n\n"
+                        "**Entre sesiones:** Los músculos necesitan 48-72h para recuperarse completamente. No entrenes el mismo grupo muscular dos días seguidos.\n\n"
+                        "**Señales de sobreentrenamiento:** cansancio persistente, fuerza que no avanza, mal humor, dificultad para dormir. Si tienes varios de estos, toma 3-5 días de descanso total.\n\n"
+                        "**Recuperación activa:** caminar, nadar suave o yoga en días de descanso mantiene la circulación sin estresar los músculos. 🧘")
+
+            # Hidratación
+            if any(w in m for w in ['agua', 'hidrat', 'beber', 'líquido']):
+                if profile and profile.peso:
+                    litros = round(profile.peso * 0.033, 1)
+                    return (f"💧 Para tu peso de **{profile.peso} kg**, necesitas aproximadamente **{litros} litros de agua al día**.\n\n"
+                            "Durante el ejercicio añade 500-1000ml por hora de entrenamiento.\n\n"
+                            "Señales de deshidratación: orina oscura, dolor de cabeza, fatiga, calambres.\n\n"
+                            "Tip: Bebe un vaso de agua al despertar, uno antes de cada comida y uno antes/durante/después del entrenamiento. 🌊")
+                return ("💧 La recomendación general es **2-3 litros de agua al día** (más si haces ejercicio o hace calor).\n\n"
+                        "Fórmula simple: 33ml por kg de peso corporal. Un indicador fácil: si tu orina es amarillo claro, estás bien hidratado.")
+
+            # Saludos y consultas generales
+            if any(w in m for w in ['hola', 'buenas', 'hey', 'qué tal', 'como estas', 'cómo estás']):
+                return f"¡Hola {nombre}! 😊 Estoy aquí para ayudarte con tu fitness. Puedo analizar tu progreso, darte consejos de nutrición, rutinas de ejercicio, suplementación y más. ¿Qué quieres saber hoy? 💪"
+
+            if any(w in m for w in ['gracias', 'perfecto', 'genial', 'excelente', 'ok', 'bien']):
+                return f"¡De nada {nombre}! 🙌 Recuerda: la consistencia es la clave del éxito. ¿Hay algo más en lo que pueda ayudarte? 💪"
+
+            # Respuesta genérica
+            return (f"Buena pregunta, {nombre}! 🤔 Puedo ayudarte con:\n\n"
+                    "• 📊 Análisis de tu progreso de peso\n"
+                    "• 🔥 Calorías y macros personalizados\n"
+                    "• 💪 Consejos para ganar músculo\n"
+                    "• 📉 Estrategias para perder grasa\n"
+                    "• 🏋️ Rutinas y ejercicios\n"
+                    "• 🧪 Suplementación basada en ciencia\n"
+                    "• 😴 Descanso y recuperación\n\n"
+                    "¿Sobre cuál de estos temas quieres saber más?")
+
+        # ── Llamada a Claude API (si hay key) o motor local ──────────────────
         api_key = settings.ANTHROPIC_API_KEY
         if not api_key:
-            return JsonResponse({'response': 'El asistente no está configurado. Contacta al administrador.'})
-
-        try:
-            resp = http_requests.post(
-                'https://api.anthropic.com/v1/messages',
-                headers={
-                    'x-api-key': api_key,
-                    'anthropic-version': '2023-06-01',
-                    'content-type': 'application/json',
-                },
-                json={
-                    'model': 'claude-haiku-4-5-20251001',
-                    'max_tokens': 1024,
-                    'system': system_prompt,
-                    'messages': history[-20:],
-                },
-                timeout=30,
-            )
-            resp.raise_for_status()
-            bot_response = resp.json()['content'][0]['text']
-        except Exception:
-            bot_response = 'Lo siento, no puedo responder en este momento. Intenta de nuevo en unos segundos. 🙏'
+            bot_response = _respuesta_local(user_message, profile, pesos,
+                                            calculo if 'calculo' in dir() else None,
+                                            n_entrenos if 'n_entrenos' in dir() else 0)
+        else:
+            try:
+                resp = http_requests.post(
+                    'https://api.anthropic.com/v1/messages',
+                    headers={
+                        'x-api-key': api_key,
+                        'anthropic-version': '2023-06-01',
+                        'content-type': 'application/json',
+                    },
+                    json={
+                        'model': 'claude-haiku-4-5-20251001',
+                        'max_tokens': 1024,
+                        'system': system_prompt,
+                        'messages': history[-20:],
+                    },
+                    timeout=30,
+                )
+                resp.raise_for_status()
+                bot_response = resp.json()['content'][0]['text']
+            except Exception:
+                bot_response = _respuesta_local(user_message, profile, pesos,
+                                                calculo if 'calculo' in dir() else None,
+                                                n_entrenos if 'n_entrenos' in dir() else 0)
 
         # Guardar en sesión (máx 20 mensajes = 10 intercambios)
         history.append({'role': 'assistant', 'content': bot_response})
