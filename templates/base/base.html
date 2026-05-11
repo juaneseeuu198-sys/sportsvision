@@ -200,18 +200,21 @@
 </div>
 
 <!-- Manual de usuario FAB -->
-<button class="help-fab" id="helpFabBtn" title="Manual de usuario" onclick="document.getElementById('manual-overlay').classList.add('open')">
+<button class="help-fab" id="helpFabBtn" title="Manual de usuario" onclick="document.getElementById('manual-overlay').classList.add('open')"
+  style="position:fixed;bottom:92px;right:28px;width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(67,97,238,0.18);color:rgba(255,255,255,0.8);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:900;">
   <i class="bi bi-question-lg"></i>
 </button>
 
 <!-- Theme toggle FAB -->
-<button class="theme-fab" id="themeToggleBtn" title="Cambiar tema">
+<button class="theme-fab" id="themeToggleBtn" title="Cambiar tema"
+  style="position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(107,114,128,0.18);color:rgba(255,255,255,0.8);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1200;">
   <i class="bi bi-sun-fill" id="themeIcon"></i>
 </button>
 
 {% if user.is_authenticated %}
 <!-- FitBot FAB -->
-<button class="fitbot-fab" id="fitbotFab" title="FitBot — Asistente IA">
+<button class="fitbot-fab" id="fitbotFab" title="FitBot — Asistente IA"
+  style="position:fixed;bottom:156px;right:28px;width:52px;height:52px;border-radius:50%;border:1px solid rgba(67,97,238,0.3);background:rgba(67,97,238,0.18);color:rgba(255,255,255,0.8);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:900;">
   <i class="bi bi-robot"></i>
 </button>
 
