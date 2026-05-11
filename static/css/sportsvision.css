@@ -1631,22 +1631,24 @@ html.light-mode .alert-warning { background: rgba(245,158,11,0.08); border-color
 /* ── Manual de usuario FAB ── */
 .help-fab {
   position: fixed;
-  bottom: 92px;   /* encima del theme-fab (28 + 52 + 12) */
+  bottom: 92px;
   right: 28px;
   width: 52px; height: 52px;
-  border-radius: 50%; border: none;
+  border-radius: 50%; border: 1px solid rgba(255,255,255,0.12);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 22px;
-  background: linear-gradient(135deg, #4361ee, #6b7280);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(67,97,238,0.45);
-  transition: transform .2s, box-shadow .2s;
+  background: rgba(67,97,238,0.18);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,0.7);
+  box-shadow: none;
+  transition: transform .2s, background .2s, color .2s;
   z-index: 900;
 }
 .help-fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 28px rgba(67,97,238,0.65);
+  background: rgba(67,97,238,0.38);
+  color: #fff;
 }
 html.light-mode .help-fab { background: linear-gradient(135deg, #4361ee, #6b7280); }
 
@@ -1764,21 +1766,23 @@ html.light-mode .manual-item:hover { background: rgba(67,97,238,.07); }
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.12);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   z-index: 1200;
-  background: var(--sv-purple);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(107,114,128,0.45);
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  background: rgba(107,114,128,0.18);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,0.7);
+  box-shadow: none;
+  transition: transform 0.2s, background 0.2s, color 0.2s;
 }
 .theme-fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 28px rgba(107,114,128,0.6);
+  background: rgba(107,114,128,0.38);
+  color: #fff;
 }
 html.light-mode .theme-fab {
   background: #1a1a2e;
