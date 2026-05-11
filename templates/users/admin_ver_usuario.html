@@ -27,6 +27,34 @@
 .data-section { background:var(--sv-bg-card); border:1.5px solid var(--sv-border); border-radius:16px; padding:20px; margin-bottom:16px; }
 .data-title { font-family:'Bebas Neue',sans-serif; font-size:17px; color:#4361ee; margin-bottom:14px; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(67,97,238,.2); padding-bottom:8px; }
 
+/* Botones de moderación */
+.btn-ban   { padding:10px 20px; border-radius:12px; border:none; font-size:13px; font-weight:800; cursor:pointer; transition:opacity .2s; }
+.btn-ban.banear   { background:rgba(239,68,68,.15); border:1.5px solid rgba(239,68,68,.4); color:#f87171; }
+.btn-ban.desbanear{ background:rgba(0,212,170,.15); border:1.5px solid rgba(0,212,170,.4); color:#00d4aa; }
+.btn-ban.sancionar{ background:rgba(245,158,11,.15); border:1.5px solid rgba(245,158,11,.4); color:#f59e0b; }
+.btn-ban.levantar { background:rgba(107,114,128,.15); border:1.5px solid rgba(107,114,128,.3); color:#9ca3af; }
+.btn-ban:hover { opacity:.8; }
+
+/* Ojo de privacidad */
+.priv-field { position:relative; }
+.priv-masked { filter:blur(5px); user-select:none; transition:filter .3s; }
+.priv-revealed { filter:none; }
+.btn-eye { background:none; border:none; cursor:pointer; color:var(--sv-muted); font-size:16px; padding:0 6px; transition:color .2s; }
+.btn-eye:hover { color:#4361ee; }
+
+/* Modal contraseña */
+.pwd-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+.pwd-modal-overlay.open { display:flex; }
+.pwd-modal { background:#111827; border:1.5px solid rgba(67,97,238,.4); border-radius:20px; padding:28px 24px; max-width:360px; width:90%; text-align:center; }
+.pwd-modal h3 { font-family:'Bebas Neue',sans-serif; font-size:22px; color:#fff; margin-bottom:8px; }
+.pwd-modal p  { font-size:13px; color:#6b7280; margin-bottom:18px; }
+.pwd-input { width:100%; padding:10px 14px; border-radius:10px; border:1.5px solid rgba(67,97,238,.3); background:rgba(255,255,255,.06); color:#fff; font-size:14px; margin-bottom:14px; outline:none; }
+.pwd-input:focus { border-color:#4361ee; }
+.pwd-error { color:#f87171; font-size:12px; margin-bottom:10px; display:none; }
+.pwd-btn-confirm { width:100%; padding:11px; border-radius:10px; border:none; background:#4361ee; color:#fff; font-size:14px; font-weight:800; cursor:pointer; transition:opacity .2s; }
+.pwd-btn-confirm:hover { opacity:.85; }
+.pwd-btn-cancel { background:none; border:none; color:#6b7280; font-size:13px; cursor:pointer; margin-top:10px; text-decoration:underline; }
+
 /* Entrenamientos expandibles */
 .entreno-row {
   display:flex; align-items:center; gap:12px; padding:10px 0;
@@ -197,32 +225,110 @@
   {% endfor %}
   {% endif %}
 
-  <!-- Contacto -->
+  <!-- ── Acciones de moderación ── -->
+  {% if cliente != request.user %}
+  <div class="data-section" style="border-color:rgba(239,68,68,.25);">
+    <div class="data-title" style="color:#f87171;border-color:rgba(239,68,68,.2);">
+      <i class="bi bi-shield-fill-exclamation"></i> Moderación
+      {% if not cliente.is_active %}
+      <span style="margin-left:auto;font-size:11px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:2px 10px;color:#f87171;">BANEADO</span>
+      {% elif profile.suspendido_hasta and profile.suspendido_hasta > now %}
+      <span style="margin-left:auto;font-size:11px;background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:2px 10px;color:#f59e0b;">SUSPENDIDO hasta {{ profile.suspendido_hasta|date:"d/m/Y H:i" }}</span>
+      {% endif %}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;">
+      <!-- Ban -->
+      <form method="post" action="{% url 'banear_usuario' cliente.id %}"
+            onsubmit="return confirm('{% if cliente.is_active %}¿Banear permanentemente a {{ cliente.username }}?{% else %}¿Desbanear a {{ cliente.username }}?{% endif %}')">
+        {% csrf_token %}
+        <button type="submit" class="btn-ban {% if cliente.is_active %}banear{% else %}desbanear{% endif %}">
+          {% if cliente.is_active %}
+            <i class="bi bi-slash-circle-fill me-1"></i> Banear permanentemente
+          {% else %}
+            <i class="bi bi-check-circle-fill me-1"></i> Desbanear
+          {% endif %}
+        </button>
+      </form>
+
+      <!-- Sanción temporal -->
+      <form method="post" action="{% url 'sancionar_usuario' cliente.id %}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        {% csrf_token %}
+        <select name="dias" style="padding:8px 10px;border-radius:10px;border:1.5px solid rgba(245,158,11,.3);background:rgba(245,158,11,.08);color:#f59e0b;font-size:13px;font-weight:700;cursor:pointer;outline:none;">
+          <option value="0">0 días</option>
+          <option value="1">1 día</option>
+          <option value="3">3 días</option>
+          <option value="7">7 días</option>
+          <option value="14">14 días</option>
+          <option value="30">30 días</option>
+        </select>
+        <select name="horas" style="padding:8px 10px;border-radius:10px;border:1.5px solid rgba(245,158,11,.3);background:rgba(245,158,11,.08);color:#f59e0b;font-size:13px;font-weight:700;cursor:pointer;outline:none;">
+          <option value="0">0 horas</option>
+          <option value="6">6 horas</option>
+          <option value="12">12 horas</option>
+          <option value="24">24 horas</option>
+        </select>
+        <button type="submit" class="btn-ban sancionar">
+          <i class="bi bi-clock-fill me-1"></i> Sancionar
+        </button>
+        {% if profile.suspendido_hasta and profile.suspendido_hasta > now %}
+        <button type="submit" name="dias" value="0" class="btn-ban levantar"
+                onclick="this.form.horas.value='0'">
+          <i class="bi bi-x-lg me-1"></i> Levantar sanción
+        </button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Contacto con ojo de privacidad -->
   {% if profile.telefono or profile.direccion %}
   <div class="data-section">
-    <div class="data-title"><i class="bi bi-person-lines-fill"></i> Información de contacto</div>
+    <div class="data-title"><i class="bi bi-person-lines-fill"></i> Información de contacto
+      <button class="btn-eye ms-auto" onclick="abrirModalPrivacidad()" title="Ver datos privados">
+        <i class="bi bi-eye-slash-fill"></i>
+      </button>
+    </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
       {% if profile.telefono %}
       <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.2);border-radius:12px;">
         <i class="bi bi-telephone-fill" style="color:#00d4aa;font-size:18px;"></i>
-        <div>
+        <div style="flex:1;">
           <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--sv-muted);">Teléfono</div>
-          <div style="font-size:15px;font-weight:700;color:var(--sv-text);">{{ profile.telefono }}</div>
+          <div class="priv-masked priv-field" id="field-telefono" style="font-size:15px;font-weight:700;color:var(--sv-text);">{{ profile.telefono }}</div>
         </div>
       </div>
       {% endif %}
       {% if profile.direccion %}
       <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(244,162,97,.06);border:1px solid rgba(244,162,97,.2);border-radius:12px;">
         <i class="bi bi-geo-alt-fill" style="color:#f4a261;font-size:18px;"></i>
-        <div>
+        <div style="flex:1;">
           <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--sv-muted);">Dirección</div>
-          <div style="font-size:15px;font-weight:700;color:var(--sv-text);">{{ profile.direccion }}</div>
+          <div class="priv-masked priv-field" id="field-direccion" style="font-size:15px;font-weight:700;color:var(--sv-text);">{{ profile.direccion }}</div>
         </div>
       </div>
       {% endif %}
     </div>
+    <p style="font-size:11px;color:var(--sv-muted);margin-top:10px;margin-bottom:0;">
+      <i class="bi bi-lock-fill me-1"></i> Haz clic en el ojo para revelar los datos — se pedirá tu contraseña.
+    </p>
   </div>
   {% endif %}
+
+  <!-- Modal de contraseña -->
+  <div class="pwd-modal-overlay" id="pwdModal">
+    <div class="pwd-modal">
+      <h3><i class="bi bi-shield-lock-fill me-2"></i>Verificar identidad</h3>
+      <p>Ingresa tu contraseña de administrador para ver los datos privados.</p>
+      <input type="password" class="pwd-input" id="pwdInput" placeholder="Tu contraseña..." autocomplete="current-password">
+      <div class="pwd-error" id="pwdError">Contraseña incorrecta. Intenta de nuevo.</div>
+      <button class="pwd-btn-confirm" onclick="confirmarPassword()">
+        <i class="bi bi-eye-fill me-1"></i> Ver datos
+      </button>
+      <br>
+      <button class="pwd-btn-cancel" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
 
   <!-- Datos físicos -->
   <div class="data-section">
@@ -584,5 +690,49 @@ function togglePlan(id, head) {
     icon.style.transform = open ? 'rotate(90deg)' : '';
   }
 }
+
+// ── Privacidad ──────────────────────────────────────────
+function abrirModalPrivacidad() {
+  document.getElementById('pwdModal').classList.add('open');
+  document.getElementById('pwdInput').value = '';
+  document.getElementById('pwdError').style.display = 'none';
+  setTimeout(function(){ document.getElementById('pwdInput').focus(); }, 100);
+}
+function cerrarModal() {
+  document.getElementById('pwdModal').classList.remove('open');
+}
+function confirmarPassword() {
+  var pwd = document.getElementById('pwdInput').value;
+  if (!pwd) return;
+  var formData = new FormData();
+  formData.append('password', pwd);
+  formData.append('user_id', '{{ cliente.id }}');
+  formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+  fetch('{% url "verificar_password_admin" %}', { method: 'POST', body: formData })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (data.ok) {
+        cerrarModal();
+        // Revelar campos
+        var tel = document.getElementById('field-telefono');
+        var dir = document.getElementById('field-direccion');
+        if (tel) { tel.classList.remove('priv-masked'); tel.classList.add('priv-revealed'); }
+        if (dir) { dir.classList.remove('priv-masked'); dir.classList.add('priv-revealed'); }
+        // Actualizar botón ojo
+        var eyeBtn = document.querySelector('.btn-eye i');
+        if (eyeBtn) eyeBtn.className = 'bi bi-eye-fill';
+      } else {
+        document.getElementById('pwdError').style.display = 'block';
+        document.getElementById('pwdInput').value = '';
+        document.getElementById('pwdInput').focus();
+      }
+    });
+}
+document.getElementById('pwdInput').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') confirmarPassword();
+});
+document.getElementById('pwdModal').addEventListener('click', function(e){
+  if (e.target === this) cerrarModal();
+});
 </script>
 {% endblock %}

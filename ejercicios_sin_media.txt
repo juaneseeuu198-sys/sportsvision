@@ -1,0 +1,1159 @@
+======================================================================
+EJERCICIOS SIN MEDIA — SportsVision
+======================================================================
+
+INSTRUCCIONES:
+  GIF/Video  -> colocar en:  media/ejercicios/gifs/<nombre_archivo>.mp4
+  Imagen     -> colocar en:  media/ejercicios/<nombre_archivo>.jpg
+
+Total sin media: 281 ejercicios
+
+
+── ABDOMEN ──────────────────────────────
+  Ejercicio : Bicicleta Abdominal
+  GIF/Video : media/ejercicios/gifs/bicicleta_abdominal.mp4
+  Imagen    : media/ejercicios/bicicleta_abdominal.jpg
+
+  Ejercicio : Crunch con Disco
+  GIF/Video : media/ejercicios/gifs/crunch_con_disco.mp4
+  Imagen    : media/ejercicios/crunch_con_disco.jpg
+
+  Ejercicio : Crunch con Rotación
+  GIF/Video : media/ejercicios/gifs/crunch_con_rotacion.mp4
+  Imagen    : media/ejercicios/crunch_con_rotacion.jpg
+
+  Ejercicio : Crunchs
+  GIF/Video : media/ejercicios/gifs/crunchs.mp4
+  Imagen    : media/ejercicios/crunchs.jpg
+
+  Ejercicio : Decline Crunch
+  GIF/Video : media/ejercicios/gifs/decline_crunch.mp4
+  Imagen    : media/ejercicios/decline_crunch.jpg
+
+  Ejercicio : Dragon Flag
+  GIF/Video : media/ejercicios/gifs/dragon_flag.mp4
+  Imagen    : media/ejercicios/dragon_flag.jpg
+
+  Ejercicio : Flutter Kicks
+  GIF/Video : media/ejercicios/gifs/flutter_kicks.mp4
+  Imagen    : media/ejercicios/flutter_kicks.jpg
+
+  Ejercicio : Hanging Leg Raise
+  GIF/Video : media/ejercicios/gifs/hanging_leg_raise.mp4
+  Imagen    : media/ejercicios/hanging_leg_raise.jpg
+
+  Ejercicio : Hollow Body Hold
+  GIF/Video : media/ejercicios/gifs/hollow_body_hold.mp4
+  Imagen    : media/ejercicios/hollow_body_hold.jpg
+
+  Ejercicio : Lateral Crunch
+  GIF/Video : media/ejercicios/gifs/lateral_crunch.mp4
+  Imagen    : media/ejercicios/lateral_crunch.jpg
+
+  Ejercicio : Oblicuos con Banda
+  GIF/Video : media/ejercicios/gifs/oblicuos_con_banda.mp4
+  Imagen    : media/ejercicios/oblicuos_con_banda.jpg
+
+  Ejercicio : Pallof Press de Rodillas
+  GIF/Video : media/ejercicios/gifs/pallof_press_de_rodillas.mp4
+  Imagen    : media/ejercicios/pallof_press_de_rodillas.jpg
+
+  Ejercicio : Plancha Abdominal
+  GIF/Video : media/ejercicios/gifs/plancha_abdominal.mp4
+  Imagen    : media/ejercicios/plancha_abdominal.jpg
+
+  Ejercicio : Plank Knee to Elbow
+  GIF/Video : media/ejercicios/gifs/plank_knee_to_elbow.mp4
+  Imagen    : media/ejercicios/plank_knee_to_elbow.jpg
+
+  Ejercicio : Reverse Crunch
+  GIF/Video : media/ejercicios/gifs/reverse_crunch.mp4
+  Imagen    : media/ejercicios/reverse_crunch.jpg
+
+  Ejercicio : Rueda Abdominal
+  GIF/Video : media/ejercicios/gifs/rueda_abdominal.mp4
+  Imagen    : media/ejercicios/rueda_abdominal.jpg
+
+  Ejercicio : Russian Twist
+  GIF/Video : media/ejercicios/gifs/russian_twist.mp4
+  Imagen    : media/ejercicios/russian_twist.jpg
+
+  Ejercicio : Scissor Kicks
+  GIF/Video : media/ejercicios/gifs/scissor_kicks.mp4
+  Imagen    : media/ejercicios/scissor_kicks.jpg
+
+  Ejercicio : Sit-Ups
+  GIF/Video : media/ejercicios/gifs/sit_ups.mp4
+  Imagen    : media/ejercicios/sit_ups.jpg
+
+  Ejercicio : Toe Touch Crunch
+  GIF/Video : media/ejercicios/gifs/toe_touch_crunch.mp4
+  Imagen    : media/ejercicios/toe_touch_crunch.jpg
+
+  Ejercicio : Windshield Wipers
+  GIF/Video : media/ejercicios/gifs/windshield_wipers.mp4
+  Imagen    : media/ejercicios/windshield_wipers.jpg
+
+
+── ANTEBRAZOS ──────────────────────────────
+  Ejercicio : Barbell Finger Rollup
+  GIF/Video : media/ejercicios/gifs/barbell_finger_rollup.mp4
+  Imagen    : media/ejercicios/barbell_finger_rollup.jpg
+
+  Ejercicio : Curl de Muñeca con Banda
+  GIF/Video : media/ejercicios/gifs/curl_de_muneca_con_banda.mp4
+  Imagen    : media/ejercicios/curl_de_muneca_con_banda.jpg
+
+  Ejercicio : Curl de Muñeca con Barra
+  GIF/Video : media/ejercicios/gifs/curl_de_muneca_con_barra.mp4
+  Imagen    : media/ejercicios/curl_de_muneca_con_barra.jpg
+
+  Ejercicio : Curl de Muñeca con Mancuernas
+  GIF/Video : media/ejercicios/gifs/curl_de_muneca_con_mancuernas.mp4
+  Imagen    : media/ejercicios/curl_de_muneca_con_mancuernas.jpg
+
+  Ejercicio : Curl Inverso con Barra
+  GIF/Video : media/ejercicios/gifs/curl_inverso_con_barra.mp4
+  Imagen    : media/ejercicios/curl_inverso_con_barra.jpg
+
+  Ejercicio : Curl Inverso con Mancuernas
+  GIF/Video : media/ejercicios/gifs/curl_inverso_con_mancuernas.mp4
+  Imagen    : media/ejercicios/curl_inverso_con_mancuernas.jpg
+
+  Ejercicio : Dead Hang
+  GIF/Video : media/ejercicios/gifs/dead_hang.mp4
+  Imagen    : media/ejercicios/dead_hang.jpg
+
+  Ejercicio : Extensión de Muñeca con Banda
+  GIF/Video : media/ejercicios/gifs/extension_de_muneca_con_banda.mp4
+  Imagen    : media/ejercicios/extension_de_muneca_con_banda.jpg
+
+  Ejercicio : Extensión de Muñeca con Barra
+  GIF/Video : media/ejercicios/gifs/extension_de_muneca_con_barra.mp4
+  Imagen    : media/ejercicios/extension_de_muneca_con_barra.jpg
+
+  Ejercicio : Extensión de Muñeca en Pared
+  GIF/Video : media/ejercicios/gifs/extension_de_muneca_en_pared.mp4
+  Imagen    : media/ejercicios/extension_de_muneca_en_pared.jpg
+
+  Ejercicio : Farmer's Walk
+  GIF/Video : media/ejercicios/gifs/farmer_s_walk.mp4
+  Imagen    : media/ejercicios/farmer_s_walk.jpg
+
+  Ejercicio : Grip Crush con Mancuerna
+  GIF/Video : media/ejercicios/gifs/grip_crush_con_mancuerna.mp4
+  Imagen    : media/ejercicios/grip_crush_con_mancuerna.jpg
+
+  Ejercicio : Pinch Grip con Discos
+  GIF/Video : media/ejercicios/gifs/pinch_grip_con_discos.mp4
+  Imagen    : media/ejercicios/pinch_grip_con_discos.jpg
+
+  Ejercicio : Plate Pinch
+  GIF/Video : media/ejercicios/gifs/plate_pinch.mp4
+  Imagen    : media/ejercicios/plate_pinch.jpg
+
+  Ejercicio : Rope Climb (simulado con toalla)
+  GIF/Video : media/ejercicios/gifs/rope_climb_simulado_con_toalla.mp4
+  Imagen    : media/ejercicios/rope_climb_simulado_con_toalla.jpg
+
+  Ejercicio : Rotación de Muñeca con Mancuerna
+  GIF/Video : media/ejercicios/gifs/rotacion_de_muneca_con_mancuerna.mp4
+  Imagen    : media/ejercicios/rotacion_de_muneca_con_mancuerna.jpg
+
+  Ejercicio : Squeeze de Pelota
+  GIF/Video : media/ejercicios/gifs/squeeze_de_pelota.mp4
+  Imagen    : media/ejercicios/squeeze_de_pelota.jpg
+
+  Ejercicio : Towel Pull-Up
+  GIF/Video : media/ejercicios/gifs/towel_pull_up.mp4
+  Imagen    : media/ejercicios/towel_pull_up.jpg
+
+  Ejercicio : Wrist Roller
+  GIF/Video : media/ejercicios/gifs/wrist_roller.mp4
+  Imagen    : media/ejercicios/wrist_roller.jpg
+
+
+── BÍCEPS ──────────────────────────────
+  Ejercicio : Barbell Drag Curl
+  GIF/Video : media/ejercicios/gifs/barbell_drag_curl.mp4
+  Imagen    : media/ejercicios/barbell_drag_curl.jpg
+
+  Ejercicio : Bayesian Curl con Banda
+  GIF/Video : media/ejercicios/gifs/bayesian_curl_con_banda.mp4
+  Imagen    : media/ejercicios/bayesian_curl_con_banda.jpg
+
+  Ejercicio : Cross Body Curl
+  GIF/Video : media/ejercicios/gifs/cross_body_curl.mp4
+  Imagen    : media/ejercicios/cross_body_curl.jpg
+
+  Ejercicio : Curl 21s con Barra
+  GIF/Video : media/ejercicios/gifs/curl_21s_con_barra.mp4
+  Imagen    : media/ejercicios/curl_21s_con_barra.jpg
+
+  Ejercicio : Curl con Banda
+  GIF/Video : media/ejercicios/gifs/curl_con_banda.mp4
+  Imagen    : media/ejercicios/curl_con_banda.jpg
+
+  Ejercicio : Curl Concentrado
+  GIF/Video : media/ejercicios/gifs/curl_concentrado.mp4
+  Imagen    : media/ejercicios/curl_concentrado.jpg
+
+  Ejercicio : Curl con Disco
+  GIF/Video : media/ejercicios/gifs/curl_con_disco.mp4
+  Imagen    : media/ejercicios/curl_con_disco.jpg
+
+  Ejercicio : Curl con Mancuernas
+  GIF/Video : media/ejercicios/gifs/curl_con_mancuernas.mp4
+  Imagen    : media/ejercicios/curl_con_mancuernas.jpg
+
+  Ejercicio : Curl de Bíceps con Barra
+  GIF/Video : media/ejercicios/gifs/curl_de_biceps_con_barra.mp4
+  Imagen    : media/ejercicios/curl_de_biceps_con_barra.jpg
+
+  Ejercicio : Curl en Banca Inclinada
+  GIF/Video : media/ejercicios/gifs/curl_en_banca_inclinada.mp4
+  Imagen    : media/ejercicios/curl_en_banca_inclinada.jpg
+
+  Ejercicio : Curl en Banco Predicador
+  GIF/Video : media/ejercicios/gifs/curl_en_banco_predicador.mp4
+  Imagen    : media/ejercicios/curl_en_banco_predicador.jpg
+
+  Ejercicio : Curl en Cable con Banda
+  GIF/Video : media/ejercicios/gifs/curl_en_cable_con_banda.mp4
+  Imagen    : media/ejercicios/curl_en_cable_con_banda.jpg
+
+  Ejercicio : Curl Invertido
+  GIF/Video : media/ejercicios/gifs/curl_invertido.mp4
+  Imagen    : media/ejercicios/curl_invertido.jpg
+
+  Ejercicio : Curl martillo
+  GIF/Video : media/ejercicios/gifs/curl_martillo.mp4
+  Imagen    : media/ejercicios/curl_martillo.jpg
+
+  Ejercicio : Reverse Curl con Barra EZ
+  GIF/Video : media/ejercicios/gifs/reverse_curl_con_barra_ez.mp4
+  Imagen    : media/ejercicios/reverse_curl_con_barra_ez.jpg
+
+  Ejercicio : Spider Curl
+  GIF/Video : media/ejercicios/gifs/spider_curl.mp4
+  Imagen    : media/ejercicios/spider_curl.jpg
+
+  Ejercicio : Zottman Curl
+  GIF/Video : media/ejercicios/gifs/zottman_curl.mp4
+  Imagen    : media/ejercicios/zottman_curl.jpg
+
+
+── CARDIO ──────────────────────────────
+  Ejercicio : Bear Crawl
+  GIF/Video : media/ejercicios/gifs/bear_crawl.mp4
+  Imagen    : media/ejercicios/bear_crawl.jpg
+
+  Ejercicio : Box Jumps
+  GIF/Video : media/ejercicios/gifs/box_jumps.mp4
+  Imagen    : media/ejercicios/box_jumps.jpg
+
+  Ejercicio : Burpees
+  GIF/Video : media/ejercicios/gifs/burpees.mp4
+  Imagen    : media/ejercicios/burpees.jpg
+
+  Ejercicio : Escaladores de Montaña Lentos
+  GIF/Video : media/ejercicios/gifs/escaladores_de_montana_lentos.mp4
+  Imagen    : media/ejercicios/escaladores_de_montana_lentos.jpg
+
+  Ejercicio : High Knees
+  GIF/Video : media/ejercicios/gifs/high_knees.mp4
+  Imagen    : media/ejercicios/high_knees.jpg
+
+  Ejercicio : Inchworm
+  GIF/Video : media/ejercicios/gifs/inchworm.mp4
+  Imagen    : media/ejercicios/inchworm.jpg
+
+  Ejercicio : Jumping jacks
+  GIF/Video : media/ejercicios/gifs/jumping_jacks.mp4
+  Imagen    : media/ejercicios/jumping_jacks.jpg
+
+  Ejercicio : Jump Lunge
+  GIF/Video : media/ejercicios/gifs/jump_lunge.mp4
+  Imagen    : media/ejercicios/jump_lunge.jpg
+
+  Ejercicio : Jump Rope (Cuerda de Saltar)
+  GIF/Video : media/ejercicios/gifs/jump_rope_cuerda_de_saltar.mp4
+  Imagen    : media/ejercicios/jump_rope_cuerda_de_saltar.jpg
+
+  Ejercicio : Kick Boxing en el Aire
+  GIF/Video : media/ejercicios/gifs/kick_boxing_en_el_aire.mp4
+  Imagen    : media/ejercicios/kick_boxing_en_el_aire.jpg
+
+  Ejercicio : Lateral Shuffles
+  GIF/Video : media/ejercicios/gifs/lateral_shuffles.mp4
+  Imagen    : media/ejercicios/lateral_shuffles.jpg
+
+  Ejercicio : Saltar la Soga Doble Bajo (Doble Under)
+  GIF/Video : media/ejercicios/gifs/saltar_la_soga_doble_bajo_doble_under.mp4
+  Imagen    : media/ejercicios/saltar_la_soga_doble_bajo_doble_under.jpg
+
+  Ejercicio : Salto a Cajón de Silla
+  GIF/Video : media/ejercicios/gifs/salto_a_cajon_de_silla.mp4
+  Imagen    : media/ejercicios/salto_a_cajon_de_silla.jpg
+
+  Ejercicio : Skipping
+  GIF/Video : media/ejercicios/gifs/skipping.mp4
+  Imagen    : media/ejercicios/skipping.jpg
+
+  Ejercicio : Sled Push (simulado con saco)
+  GIF/Video : media/ejercicios/gifs/sled_push_simulado_con_saco.mp4
+  Imagen    : media/ejercicios/sled_push_simulado_con_saco.jpg
+
+  Ejercicio : Speed Skaters
+  GIF/Video : media/ejercicios/gifs/speed_skaters.mp4
+  Imagen    : media/ejercicios/speed_skaters.jpg
+
+  Ejercicio : Sprint en el Lugar
+  GIF/Video : media/ejercicios/gifs/sprint_en_el_lugar.mp4
+  Imagen    : media/ejercicios/sprint_en_el_lugar.jpg
+
+  Ejercicio : Sprints de 20 metros
+  GIF/Video : media/ejercicios/gifs/sprints_de_20_metros.mp4
+  Imagen    : media/ejercicios/sprints_de_20_metros.jpg
+
+  Ejercicio : Swing con Kettlebell
+  GIF/Video : media/ejercicios/gifs/swing_con_kettlebell.mp4
+  Imagen    : media/ejercicios/swing_con_kettlebell.jpg
+
+  Ejercicio : Tabata Squat
+  GIF/Video : media/ejercicios/gifs/tabata_squat.mp4
+  Imagen    : media/ejercicios/tabata_squat.jpg
+
+  Ejercicio : Thrusters con Mancuernas
+  GIF/Video : media/ejercicios/gifs/thrusters_con_mancuernas.mp4
+  Imagen    : media/ejercicios/thrusters_con_mancuernas.jpg
+
+
+── CORE ──────────────────────────────
+  Ejercicio : Ab Wheel Rollout desde Rodillas
+  GIF/Video : media/ejercicios/gifs/ab_wheel_rollout_desde_rodillas.mp4
+  Imagen    : media/ejercicios/ab_wheel_rollout_desde_rodillas.jpg
+
+  Ejercicio : Bear Plank
+  GIF/Video : media/ejercicios/gifs/bear_plank.mp4
+  Imagen    : media/ejercicios/bear_plank.jpg
+
+  Ejercicio : Copenhagen Plank
+  GIF/Video : media/ejercicios/gifs/copenhagen_plank.mp4
+  Imagen    : media/ejercicios/copenhagen_plank.jpg
+
+  Ejercicio : Dead Bug
+  GIF/Video : media/ejercicios/gifs/dead_bug.mp4
+  Imagen    : media/ejercicios/dead_bug.jpg
+
+  Ejercicio : Elevaciones de piernas
+  GIF/Video : media/ejercicios/gifs/elevaciones_de_piernas.mp4
+  Imagen    : media/ejercicios/elevaciones_de_piernas.jpg
+
+  Ejercicio : Hollow Body Rock
+  GIF/Video : media/ejercicios/gifs/hollow_body_rock.mp4
+  Imagen    : media/ejercicios/hollow_body_rock.jpg
+
+  Ejercicio : Landmine Anti-Rotation
+  GIF/Video : media/ejercicios/gifs/landmine_anti_rotation.mp4
+  Imagen    : media/ejercicios/landmine_anti_rotation.jpg
+
+  Ejercicio : Mountain Climbers
+  GIF/Video : media/ejercicios/gifs/mountain_climbers.mp4
+  Imagen    : media/ejercicios/mountain_climbers.jpg
+
+  Ejercicio : Pallof Press con Banda
+  GIF/Video : media/ejercicios/gifs/pallof_press_con_banda.mp4
+  Imagen    : media/ejercicios/pallof_press_con_banda.jpg
+
+  Ejercicio : Plancha
+  GIF/Video : media/ejercicios/gifs/plancha.mp4
+  Imagen    : media/ejercicios/plancha.jpg
+
+  Ejercicio : Plancha con Toque de Hombro
+  GIF/Video : media/ejercicios/gifs/plancha_con_toque_de_hombro.mp4
+  Imagen    : media/ejercicios/plancha_con_toque_de_hombro.jpg
+
+  Ejercicio : Plancha Lateral
+  GIF/Video : media/ejercicios/gifs/plancha_lateral.mp4
+  Imagen    : media/ejercicios/plancha_lateral.jpg
+
+  Ejercicio : Plank Tap Anterior
+  GIF/Video : media/ejercicios/gifs/plank_tap_anterior.mp4
+  Imagen    : media/ejercicios/plank_tap_anterior.jpg
+
+  Ejercicio : Plank to Downward Dog
+  GIF/Video : media/ejercicios/gifs/plank_to_downward_dog.mp4
+  Imagen    : media/ejercicios/plank_to_downward_dog.jpg
+
+  Ejercicio : Rollout con Barra
+  GIF/Video : media/ejercicios/gifs/rollout_con_barra.mp4
+  Imagen    : media/ejercicios/rollout_con_barra.jpg
+
+  Ejercicio : Single Arm Farmer's Carry
+  GIF/Video : media/ejercicios/gifs/single_arm_farmer_s_carry.mp4
+  Imagen    : media/ejercicios/single_arm_farmer_s_carry.jpg
+
+  Ejercicio : Stir the Pot
+  GIF/Video : media/ejercicios/gifs/stir_the_pot.mp4
+  Imagen    : media/ejercicios/stir_the_pot.jpg
+
+  Ejercicio : Suitcase Carry
+  GIF/Video : media/ejercicios/gifs/suitcase_carry.mp4
+  Imagen    : media/ejercicios/suitcase_carry.jpg
+
+  Ejercicio : Turkish Get-Up
+  GIF/Video : media/ejercicios/gifs/turkish_get_up.mp4
+  Imagen    : media/ejercicios/turkish_get_up.jpg
+
+  Ejercicio : V-Ups
+  GIF/Video : media/ejercicios/gifs/v_ups.mp4
+  Imagen    : media/ejercicios/v_ups.jpg
+
+  Ejercicio : Windmill con Kettlebell
+  GIF/Video : media/ejercicios/gifs/windmill_con_kettlebell.mp4
+  Imagen    : media/ejercicios/windmill_con_kettlebell.jpg
+
+
+── ESPALDA ──────────────────────────────
+  Ejercicio : Chin-Ups
+  GIF/Video : media/ejercicios/gifs/chin_ups.mp4
+  Imagen    : media/ejercicios/chin_ups.jpg
+
+  Ejercicio : Dominadas
+  GIF/Video : media/ejercicios/gifs/dominadas.mp4
+  Imagen    : media/ejercicios/dominadas.jpg
+
+  Ejercicio : Dominadas con Peso
+  GIF/Video : media/ejercicios/gifs/dominadas_con_peso.mp4
+  Imagen    : media/ejercicios/dominadas_con_peso.jpg
+
+  Ejercicio : Face Pull con Banda
+  GIF/Video : media/ejercicios/gifs/face_pull_con_banda.mp4
+  Imagen    : media/ejercicios/face_pull_con_banda.jpg
+
+  Ejercicio : Hiperextensiones
+  GIF/Video : media/ejercicios/gifs/hiperextensiones.mp4
+  Imagen    : media/ejercicios/hiperextensiones.jpg
+
+  Ejercicio : Katana Row
+  GIF/Video : media/ejercicios/gifs/katana_row.mp4
+  Imagen    : media/ejercicios/katana_row.jpg
+
+  Ejercicio : Meadows Row
+  GIF/Video : media/ejercicios/gifs/meadows_row.mp4
+  Imagen    : media/ejercicios/meadows_row.jpg
+
+  Ejercicio : Peso Muerto Convencional
+  GIF/Video : media/ejercicios/gifs/peso_muerto_convencional.mp4
+  Imagen    : media/ejercicios/peso_muerto_convencional.jpg
+
+  Ejercicio : Pull-down con Banda
+  GIF/Video : media/ejercicios/gifs/pull_down_con_banda.mp4
+  Imagen    : media/ejercicios/pull_down_con_banda.jpg
+
+  Ejercicio : Pull-up Negativo
+  GIF/Video : media/ejercicios/gifs/pull_up_negativo.mp4
+  Imagen    : media/ejercicios/pull_up_negativo.jpg
+
+  Ejercicio : Rack Pull
+  GIF/Video : media/ejercicios/gifs/rack_pull.mp4
+  Imagen    : media/ejercicios/rack_pull.jpg
+
+  Ejercicio : Remo Alto con Barra
+  GIF/Video : media/ejercicios/gifs/remo_alto_con_barra.mp4
+  Imagen    : media/ejercicios/remo_alto_con_barra.jpg
+
+  Ejercicio : Remo con Agarre Neutro y Mancuernas
+  GIF/Video : media/ejercicios/gifs/remo_con_agarre_neutro_y_mancuernas.mp4
+  Imagen    : media/ejercicios/remo_con_agarre_neutro_y_mancuernas.jpg
+
+  Ejercicio : Remo con Barra
+  GIF/Video : media/ejercicios/gifs/remo_con_barra.mp4
+  Imagen    : media/ejercicios/remo_con_barra.jpg
+
+  Ejercicio : Remo con Disco
+  GIF/Video : media/ejercicios/gifs/remo_con_disco.mp4
+  Imagen    : media/ejercicios/remo_con_disco.jpg
+
+  Ejercicio : Remo con Kettlebell
+  GIF/Video : media/ejercicios/gifs/remo_con_kettlebell.mp4
+  Imagen    : media/ejercicios/remo_con_kettlebell.jpg
+
+  Ejercicio : Remo con Mancuerna
+  GIF/Video : media/ejercicios/gifs/remo_con_mancuerna.mp4
+  Imagen    : media/ejercicios/remo_con_mancuerna.jpg
+
+  Ejercicio : Remo en Polea Baja con Banda
+  GIF/Video : media/ejercicios/gifs/remo_en_polea_baja_con_banda.mp4
+  Imagen    : media/ejercicios/remo_en_polea_baja_con_banda.jpg
+
+  Ejercicio : Remo Invertido con Barra
+  GIF/Video : media/ejercicios/gifs/remo_invertido_con_barra.mp4
+  Imagen    : media/ejercicios/remo_invertido_con_barra.jpg
+
+  Ejercicio : Remo Pendlay
+  GIF/Video : media/ejercicios/gifs/remo_pendlay.mp4
+  Imagen    : media/ejercicios/remo_pendlay.jpg
+
+  Ejercicio : Remo Sentado con Banda
+  GIF/Video : media/ejercicios/gifs/remo_sentado_con_banda.mp4
+  Imagen    : media/ejercicios/remo_sentado_con_banda.jpg
+
+  Ejercicio : Reverse Snow Angels
+  GIF/Video : media/ejercicios/gifs/reverse_snow_angels.mp4
+  Imagen    : media/ejercicios/reverse_snow_angels.jpg
+
+  Ejercicio : Seal Row
+  GIF/Video : media/ejercicios/gifs/seal_row.mp4
+  Imagen    : media/ejercicios/seal_row.jpg
+
+  Ejercicio : Shrug con Mancuernas
+  GIF/Video : media/ejercicios/gifs/shrug_con_mancuernas.mp4
+  Imagen    : media/ejercicios/shrug_con_mancuernas.jpg
+
+  Ejercicio : Straight Arm Pulldown con Banda
+  GIF/Video : media/ejercicios/gifs/straight_arm_pulldown_con_banda.mp4
+  Imagen    : media/ejercicios/straight_arm_pulldown_con_banda.jpg
+
+  Ejercicio : Superman
+  GIF/Video : media/ejercicios/gifs/superman.mp4
+  Imagen    : media/ejercicios/superman.jpg
+
+  Ejercicio : T-Bar Row
+  GIF/Video : media/ejercicios/gifs/t_bar_row.mp4
+  Imagen    : media/ejercicios/t_bar_row.jpg
+
+
+── GLÚTEOS ──────────────────────────────
+  Ejercicio : Abducción de Cadera con Banda
+  GIF/Video : media/ejercicios/gifs/abduccion_de_cadera_con_banda.mp4
+  Imagen    : media/ejercicios/abduccion_de_cadera_con_banda.jpg
+
+  Ejercicio : Cable Kickback con Banda
+  GIF/Video : media/ejercicios/gifs/cable_kickback_con_banda.mp4
+  Imagen    : media/ejercicios/cable_kickback_con_banda.jpg
+
+  Ejercicio : Cable Pull-Through (con banda)
+  GIF/Video : media/ejercicios/gifs/cable_pull_through_con_banda.mp4
+  Imagen    : media/ejercicios/cable_pull_through_con_banda.jpg
+
+  Ejercicio : Clamshells con Banda
+  GIF/Video : media/ejercicios/gifs/clamshells_con_banda.mp4
+  Imagen    : media/ejercicios/clamshells_con_banda.jpg
+
+  Ejercicio : Donkey Kick
+  GIF/Video : media/ejercicios/gifs/donkey_kick.mp4
+  Imagen    : media/ejercicios/donkey_kick.jpg
+
+  Ejercicio : Fire Hydrant
+  GIF/Video : media/ejercicios/gifs/fire_hydrant.mp4
+  Imagen    : media/ejercicios/fire_hydrant.jpg
+
+  Ejercicio : Frog Pump
+  GIF/Video : media/ejercicios/gifs/frog_pump.mp4
+  Imagen    : media/ejercicios/frog_pump.jpg
+
+  Ejercicio : Glute Bridge Unilateral
+  GIF/Video : media/ejercicios/gifs/glute_bridge_unilateral.mp4
+  Imagen    : media/ejercicios/glute_bridge_unilateral.jpg
+
+  Ejercicio : Good Morning
+  GIF/Video : media/ejercicios/gifs/good_morning.mp4
+  Imagen    : media/ejercicios/good_morning.jpg
+
+  Ejercicio : Hip Thrust a 45 Grados con Banda
+  GIF/Video : media/ejercicios/gifs/hip_thrust_a_45_grados_con_banda.mp4
+  Imagen    : media/ejercicios/hip_thrust_a_45_grados_con_banda.jpg
+
+  Ejercicio : Hip Thrust con Barra
+  GIF/Video : media/ejercicios/gifs/hip_thrust_con_barra.mp4
+  Imagen    : media/ejercicios/hip_thrust_con_barra.jpg
+
+  Ejercicio : Hip Thrust con Mancuerna
+  GIF/Video : media/ejercicios/gifs/hip_thrust_con_mancuerna.mp4
+  Imagen    : media/ejercicios/hip_thrust_con_mancuerna.jpg
+
+  Ejercicio : Kickback con Kettlebell
+  GIF/Video : media/ejercicios/gifs/kickback_con_kettlebell.mp4
+  Imagen    : media/ejercicios/kickback_con_kettlebell.jpg
+
+  Ejercicio : Patada de Glúteo con Banda
+  GIF/Video : media/ejercicios/gifs/patada_de_gluteo_con_banda.mp4
+  Imagen    : media/ejercicios/patada_de_gluteo_con_banda.jpg
+
+  Ejercicio : Peso Muerto Sumo con Barra
+  GIF/Video : media/ejercicios/gifs/peso_muerto_sumo_con_barra.mp4
+  Imagen    : media/ejercicios/peso_muerto_sumo_con_barra.jpg
+
+  Ejercicio : Puente con Pies Elevados
+  GIF/Video : media/ejercicios/gifs/puente_con_pies_elevados.mp4
+  Imagen    : media/ejercicios/puente_con_pies_elevados.jpg
+
+  Ejercicio : Puente de glúteos
+  GIF/Video : media/ejercicios/gifs/puente_de_gluteos.mp4
+  Imagen    : media/ejercicios/puente_de_gluteos.jpg
+
+  Ejercicio : Reverse Lunge con Rodilla al Pecho
+  GIF/Video : media/ejercicios/gifs/reverse_lunge_con_rodilla_al_pecho.mp4
+  Imagen    : media/ejercicios/reverse_lunge_con_rodilla_al_pecho.jpg
+
+  Ejercicio : Sentadilla Búlgara con Barra
+  GIF/Video : media/ejercicios/gifs/sentadilla_bulgara_con_barra.mp4
+  Imagen    : media/ejercicios/sentadilla_bulgara_con_barra.jpg
+
+  Ejercicio : Side Step con Banda
+  GIF/Video : media/ejercicios/gifs/side_step_con_banda.mp4
+  Imagen    : media/ejercicios/side_step_con_banda.jpg
+
+
+── HOMBROS ──────────────────────────────
+  Ejercicio : Band Pull-Apart
+  GIF/Video : media/ejercicios/gifs/band_pull_apart.mp4
+  Imagen    : media/ejercicios/band_pull_apart.jpg
+
+  Ejercicio : Cuban Press
+  GIF/Video : media/ejercicios/gifs/cuban_press.mp4
+  Imagen    : media/ejercicios/cuban_press.jpg
+
+  Ejercicio : Elevaciones Frontales con Mancuernas
+  GIF/Video : media/ejercicios/gifs/elevaciones_frontales_con_mancuernas.mp4
+  Imagen    : media/ejercicios/elevaciones_frontales_con_mancuernas.jpg
+
+  Ejercicio : Elevaciones laterales
+  GIF/Video : media/ejercicios/gifs/elevaciones_laterales.mp4
+  Imagen    : media/ejercicios/elevaciones_laterales.jpg
+
+  Ejercicio : Elevaciones Laterales con Banda
+  GIF/Video : media/ejercicios/gifs/elevaciones_laterales_con_banda.mp4
+  Imagen    : media/ejercicios/elevaciones_laterales_con_banda.jpg
+
+  Ejercicio : Elevaciones Laterales con Cables o Banda
+  GIF/Video : media/ejercicios/gifs/elevaciones_laterales_con_cables_o_banda.mp4
+  Imagen    : media/ejercicios/elevaciones_laterales_con_cables_o_banda.jpg
+
+  Ejercicio : Elevación Frontal Alternada
+  GIF/Video : media/ejercicios/gifs/elevacion_frontal_alternada.mp4
+  Imagen    : media/ejercicios/elevacion_frontal_alternada.jpg
+
+  Ejercicio : Encogimientos con Barra
+  GIF/Video : media/ejercicios/gifs/encogimientos_con_barra.mp4
+  Imagen    : media/ejercicios/encogimientos_con_barra.jpg
+
+  Ejercicio : Encogimientos con Mancuernas
+  GIF/Video : media/ejercicios/gifs/encogimientos_con_mancuernas.mp4
+  Imagen    : media/ejercicios/encogimientos_con_mancuernas.jpg
+
+  Ejercicio : Handstand Push-Up (Asistido)
+  GIF/Video : media/ejercicios/gifs/handstand_push_up_asistido.mp4
+  Imagen    : media/ejercicios/handstand_push_up_asistido.jpg
+
+  Ejercicio : L-Lateral Raise
+  GIF/Video : media/ejercicios/gifs/l_lateral_raise.mp4
+  Imagen    : media/ejercicios/l_lateral_raise.jpg
+
+  Ejercicio : Pájaros con Mancuernas
+  GIF/Video : media/ejercicios/gifs/pajaros_con_mancuernas.mp4
+  Imagen    : media/ejercicios/pajaros_con_mancuernas.jpg
+
+  Ejercicio : Press Arnold
+  GIF/Video : media/ejercicios/gifs/press_arnold.mp4
+  Imagen    : media/ejercicios/press_arnold.jpg
+
+  Ejercicio : Press con Kettlebell
+  GIF/Video : media/ejercicios/gifs/press_con_kettlebell.mp4
+  Imagen    : media/ejercicios/press_con_kettlebell.jpg
+
+  Ejercicio : Press de Hombros Sentado con Barra
+  GIF/Video : media/ejercicios/gifs/press_de_hombros_sentado_con_barra.mp4
+  Imagen    : media/ejercicios/press_de_hombros_sentado_con_barra.jpg
+
+  Ejercicio : Press Militar con Barra
+  GIF/Video : media/ejercicios/gifs/press_militar_con_barra.mp4
+  Imagen    : media/ejercicios/press_militar_con_barra.jpg
+
+  Ejercicio : Press Unilateral con Mancuerna
+  GIF/Video : media/ejercicios/gifs/press_unilateral_con_mancuerna.mp4
+  Imagen    : media/ejercicios/press_unilateral_con_mancuerna.jpg
+
+  Ejercicio : Push Press
+  GIF/Video : media/ejercicios/gifs/push_press.mp4
+  Imagen    : media/ejercicios/push_press.jpg
+
+  Ejercicio : Rear Delt con Banda
+  GIF/Video : media/ejercicios/gifs/rear_delt_con_banda.mp4
+  Imagen    : media/ejercicios/rear_delt_con_banda.jpg
+
+  Ejercicio : Scaption
+  GIF/Video : media/ejercicios/gifs/scaption.mp4
+  Imagen    : media/ejercicios/scaption.jpg
+
+  Ejercicio : Vuelos Invertidos con Mancuernas
+  GIF/Video : media/ejercicios/gifs/vuelos_invertidos_con_mancuernas.mp4
+  Imagen    : media/ejercicios/vuelos_invertidos_con_mancuernas.jpg
+
+  Ejercicio : W Raise
+  GIF/Video : media/ejercicios/gifs/w_raise.mp4
+  Imagen    : media/ejercicios/w_raise.jpg
+
+
+── MOVILIDAD ──────────────────────────────
+  Ejercicio : 3D Hip Flexor Stretch
+  GIF/Video : media/ejercicios/gifs/3d_hip_flexor_stretch.mp4
+  Imagen    : media/ejercicios/3d_hip_flexor_stretch.jpg
+
+  Ejercicio : Apertura de Caderas en Mariposa
+  GIF/Video : media/ejercicios/gifs/apertura_de_caderas_en_mariposa.mp4
+  Imagen    : media/ejercicios/apertura_de_caderas_en_mariposa.jpg
+
+  Ejercicio : Apertura de Pecho con Banda
+  GIF/Video : media/ejercicios/gifs/apertura_de_pecho_con_banda.mp4
+  Imagen    : media/ejercicios/apertura_de_pecho_con_banda.jpg
+
+  Ejercicio : Downward Dog
+  GIF/Video : media/ejercicios/gifs/downward_dog.mp4
+  Imagen    : media/ejercicios/downward_dog.jpg
+
+  Ejercicio : Estiramiento de Cuádriceps de Pie
+  GIF/Video : media/ejercicios/gifs/estiramiento_de_cuadriceps_de_pie.mp4
+  Imagen    : media/ejercicios/estiramiento_de_cuadriceps_de_pie.jpg
+
+  Ejercicio : Gato-Vaca (Cat-Cow)
+  GIF/Video : media/ejercicios/gifs/gato_vaca_cat_cow.mp4
+  Imagen    : media/ejercicios/gato_vaca_cat_cow.jpg
+
+  Ejercicio : Hip Flexor Stretch
+  GIF/Video : media/ejercicios/gifs/hip_flexor_stretch.mp4
+  Imagen    : media/ejercicios/hip_flexor_stretch.jpg
+
+  Ejercicio : Movilidad de cadera (90/90)
+  GIF/Video : media/ejercicios/gifs/movilidad_de_cadera_90_90.mp4
+  Imagen    : media/ejercicios/movilidad_de_cadera_90_90.jpg
+
+  Ejercicio : Neck Rolls
+  GIF/Video : media/ejercicios/gifs/neck_rolls.mp4
+  Imagen    : media/ejercicios/neck_rolls.jpg
+
+  Ejercicio : Pigeon Pose
+  GIF/Video : media/ejercicios/gifs/pigeon_pose.mp4
+  Imagen    : media/ejercicios/pigeon_pose.jpg
+
+  Ejercicio : Rotaciones de Tobillo
+  GIF/Video : media/ejercicios/gifs/rotaciones_de_tobillo.mp4
+  Imagen    : media/ejercicios/rotaciones_de_tobillo.jpg
+
+  Ejercicio : Rotación Torácica
+  GIF/Video : media/ejercicios/gifs/rotacion_toracica.mp4
+  Imagen    : media/ejercicios/rotacion_toracica.jpg
+
+  Ejercicio : Scorpion Stretch
+  GIF/Video : media/ejercicios/gifs/scorpion_stretch.mp4
+  Imagen    : media/ejercicios/scorpion_stretch.jpg
+
+  Ejercicio : Seated Forward Fold
+  GIF/Video : media/ejercicios/gifs/seated_forward_fold.mp4
+  Imagen    : media/ejercicios/seated_forward_fold.jpg
+
+  Ejercicio : Shoulder Circles
+  GIF/Video : media/ejercicios/gifs/shoulder_circles.mp4
+  Imagen    : media/ejercicios/shoulder_circles.jpg
+
+  Ejercicio : Standing Hamstring Stretch
+  GIF/Video : media/ejercicios/gifs/standing_hamstring_stretch.mp4
+  Imagen    : media/ejercicios/standing_hamstring_stretch.jpg
+
+  Ejercicio : Stretching de Pectoral con Banda
+  GIF/Video : media/ejercicios/gifs/stretching_de_pectoral_con_banda.mp4
+  Imagen    : media/ejercicios/stretching_de_pectoral_con_banda.jpg
+
+  Ejercicio : Thoracic Bridge
+  GIF/Video : media/ejercicios/gifs/thoracic_bridge.mp4
+  Imagen    : media/ejercicios/thoracic_bridge.jpg
+
+  Ejercicio : Thread the Needle
+  GIF/Video : media/ejercicios/gifs/thread_the_needle.mp4
+  Imagen    : media/ejercicios/thread_the_needle.jpg
+
+  Ejercicio : Wall Ankle Mobilization
+  GIF/Video : media/ejercicios/gifs/wall_ankle_mobilization.mp4
+  Imagen    : media/ejercicios/wall_ankle_mobilization.jpg
+
+  Ejercicio : World's Greatest Stretch
+  GIF/Video : media/ejercicios/gifs/world_s_greatest_stretch.mp4
+  Imagen    : media/ejercicios/world_s_greatest_stretch.jpg
+
+
+── PANTORRILLAS ──────────────────────────────
+  Ejercicio : Calf Raise en Prensa
+  GIF/Video : media/ejercicios/gifs/calf_raise_en_prensa.mp4
+  Imagen    : media/ejercicios/calf_raise_en_prensa.jpg
+
+  Ejercicio : Donkey Calf Raise
+  GIF/Video : media/ejercicios/gifs/donkey_calf_raise.mp4
+  Imagen    : media/ejercicios/donkey_calf_raise.jpg
+
+  Ejercicio : Elevación de Pantorrilla con Barra
+  GIF/Video : media/ejercicios/gifs/elevacion_de_pantorrilla_con_barra.mp4
+  Imagen    : media/ejercicios/elevacion_de_pantorrilla_con_barra.jpg
+
+  Ejercicio : Elevación de Pantorrilla con Kettlebell
+  GIF/Video : media/ejercicios/gifs/elevacion_de_pantorrilla_con_kettlebell.mp4
+  Imagen    : media/ejercicios/elevacion_de_pantorrilla_con_kettlebell.jpg
+
+  Ejercicio : Elevación de Pantorrilla con Pausa
+  GIF/Video : media/ejercicios/gifs/elevacion_de_pantorrilla_con_pausa.mp4
+  Imagen    : media/ejercicios/elevacion_de_pantorrilla_con_pausa.jpg
+
+  Ejercicio : Elevación de Pantorrilla Isométrica
+  GIF/Video : media/ejercicios/gifs/elevacion_de_pantorrilla_isometrica.mp4
+  Imagen    : media/ejercicios/elevacion_de_pantorrilla_isometrica.jpg
+
+  Ejercicio : Elevación de Pantorrilla Sentado
+  GIF/Video : media/ejercicios/gifs/elevacion_de_pantorrilla_sentado.mp4
+  Imagen    : media/ejercicios/elevacion_de_pantorrilla_sentado.jpg
+
+  Ejercicio : Elevación de Pantorrilla Unilateral
+  GIF/Video : media/ejercicios/gifs/elevacion_de_pantorrilla_unilateral.mp4
+  Imagen    : media/ejercicios/elevacion_de_pantorrilla_unilateral.jpg
+
+  Ejercicio : Elevación de Talones en Escalón
+  GIF/Video : media/ejercicios/gifs/elevacion_de_talones_en_escalon.mp4
+  Imagen    : media/ejercicios/elevacion_de_talones_en_escalon.jpg
+
+  Ejercicio : Elevaciones de Pantorrilla
+  GIF/Video : media/ejercicios/gifs/elevaciones_de_pantorrilla.mp4
+  Imagen    : media/ejercicios/elevaciones_de_pantorrilla.jpg
+
+  Ejercicio : Elevaciones de Pantorrilla con Mancuernas
+  GIF/Video : media/ejercicios/gifs/elevaciones_de_pantorrilla_con_mancuernas.mp4
+  Imagen    : media/ejercicios/elevaciones_de_pantorrilla_con_mancuernas.jpg
+
+  Ejercicio : Heel Walks
+  GIF/Video : media/ejercicios/gifs/heel_walks.mp4
+  Imagen    : media/ejercicios/heel_walks.jpg
+
+  Ejercicio : Saltitos en Punta de Pie
+  GIF/Video : media/ejercicios/gifs/saltitos_en_punta_de_pie.mp4
+  Imagen    : media/ejercicios/saltitos_en_punta_de_pie.jpg
+
+  Ejercicio : Saltos en Puntas de Pie
+  GIF/Video : media/ejercicios/gifs/saltos_en_puntas_de_pie.mp4
+  Imagen    : media/ejercicios/saltos_en_puntas_de_pie.jpg
+
+  Ejercicio : Seated Calf Raise con Disco
+  GIF/Video : media/ejercicios/gifs/seated_calf_raise_con_disco.mp4
+  Imagen    : media/ejercicios/seated_calf_raise_con_disco.jpg
+
+  Ejercicio : Tibial Raise
+  GIF/Video : media/ejercicios/gifs/tibial_raise.mp4
+  Imagen    : media/ejercicios/tibial_raise.jpg
+
+
+── PECHO ──────────────────────────────
+  Ejercicio : Aperturas con Banda
+  GIF/Video : media/ejercicios/gifs/aperturas_con_banda.mp4
+  Imagen    : media/ejercicios/aperturas_con_banda.jpg
+
+  Ejercicio : Aperturas con Mancuernas
+  GIF/Video : media/ejercicios/gifs/aperturas_con_mancuernas.mp4
+  Imagen    : media/ejercicios/aperturas_con_mancuernas.jpg
+
+  Ejercicio : Cruce de Banda
+  GIF/Video : media/ejercicios/gifs/cruce_de_banda.mp4
+  Imagen    : media/ejercicios/cruce_de_banda.jpg
+
+  Ejercicio : Dips de Pecho con Peso
+  GIF/Video : media/ejercicios/gifs/dips_de_pecho_con_peso.mp4
+  Imagen    : media/ejercicios/dips_de_pecho_con_peso.jpg
+
+  Ejercicio : Flexiones Archer
+  GIF/Video : media/ejercicios/gifs/flexiones_archer.mp4
+  Imagen    : media/ejercicios/flexiones_archer.jpg
+
+  Ejercicio : Flexiones con Palmada
+  GIF/Video : media/ejercicios/gifs/flexiones_con_palmada.mp4
+  Imagen    : media/ejercicios/flexiones_con_palmada.jpg
+
+  Ejercicio : Flexiones con Rodillas
+  GIF/Video : media/ejercicios/gifs/flexiones_con_rodillas.mp4
+  Imagen    : media/ejercicios/flexiones_con_rodillas.jpg
+
+  Ejercicio : Flexiones Declinadas
+  GIF/Video : media/ejercicios/gifs/flexiones_declinadas.mp4
+  Imagen    : media/ejercicios/flexiones_declinadas.jpg
+
+  Ejercicio : Flexiones en Pared
+  GIF/Video : media/ejercicios/gifs/flexiones_en_pared.mp4
+  Imagen    : media/ejercicios/flexiones_en_pared.jpg
+
+  Ejercicio : Flexiones Explosivas
+  GIF/Video : media/ejercicios/gifs/flexiones_explosivas.mp4
+  Imagen    : media/ejercicios/flexiones_explosivas.jpg
+
+  Ejercicio : Flexiones (Push-ups)
+  GIF/Video : media/ejercicios/gifs/flexiones_push_ups.mp4
+  Imagen    : media/ejercicios/flexiones_push_ups.jpg
+
+  Ejercicio : Fondos en Paralelas (Pecho)
+  GIF/Video : media/ejercicios/gifs/fondos_en_paralelas_pecho.mp4
+  Imagen    : media/ejercicios/fondos_en_paralelas_pecho.jpg
+
+  Ejercicio : Fondos entre Sillas
+  GIF/Video : media/ejercicios/gifs/fondos_entre_sillas.mp4
+  Imagen    : media/ejercicios/fondos_entre_sillas.jpg
+
+  Ejercicio : Pike Push-Up
+  GIF/Video : media/ejercicios/gifs/pike_push_up.mp4
+  Imagen    : media/ejercicios/pike_push_up.jpg
+
+  Ejercicio : Press Arnold con Mancuernas
+  GIF/Video : media/ejercicios/gifs/press_arnold_con_mancuernas.mp4
+  Imagen    : media/ejercicios/press_arnold_con_mancuernas.jpg
+
+  Ejercicio : Press con Banda
+  GIF/Video : media/ejercicios/gifs/press_con_banda.mp4
+  Imagen    : media/ejercicios/press_con_banda.jpg
+
+  Ejercicio : Press con Mancuernas
+  GIF/Video : media/ejercicios/gifs/press_con_mancuernas.mp4
+  Imagen    : media/ejercicios/press_con_mancuernas.jpg
+
+  Ejercicio : Press de Banca con Barra
+  GIF/Video : media/ejercicios/gifs/press_de_banca_con_barra.mp4
+  Imagen    : media/ejercicios/press_de_banca_con_barra.jpg
+
+  Ejercicio : Press Declinado con Barra
+  GIF/Video : media/ejercicios/gifs/press_declinado_con_barra.mp4
+  Imagen    : media/ejercicios/press_declinado_con_barra.jpg
+
+  Ejercicio : Press de Pecho con Banda y Barra
+  GIF/Video : media/ejercicios/gifs/press_de_pecho_con_banda_y_barra.mp4
+  Imagen    : media/ejercicios/press_de_pecho_con_banda_y_barra.jpg
+
+  Ejercicio : Press de Pecho con Kettlebell
+  GIF/Video : media/ejercicios/gifs/press_de_pecho_con_kettlebell.mp4
+  Imagen    : media/ejercicios/press_de_pecho_con_kettlebell.jpg
+
+  Ejercicio : Press Inclinado con Barra
+  GIF/Video : media/ejercicios/gifs/press_inclinado_con_barra.mp4
+  Imagen    : media/ejercicios/press_inclinado_con_barra.jpg
+
+  Ejercicio : Press inclinado con mancuernas
+  GIF/Video : media/ejercicios/gifs/press_inclinado_con_mancuernas.mp4
+  Imagen    : media/ejercicios/press_inclinado_con_mancuernas.jpg
+
+  Ejercicio : Pullover con Mancuerna
+  GIF/Video : media/ejercicios/gifs/pullover_con_mancuerna.mp4
+  Imagen    : media/ejercicios/pullover_con_mancuerna.jpg
+
+  Ejercicio : Squeeze Press con Mancuernas
+  GIF/Video : media/ejercicios/gifs/squeeze_press_con_mancuernas.mp4
+  Imagen    : media/ejercicios/squeeze_press_con_mancuernas.jpg
+
+  Ejercicio : Svend Press
+  GIF/Video : media/ejercicios/gifs/svend_press.mp4
+  Imagen    : media/ejercicios/svend_press.jpg
+
+
+── PIERNAS ──────────────────────────────
+  Ejercicio : Box Squat
+  GIF/Video : media/ejercicios/gifs/box_squat.mp4
+  Imagen    : media/ejercicios/box_squat.jpg
+
+  Ejercicio : Cossack Squat
+  GIF/Video : media/ejercicios/gifs/cossack_squat.mp4
+  Imagen    : media/ejercicios/cossack_squat.jpg
+
+  Ejercicio : Curl Femoral con Mancuerna
+  GIF/Video : media/ejercicios/gifs/curl_femoral_con_mancuerna.mp4
+  Imagen    : media/ejercicios/curl_femoral_con_mancuerna.jpg
+
+  Ejercicio : Curl Femoral de Pie con Banda
+  GIF/Video : media/ejercicios/gifs/curl_femoral_de_pie_con_banda.mp4
+  Imagen    : media/ejercicios/curl_femoral_de_pie_con_banda.jpg
+
+  Ejercicio : Good Morning con Barra
+  GIF/Video : media/ejercicios/gifs/good_morning_con_barra.mp4
+  Imagen    : media/ejercicios/good_morning_con_barra.jpg
+
+  Ejercicio : Hack Squat con Barra
+  GIF/Video : media/ejercicios/gifs/hack_squat_con_barra.mp4
+  Imagen    : media/ejercicios/hack_squat_con_barra.jpg
+
+  Ejercicio : Hamstring Curl con Banda
+  GIF/Video : media/ejercicios/gifs/hamstring_curl_con_banda.mp4
+  Imagen    : media/ejercicios/hamstring_curl_con_banda.jpg
+
+  Ejercicio : Leg Extension con Banda
+  GIF/Video : media/ejercicios/gifs/leg_extension_con_banda.mp4
+  Imagen    : media/ejercicios/leg_extension_con_banda.jpg
+
+  Ejercicio : Lunge con Kettelbell
+  GIF/Video : media/ejercicios/gifs/lunge_con_kettelbell.mp4
+  Imagen    : media/ejercicios/lunge_con_kettelbell.jpg
+
+  Ejercicio : Nordic Curl
+  GIF/Video : media/ejercicios/gifs/nordic_curl.mp4
+  Imagen    : media/ejercicios/nordic_curl.jpg
+
+  Ejercicio : Peso Muerto a Una Pierna
+  GIF/Video : media/ejercicios/gifs/peso_muerto_a_una_pierna.mp4
+  Imagen    : media/ejercicios/peso_muerto_a_una_pierna.jpg
+
+  Ejercicio : Peso muerto rumano
+  GIF/Video : media/ejercicios/gifs/peso_muerto_rumano.mp4
+  Imagen    : media/ejercicios/peso_muerto_rumano.jpg
+
+  Ejercicio : Prensa con Disco
+  GIF/Video : media/ejercicios/gifs/prensa_con_disco.mp4
+  Imagen    : media/ejercicios/prensa_con_disco.jpg
+
+  Ejercicio : Prensa de Piernas (simulada con banda)
+  GIF/Video : media/ejercicios/gifs/prensa_de_piernas_simulada_con_banda.mp4
+  Imagen    : media/ejercicios/prensa_de_piernas_simulada_con_banda.jpg
+
+  Ejercicio : Reverse Lunge
+  GIF/Video : media/ejercicios/gifs/reverse_lunge.mp4
+  Imagen    : media/ejercicios/reverse_lunge.jpg
+
+  Ejercicio : Sentadilla Búlgara
+  GIF/Video : media/ejercicios/gifs/sentadilla_bulgara.mp4
+  Imagen    : media/ejercicios/sentadilla_bulgara.jpg
+
+  Ejercicio : Sentadilla con Barra
+  GIF/Video : media/ejercicios/gifs/sentadilla_con_barra.mp4
+  Imagen    : media/ejercicios/sentadilla_con_barra.jpg
+
+  Ejercicio : Sentadilla con Kettlebell
+  GIF/Video : media/ejercicios/gifs/sentadilla_con_kettlebell.mp4
+  Imagen    : media/ejercicios/sentadilla_con_kettlebell.jpg
+
+  Ejercicio : Sentadilla con Peso Corporal
+  GIF/Video : media/ejercicios/gifs/sentadilla_con_peso_corporal.mp4
+  Imagen    : media/ejercicios/sentadilla_con_peso_corporal.jpg
+
+  Ejercicio : Sentadilla con Salto
+  GIF/Video : media/ejercicios/gifs/sentadilla_con_salto.mp4
+  Imagen    : media/ejercicios/sentadilla_con_salto.jpg
+
+  Ejercicio : Sentadilla Goblet con Kettlebell
+  GIF/Video : media/ejercicios/gifs/sentadilla_goblet_con_kettlebell.mp4
+  Imagen    : media/ejercicios/sentadilla_goblet_con_kettlebell.jpg
+
+  Ejercicio : Sentadilla Pausa
+  GIF/Video : media/ejercicios/gifs/sentadilla_pausa.mp4
+  Imagen    : media/ejercicios/sentadilla_pausa.jpg
+
+  Ejercicio : Sentadilla Sumo
+  GIF/Video : media/ejercicios/gifs/sentadilla_sumo.mp4
+  Imagen    : media/ejercicios/sentadilla_sumo.jpg
+
+  Ejercicio : Single Leg Romanian Deadlift con Banda
+  GIF/Video : media/ejercicios/gifs/single_leg_romanian_deadlift_con_banda.mp4
+  Imagen    : media/ejercicios/single_leg_romanian_deadlift_con_banda.jpg
+
+  Ejercicio : Sissy Squat
+  GIF/Video : media/ejercicios/gifs/sissy_squat.mp4
+  Imagen    : media/ejercicios/sissy_squat.jpg
+
+  Ejercicio : Step-Ups con Mancuernas
+  GIF/Video : media/ejercicios/gifs/step_ups_con_mancuernas.mp4
+  Imagen    : media/ejercicios/step_ups_con_mancuernas.jpg
+
+  Ejercicio : Wall Sit
+  GIF/Video : media/ejercicios/gifs/wall_sit.mp4
+  Imagen    : media/ejercicios/wall_sit.jpg
+
+  Ejercicio : Zancada Lateral
+  GIF/Video : media/ejercicios/gifs/zancada_lateral.mp4
+  Imagen    : media/ejercicios/zancada_lateral.jpg
+
+  Ejercicio : Zancadas
+  GIF/Video : media/ejercicios/gifs/zancadas.mp4
+  Imagen    : media/ejercicios/zancadas.jpg
+
+  Ejercicio : Zercher Squat
+  GIF/Video : media/ejercicios/gifs/zercher_squat.mp4
+  Imagen    : media/ejercicios/zercher_squat.jpg
+
+
+── TRÍCEPS ──────────────────────────────
+  Ejercicio : Extensión con Banda por Encima
+  GIF/Video : media/ejercicios/gifs/extension_con_banda_por_encima.mp4
+  Imagen    : media/ejercicios/extension_con_banda_por_encima.jpg
+
+  Ejercicio : Extensión de Tríceps
+  GIF/Video : media/ejercicios/gifs/extension_de_triceps.mp4
+  Imagen    : media/ejercicios/extension_de_triceps.jpg
+
+  Ejercicio : Extensión de Tríceps Acostado con Banda
+  GIF/Video : media/ejercicios/gifs/extension_de_triceps_acostado_con_banda.mp4
+  Imagen    : media/ejercicios/extension_de_triceps_acostado_con_banda.jpg
+
+  Ejercicio : Extensión de tríceps por encima (mancuerna)
+  GIF/Video : media/ejercicios/gifs/extension_de_triceps_por_encima_mancuerna.mp4
+  Imagen    : media/ejercicios/extension_de_triceps_por_encima_mancuerna.jpg
+
+  Ejercicio : Extensión Overhead con Mancuerna Doble
+  GIF/Video : media/ejercicios/gifs/extension_overhead_con_mancuerna_doble.mp4
+  Imagen    : media/ejercicios/extension_overhead_con_mancuerna_doble.jpg
+
+  Ejercicio : Flexiones Diamante
+  GIF/Video : media/ejercicios/gifs/flexiones_diamante.mp4
+  Imagen    : media/ejercicios/flexiones_diamante.jpg
+
+  Ejercicio : Flexiones Pike para Tríceps
+  GIF/Video : media/ejercicios/gifs/flexiones_pike_para_triceps.mp4
+  Imagen    : media/ejercicios/flexiones_pike_para_triceps.jpg
+
+  Ejercicio : Fondos en banco
+  GIF/Video : media/ejercicios/gifs/fondos_en_banco.mp4
+  Imagen    : media/ejercicios/fondos_en_banco.jpg
+
+  Ejercicio : Fondos en Paralelas
+  GIF/Video : media/ejercicios/gifs/fondos_en_paralelas.mp4
+  Imagen    : media/ejercicios/fondos_en_paralelas.jpg
+
+  Ejercicio : Fondos Estrecho entre Bancos
+  GIF/Video : media/ejercicios/gifs/fondos_estrecho_entre_bancos.mp4
+  Imagen    : media/ejercicios/fondos_estrecho_entre_bancos.jpg
+
+  Ejercicio : JM Press
+  GIF/Video : media/ejercicios/gifs/jm_press.mp4
+  Imagen    : media/ejercicios/jm_press.jpg
+
+  Ejercicio : Kick Back con Mancuerna
+  GIF/Video : media/ejercicios/gifs/kick_back_con_mancuerna.mp4
+  Imagen    : media/ejercicios/kick_back_con_mancuerna.jpg
+
+  Ejercicio : Press Cerrado con Barra
+  GIF/Video : media/ejercicios/gifs/press_cerrado_con_barra.mp4
+  Imagen    : media/ejercicios/press_cerrado_con_barra.jpg
+
+  Ejercicio : Press Francés
+  GIF/Video : media/ejercicios/gifs/press_frances.mp4
+  Imagen    : media/ejercicios/press_frances.jpg
+
+  Ejercicio : Pushdown con Agarre Supino
+  GIF/Video : media/ejercicios/gifs/pushdown_con_agarre_supino.mp4
+  Imagen    : media/ejercicios/pushdown_con_agarre_supino.jpg
+
+  Ejercicio : Pushdown con Banda
+  GIF/Video : media/ejercicios/gifs/pushdown_con_banda.mp4
+  Imagen    : media/ejercicios/pushdown_con_banda.jpg
+
+  Ejercicio : Skullcrusher con Mancuernas
+  GIF/Video : media/ejercicios/gifs/skullcrusher_con_mancuernas.mp4
+  Imagen    : media/ejercicios/skullcrusher_con_mancuernas.jpg
+
+  Ejercicio : Tate Press
+  GIF/Video : media/ejercicios/gifs/tate_press.mp4
+  Imagen    : media/ejercicios/tate_press.jpg
+
+  Ejercicio : Triceps Dip con Banda de Asistencia
+  GIF/Video : media/ejercicios/gifs/triceps_dip_con_banda_de_asistencia.mp4
+  Imagen    : media/ejercicios/triceps_dip_con_banda_de_asistencia.jpg
+
+  Ejercicio : Triceps Kickback Bilateral
+  GIF/Video : media/ejercicios/gifs/triceps_kickback_bilateral.mp4
+  Imagen    : media/ejercicios/triceps_kickback_bilateral.jpg

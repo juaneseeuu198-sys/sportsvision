@@ -27,6 +27,9 @@ urlpatterns = [
     path('admin-pro/usuario/<int:user_id>/crear-rutina/', views.admin_crear_rutina,   name='admin_crear_rutina'),
     path('admin-pro/revisar/<int:solicitud_id>/',         views.revisar_solicitud,    name='revisar_solicitud'),
     path('admin-pro/revocar/<int:user_id>/',        views.revocar_profesional_admin, name='revocar_profesional_admin'),
+    path('admin-pro/banear/<int:user_id>/',         views.banear_usuario,            name='banear_usuario'),
+    path('admin-pro/sancionar/<int:user_id>/',      views.sancionar_usuario,         name='sancionar_usuario'),
+    path('admin-pro/verificar-password/',           views.verificar_password_admin,  name='verificar_password_admin'),
 
     # Privacidad del usuario
     path('privacidad/',                              views.privacidad,           name='privacidad'),

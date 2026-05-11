@@ -53,7 +53,9 @@ class UserProfile(models.Model):
     telefono_verificado= models.BooleanField(default=False)
     direccion          = models.CharField(max_length=250, blank=True, default='')
     acepto_terminos    = models.BooleanField(default=False)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
+    fecha_registro     = models.DateTimeField(auto_now_add=True)
+    suspendido_hasta   = models.DateTimeField(null=True, blank=True,
+                                              help_text="Si está establecido, el usuario no puede iniciar sesión hasta esta fecha")
 
     def generar_codigo(self):
         """Genera un código único de 6 caracteres para el profesional."""

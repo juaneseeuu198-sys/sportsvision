@@ -7,6 +7,8 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.http import JsonResponse
+from datetime import timedelta
 import random
 import requests as http_requests
 from .forms import RegistroForm, EditarUsuarioForm, EditarPerfilForm
@@ -190,8 +192,17 @@ def login_view(request):
 
         user = authenticate(request, username=identifier, password=password)
         if user:
-            login(request, user)
-            return redirect('dashboard')
+            # Verificar suspensión temporal
+            try:
+                if user.profile.suspendido_hasta and user.profile.suspendido_hasta > timezone.now():
+                    hasta = user.profile.suspendido_hasta.strftime('%d/%m/%Y %H:%M')
+                    error = f'Cuenta suspendida hasta el {hasta}.'
+                else:
+                    login(request, user)
+                    return redirect('dashboard')
+            except Exception:
+                login(request, user)
+                return redirect('dashboard')
         else:
             error = 'Usuario/correo o contraseña incorrectos.'
 
@@ -617,6 +628,7 @@ def admin_ver_usuario(request, user_id):
         'condiciones':    [LABELS_LIM.get(k, k) for k in (profile.limitaciones or [])],
         'total_series':   total_series,
         'kg_total':       kg_total,
+        'now':            timezone.now(),
     })
 
 
@@ -690,6 +702,65 @@ def revocar_profesional_admin(request, user_id):
         messages.success(request, f'Acceso profesional de {nombre} revocado.')
 
     return redirect('admin_pro_dashboard')
+
+
+@login_required
+def banear_usuario(request, user_id):
+    """Banea o desbanea un usuario (activa/desactiva su cuenta)."""
+    if not _es_admin_pro(request.user):
+        return redirect('dashboard')
+    if request.method == 'POST':
+        usuario = get_object_or_404(User, id=user_id)
+        if usuario == request.user:
+            messages.error(request, 'No puedes banearte a ti mismo.')
+            return redirect('admin_ver_usuario', user_id=user_id)
+        usuario.is_active = not usuario.is_active
+        usuario.save()
+        accion = 'baneado' if not usuario.is_active else 'desbaneado'
+        messages.success(request, f'Usuario {usuario.username} {accion} correctamente.')
+    return redirect('admin_ver_usuario', user_id=user_id)
+
+
+@login_required
+def sancionar_usuario(request, user_id):
+    """Suspende temporalmente a un usuario por el tiempo indicado."""
+    if not _es_admin_pro(request.user):
+        return redirect('dashboard')
+    if request.method == 'POST':
+        usuario = get_object_or_404(User, id=user_id)
+        if usuario == request.user:
+            messages.error(request, 'No puedes sancionarte a ti mismo.')
+            return redirect('admin_ver_usuario', user_id=user_id)
+        dias = int(request.POST.get('dias', 0))
+        horas = int(request.POST.get('horas', 0))
+        if dias == 0 and horas == 0:
+            usuario.profile.suspendido_hasta = None
+            usuario.profile.save(update_fields=['suspendido_hasta'])
+            messages.success(request, f'Sanción de {usuario.username} levantada.')
+        else:
+            usuario.profile.suspendido_hasta = timezone.now() + timedelta(days=dias, hours=horas)
+            usuario.profile.save(update_fields=['suspendido_hasta'])
+            messages.success(request, f'{usuario.username} sancionado por {dias}d {horas}h.')
+    return redirect('admin_ver_usuario', user_id=user_id)
+
+
+@login_required
+def verificar_password_admin(request):
+    """Verifica la contraseña del admin y devuelve datos sensibles."""
+    if not _es_admin_pro(request.user):
+        return JsonResponse({'ok': False}, status=403)
+    if request.method == 'POST':
+        password = request.POST.get('password', '')
+        user_id  = request.POST.get('user_id', '')
+        if authenticate(username=request.user.username, password=password):
+            target = get_object_or_404(User, id=user_id)
+            return JsonResponse({
+                'ok': True,
+                'telefono': target.profile.telefono or '—',
+                'direccion': target.profile.direccion or '—',
+            })
+        return JsonResponse({'ok': False, 'error': 'Contraseña incorrecta'})
+    return JsonResponse({'ok': False}, status=405)
 
 
 @login_required
