@@ -220,6 +220,7 @@
 
 <!-- FitBot Overlay -->
 <div class="fitbot-overlay" id="fitbotOverlay"
+     style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:flex-end;justify-content:flex-end;padding:24px;"
      data-url="{% url 'chatbot' %}"
      data-csrf="{{ csrf_token }}">
   <div class="fitbot-widget" id="fitbotWidget">
@@ -276,7 +277,7 @@
   function hideTyping() { var t=document.getElementById('fbTyping'); if(t) t.remove(); }
 
   function open() {
-    overlay.classList.add('open');
+    overlay.style.display = 'flex';
     fab.classList.add('active');
     opened = true;
     if (!msgs.children.length) {
@@ -286,7 +287,7 @@
   }
 
   function close() {
-    overlay.classList.remove('open');
+    overlay.style.display = 'none';
     fab.classList.remove('active');
     opened = false;
   }
