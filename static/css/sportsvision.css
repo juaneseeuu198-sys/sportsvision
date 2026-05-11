@@ -43,15 +43,6 @@ body.sv-body {
   min-height: 100vh;
 }
 
-/* Columna derecha: topbar arriba + main abajo */
-.sv-content-col {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 100vh;
-  min-width: 0;
-}
-
 /* ---- SIDEBAR ---- */
 .sv-sidebar {
   width: 220px;
@@ -192,6 +183,7 @@ body.sv-body {
 .sv-main {
   margin-left: 0;
   flex: 1;
+  min-height: 100vh;
   background: transparent;
   position: relative;
 }
@@ -262,7 +254,6 @@ body.page-pro {
   top: 0;
   z-index: 40;
   backdrop-filter: blur(8px);
-  flex-shrink: 0;
 }
 
 /* Empuja el perfil a la derecha */
