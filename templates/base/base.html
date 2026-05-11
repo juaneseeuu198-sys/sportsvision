@@ -223,20 +223,30 @@
      style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:flex-end;justify-content:flex-end;padding:24px;"
      data-url="{% url 'chatbot' %}"
      data-csrf="{{ csrf_token }}">
-  <div class="fitbot-widget" id="fitbotWidget">
-    <div class="fitbot-widget-header">
-      <div class="fitbot-widget-title">
-        <span class="fitbot-dot"></span>
+  <div class="fitbot-widget" id="fitbotWidget"
+       style="width:100%;max-width:520px;max-height:80vh;background:#16213e;border:1.5px solid rgba(67,97,238,.45);border-radius:24px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.7);">
+    <div class="fitbot-widget-header"
+         style="display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;">
+      <div class="fitbot-widget-title"
+           style="display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:700;color:#fff;letter-spacing:1px;">
+        <span style="width:9px;height:9px;border-radius:50%;background:#00d4aa;box-shadow:0 0 6px #00d4aa;display:inline-block;"></span>
         <i class="bi bi-robot"></i> FITBOT
       </div>
-      <button class="fitbot-widget-close" id="fitbotClose" title="Cerrar">
+      <button class="fitbot-widget-close" id="fitbotClose" title="Cerrar"
+              style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:#8892b0;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
-    <div class="fitbot-widget-messages" id="fitbotMessages"></div>
-    <div class="fitbot-widget-input">
-      <input type="text" id="fitbotInput" placeholder="Escríbeme algo…" maxlength="400" autocomplete="off">
-      <button id="fitbotSend"><i class="bi bi-send-fill"></i></button>
+    <div class="fitbot-widget-messages" id="fitbotMessages"
+         style="flex:1;overflow-y:auto;padding:16px 20px 10px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;"></div>
+    <div class="fitbot-widget-input"
+         style="display:flex;gap:10px;align-items:center;padding:12px 20px 16px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;">
+      <input type="text" id="fitbotInput" placeholder="Escríbeme algo…" maxlength="400" autocomplete="off"
+             style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;color:#fff;font-size:.9rem;outline:none;">
+      <button id="fitbotSend"
+              style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4361ee,#7b2ff7);border:none;color:#fff;font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+        <i class="bi bi-send-fill"></i>
+      </button>
     </div>
   </div>
 </div>
@@ -259,8 +269,13 @@
   function addMsg(role, text) {
     var d = document.createElement('div');
     d.className = 'fmsg ' + role;
+    d.style.cssText = 'display:flex;max-width:85%;' + (role==='user' ? 'align-self:flex-end;justify-content:flex-end;' : 'align-self:flex-start;');
     var b = document.createElement('div');
     b.className = 'fmsg-bubble';
+    b.style.cssText = 'padding:10px 15px;border-radius:18px;font-size:.9rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;' +
+      (role==='user'
+        ? 'background:linear-gradient(135deg,rgba(67,97,238,.8),rgba(123,47,247,.6));border-bottom-right-radius:4px;color:#fff;'
+        : 'background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-bottom-left-radius:4px;color:#fff;');
     b.textContent = text;
     d.appendChild(b);
     msgs.appendChild(d);
@@ -271,7 +286,8 @@
   function showTyping() {
     var d = document.createElement('div');
     d.className = 'fmsg bot'; d.id = 'fbTyping';
-    d.innerHTML = '<div class="fmsg-bubble fmsg-typing"><span></span><span></span><span></span></div>';
+    d.style.cssText = 'display:flex;align-self:flex-start;';
+    d.innerHTML = '<div style="padding:12px 15px;border-radius:18px;border-bottom-left-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);display:flex;gap:5px;align-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:#00d4aa;display:inline-block;animation:fbDot .9s infinite;"></span><span style="width:7px;height:7px;border-radius:50%;background:#00d4aa;display:inline-block;animation:fbDot .9s .2s infinite;"></span><span style="width:7px;height:7px;border-radius:50%;background:#00d4aa;display:inline-block;animation:fbDot .9s .4s infinite;"></span></div>';
     msgs.appendChild(d); scrollBot();
   }
   function hideTyping() { var t=document.getElementById('fbTyping'); if(t) t.remove(); }
