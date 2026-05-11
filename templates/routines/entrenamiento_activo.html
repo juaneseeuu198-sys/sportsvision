@@ -91,85 +91,115 @@ body.sv-body { background: #000 !important; }
 }
 .ex-carousel-item.current .ex-carousel-label { color: #fff; }
 
-/* ── Exercise image ──────────────────────────────── */
-.ex-image-wrap {
-  width: 100%; background: #0d0d0d;
+/* ── Background fijo con imagen del ejercicio ───── */
+.wk-bg {
+  position: fixed; inset: 0; z-index: -1;
+  background: #000;
+}
+.wk-bg-img {
+  width: 100%; height: 100%;
+  object-fit: cover; opacity: .18;
+  filter: blur(18px) saturate(1.4);
+}
+.wk-bg-icon {
+  position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  min-height: 220px; max-height: 280px;
+  font-size: 200px; opacity: .06;
+  filter: blur(4px);
+}
+
+/* ── Exercise image (compacta, encima del card) ── */
+.ex-image-wrap {
+  width: 100%; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 160px; max-height: 200px;
   overflow: hidden; position: relative;
 }
 .ex-image-wrap img {
   width: 100%; height: 100%;
-  object-fit: contain; max-height: 280px;
+  object-fit: contain; max-height: 200px;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,.6));
 }
 .ex-image-icon { font-size: 90px; line-height: 1; }
-.ex-image-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,.92) 0%, transparent 55%);
-  pointer-events: none;
+.ex-image-overlay { display: none; }
+.ex-image-info { display: none; }
+.ex-name { display: none; }
+.ex-desc { display: none; }
+.ex-muscle-chip { display: none; }
+
+/* ── Card central de cristal ─────────────────────── */
+.wk-glass-card {
+  margin: 0 12px;
+  background: rgba(8, 10, 22, 0.72);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 28px;
+  overflow: hidden;
 }
-.ex-image-info {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 16px 16px 14px;
+
+/* ── Exercise name header (dentro del card) ─────── */
+.ex-glass-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
 }
-.ex-name {
-  font-size: 19px; font-weight: 800; color: #fff; line-height: 1.2;
-  margin-bottom: 4px;
+.ex-glass-name {
+  font-size: 18px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 4px;
 }
-.ex-desc {
-  font-size: 12px; color: rgba(255,255,255,.55); line-height: 1.5; margin: 0;
+.ex-glass-desc {
+  font-size: 12px; color: rgba(255,255,255,.45); margin: 0;
 }
-.ex-muscle-chip {
+.ex-glass-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.ex-glass-chip {
   display: inline-flex; align-items: center; gap: 4px;
-  background: rgba(0,212,170,.15); border: 1px solid rgba(0,212,170,.3);
-  border-radius: 10px; padding: 2px 8px; margin-bottom: 5px;
-  font-size: 10px; font-weight: 800; color: #00d4aa; text-transform: uppercase; letter-spacing: .4px;
+  padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 800; letter-spacing: .3px;
+}
+.ex-glass-chip.muscle {
+  background: rgba(0,212,170,.15); border: 1px solid rgba(0,212,170,.3); color: #00d4aa;
+}
+.ex-glass-chip.timer {
+  background: rgba(10,132,255,.15); border: 1px solid rgba(10,132,255,.3); color: #60a5fa;
 }
 
 /* ── Action buttons ──────────────────────────────── */
 .ex-actions {
-  display: flex; gap: 8px; padding: 12px 16px;
-  background: #0a0a0a; border-bottom: 1px solid #1c1c1e;
+  display: flex; gap: 8px; padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
 }
 .btn-action {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 16px; border-radius: 20px;
-  background: #1c1c1e; border: 1px solid #2c2c2e;
+  padding: 8px 14px; border-radius: 20px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
   color: #fff; font-size: 13px; font-weight: 700;
   cursor: pointer; transition: background .2s;
   text-decoration: none;
 }
-.btn-action:hover { background: #2c2c2e; color: #fff; }
+.btn-action:hover { background: rgba(255,255,255,.14); color: #fff; }
 .btn-action.delete {
-  background: rgba(255,59,48,.1);
-  border-color: rgba(255,59,48,.25);
-  color: #ff3b30;
+  background: rgba(255,59,48,.12);
+  border-color: rgba(255,59,48,.25); color: #ff3b30;
 }
-.btn-action.delete:hover { background: rgba(255,59,48,.2); }
+.btn-action.delete:hover { background: rgba(255,59,48,.22); }
 
-/* ── Exercise info (hidden, merged into overlay) ── */
+/* ── Exercise info (hidden) ──────────────────────── */
 .ex-info { display: none; }
-.ex-timer-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: rgba(10,132,255,.15); border: 1px solid rgba(10,132,255,.3);
-  border-radius: 12px; padding: 2px 8px; margin-bottom: 5px;
-  font-size: 10px; font-weight: 800; color: #0a84ff;
-}
+.ex-timer-badge { display: none; }
 
 /* ── Sets table ──────────────────────────────────── */
-.sets-section { padding: 0 16px 16px; }
+.sets-section { padding: 0 12px 16px; }
 .sets-card {
-  background: #111; border: 1px solid #1c1c1e;
-  border-radius: 18px; overflow: hidden; margin-bottom: 12px;
+  background: transparent;
+  border-radius: 0; overflow: hidden; margin-bottom: 0;
 }
 .sets-header {
   display: grid;
   grid-template-columns: 36px 1fr 80px 80px 40px;
-  gap: 8px; padding: 10px 14px 8px;
-  background: #1a1a1a;
+  gap: 8px; padding: 10px 16px 8px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
 }
 .sets-header span {
-  font-size: 10px; font-weight: 800; color: #6b7280;
+  font-size: 10px; font-weight: 800; color: rgba(255,255,255,.3);
   text-transform: uppercase; letter-spacing: .5px; text-align: center;
 }
 .sets-header span:first-child { text-align: left; }
@@ -179,8 +209,8 @@ body.sv-body { background: #000 !important; }
   display: grid;
   grid-template-columns: 36px 1fr 80px 80px 40px;
   gap: 8px; align-items: center;
-  padding: 8px 14px;
-  border-bottom: 1px solid #1c1c1e;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
 }
 .set-row:last-of-type { border-bottom: none; }
 .set-num {
@@ -219,8 +249,8 @@ body.sv-body { background: #000 !important; }
   padding: 10px 0;
 }
 .set-input {
-  background: #1c1c1e !important;
-  border: 1.5px solid #2c2c2e !important;
+  background: rgba(255,255,255,.08) !important;
+  border: 1.5px solid rgba(255,255,255,.12) !important;
   border-radius: 10px !important;
   color: #fff !important;
   font-size: 14px !important; font-weight: 700 !important;
@@ -231,11 +261,12 @@ body.sv-body { background: #000 !important; }
 .set-input:focus {
   border-color: #0a84ff !important;
   outline: none !important;
+  background: rgba(10,132,255,.12) !important;
 }
 .btn-set-confirm {
   width: 32px; height: 32px; border-radius: 50%;
-  background: #2c2c2e; border: none;
-  color: #8e8e93; font-size: 13px;
+  background: rgba(255,255,255,.1); border: none;
+  color: rgba(255,255,255,.5); font-size: 13px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; margin: 0 auto;
   transition: background .2s, color .2s;
@@ -244,23 +275,26 @@ body.sv-body { background: #000 !important; }
 
 /* ── Add set button ──────────────────────────────── */
 .btn-add-set {
-  width: 100%; padding: 15px;
-  background: #1c1c1e; border: none; border-radius: 14px;
-  color: #fff; font-size: 15px; font-weight: 700;
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 0 0 28px 28px;
+  color: rgba(255,255,255,.7); font-size: 14px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  cursor: pointer; margin: 8px 0 16px;
+  cursor: pointer; margin: 0;
   transition: background .2s;
 }
-.btn-add-set:hover { background: #2c2c2e; }
+.btn-add-set:hover { background: rgba(255,255,255,.1); }
 .btn-add-set i { color: #0a84ff; }
 
 /* ── Nav: siguiente / terminar ───────────────────── */
 .btn-next {
-  width: calc(100% - 32px); margin: 0 16px 16px;
-  padding: 16px; border-radius: 14px; border: none;
+  width: 100%; margin: 0;
+  padding: 16px; border-radius: 18px; border: none;
   background: #00d4aa; color: #000;
   font-size: 16px; font-weight: 800;
   cursor: pointer; transition: opacity .2s;
+  box-shadow: 0 4px 24px rgba(0,212,170,.35);
 }
 .btn-next:hover { opacity: .88; }
 .btn-next.finish {
@@ -418,7 +452,24 @@ body.sv-body { background: #000 !important; }
 </div>
 {% endif %}
 
-<div style="max-width:600px;margin:0 auto;background:#000;min-height:100vh;">
+<!-- Fondo dinámico con imagen del ejercicio -->
+<div class="wk-bg" aria-hidden="true">
+  {% if ejercicio_actual.ejercicio.gif %}
+    <img class="wk-bg-img" src="{{ ejercicio_actual.ejercicio.gif.url }}" alt="">
+  {% elif ejercicio_actual.ejercicio.imagen %}
+    <img class="wk-bg-img" src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="">
+  {% else %}
+    <div class="wk-bg-icon">
+      {% with s=ejercicio_actual.ejercicio.grupo_muscular.slug|default:"core" %}
+        {% if s == 'pecho' %}💪{% elif s == 'espalda' %}🏋️{% elif s == 'piernas' %}🦵
+        {% elif s == 'gluteos' %}⚡{% elif s == 'abdomen' %}🎯{% elif s == 'core' %}🔥
+        {% elif s == 'cardio' %}❤️{% elif s == 'movilidad' %}🧘{% else %}🏋️{% endif %}
+      {% endwith %}
+    </div>
+  {% endif %}
+</div>
+
+<div style="max-width:600px;margin:0 auto;min-height:100vh;">
 
   <!-- TOP BAR -->
   <div class="wk-topbar">
@@ -471,8 +522,8 @@ body.sv-body { background: #000 !important; }
     {% endfor %}
   </div>
 
-  <!-- EXERCISE IMAGE -->
-  <div class="ex-image-wrap">
+  <!-- EXERCISE IMAGE (flotante, encima del card) -->
+  <div class="ex-image-wrap" style="margin:8px 0 -12px;">
     {% if ejercicio_actual.ejercicio.gif %}
       <img src="{{ ejercicio_actual.ejercicio.gif.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
     {% elif ejercicio_actual.ejercicio.imagen %}
@@ -487,41 +538,47 @@ body.sv-body { background: #000 !important; }
         {% endwith %}
       </div>
     {% endif %}
-    <div class="ex-image-overlay"></div>
-    <div class="ex-image-info">
-      {% if ejercicio_actual.ejercicio.grupo_muscular %}
-      <div class="ex-muscle-chip"><i class="bi bi-bullseye me-1"></i>{{ ejercicio_actual.ejercicio.grupo_muscular.nombre }}</div>
-      {% endif %}
-      {% if ejercicio_actual.ejercicio.duracion_minutos %}
-      <div class="ex-timer-badge" style="margin-bottom:5px;"><i class="bi bi-stopwatch-fill"></i> {{ ejercicio_actual.ejercicio.duracion_minutos }} min</div>
-      {% endif %}
-      <div class="ex-name">{{ ejercicio_actual.ejercicio.nombre }}</div>
-      {% if ejercicio_actual.ejercicio.descripcion %}
-      <p class="ex-desc">{{ ejercicio_actual.ejercicio.descripcion|truncatechars:100 }}</p>
-      {% endif %}
-    </div>
   </div>
 
-  <!-- ACTION BUTTONS -->
-  <div class="ex-actions">
-    <a href="{% url 'ejercicio_detalle' ejercicio_actual.ejercicio.id %}" target="_blank" class="btn-action">
-      <i class="bi bi-play-fill" style="color:#0a84ff;"></i> Guía
-    </a>
-    <form method="post" style="margin:0;">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="siguiente_ejercicio">
-      <button type="submit" class="btn-action">
-        <i class="bi bi-arrow-repeat"></i> Saltar
-      </button>
-    </form>
-    <form method="post" style="margin:0;margin-left:auto;">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="terminar_entrenamiento">
-      <button type="submit" class="btn-action delete">
-        <i class="bi bi-x-circle"></i> Terminar
-      </button>
-    </form>
-  </div>
+  <!-- GLASS CARD -->
+  <div class="wk-glass-card">
+
+    <!-- Exercise name header -->
+    <div class="ex-glass-header">
+      <div class="ex-glass-chips">
+        {% if ejercicio_actual.ejercicio.grupo_muscular %}
+        <span class="ex-glass-chip muscle"><i class="bi bi-bullseye"></i> {{ ejercicio_actual.ejercicio.grupo_muscular.nombre }}</span>
+        {% endif %}
+        {% if ejercicio_actual.ejercicio.duracion_minutos %}
+        <span class="ex-glass-chip timer"><i class="bi bi-stopwatch-fill"></i> {{ ejercicio_actual.ejercicio.duracion_minutos }} min</span>
+        {% endif %}
+      </div>
+      <div class="ex-glass-name">{{ ejercicio_actual.ejercicio.nombre }}</div>
+      {% if ejercicio_actual.ejercicio.descripcion %}
+      <p class="ex-glass-desc">{{ ejercicio_actual.ejercicio.descripcion|truncatechars:100 }}</p>
+      {% endif %}
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="ex-actions">
+      <a href="{% url 'ejercicio_detalle' ejercicio_actual.ejercicio.id %}" target="_blank" class="btn-action">
+        <i class="bi bi-play-fill" style="color:#60a5fa;"></i> Guía
+      </a>
+      <form method="post" style="margin:0;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="siguiente_ejercicio">
+        <button type="submit" class="btn-action">
+          <i class="bi bi-arrow-repeat"></i> Saltar
+        </button>
+      </form>
+      <form method="post" style="margin:0;margin-left:auto;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="terminar_entrenamiento">
+        <button type="submit" class="btn-action delete">
+          <i class="bi bi-x-circle"></i> Terminar
+        </button>
+      </form>
+    </div>
 
   <!-- EXERCISE INFO -->
   <div class="ex-info">
@@ -643,11 +700,12 @@ body.sv-body { background: #000 !important; }
     <button type="button" class="btn-add-set" onclick="document.getElementById('serieForm').submit()">
       <i class="bi bi-plus-lg"></i> Agregar serie
     </button>
-  </div>
+
+  </div><!-- /wk-glass-card -->
   {% endif %}
 
   <!-- SIGUIENTE / TERMINAR -->
-  <form method="post" style="margin:0;">
+  <form method="post" style="margin:0;padding:12px 12px 20px;">
     {% csrf_token %}
     <input type="hidden" name="action" value="siguiente_ejercicio">
     {% if es_ultimo %}
