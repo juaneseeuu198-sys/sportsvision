@@ -610,14 +610,14 @@ document.getElementById('avatar-file-input').addEventListener('change', function
   reader.onload = function(ev) {
     var b64 = ev.target.result;
 
-    // En móvil O GIF → guardar directo sin cropper
-    if (esMobil || file.type === 'image/gif') {
+    // GIF → guardar directo (no se puede recortar animación)
+    if (file.type === 'image/gif') {
       document.getElementById('avatar_cropped').value = b64;
       document.getElementById('form-avatar-crop').submit();
       return;
     }
 
-    // En escritorio → cropper
+    // Cropper en todos los dispositivos (soporta touch)
     var img = document.getElementById('crop-image');
     img.src = b64;
     document.getElementById('crop-overlay').classList.add('open');
