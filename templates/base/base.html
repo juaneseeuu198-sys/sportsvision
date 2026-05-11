@@ -292,12 +292,43 @@
   }
   function hideTyping() { var t=document.getElementById('fbTyping'); if(t) t.remove(); }
 
+  var CHIPS = [
+    '¿Cómo va mi progreso de peso?',
+    '¿Estoy cumpliendo mis calorías?',
+    '¿Qué debo comer para ganar músculo?',
+    '¿Cuánta proteína necesito al día?',
+    'Dame un consejo para perder grasa',
+    '¿Qué ejercicios hacer hoy?'
+  ];
+
+  function addChips() {
+    var wrap = document.createElement('div');
+    wrap.id = 'fitbotChips';
+    wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 6px;';
+    CHIPS.forEach(function(c) {
+      var btn = document.createElement('button');
+      btn.textContent = c;
+      btn.style.cssText = 'background:rgba(67,97,238,.15);border:1px solid rgba(67,97,238,.4);border-radius:20px;padding:6px 13px;font-size:.78rem;color:#a0aec0;cursor:pointer;transition:background .2s;';
+      btn.onmouseover = function(){ this.style.background='rgba(67,97,238,.35)'; this.style.color='#fff'; };
+      btn.onmouseout  = function(){ this.style.background='rgba(67,97,238,.15)'; this.style.color='#a0aec0'; };
+      btn.addEventListener('click', function() {
+        var chips = document.getElementById('fitbotChips');
+        if (chips) chips.remove();
+        send(c);
+      });
+      wrap.appendChild(btn);
+    });
+    msgs.appendChild(wrap);
+    scrollBot();
+  }
+
   function open() {
     overlay.style.display = 'flex';
     fab.classList.add('active');
     opened = true;
     if (!msgs.children.length) {
       addMsg('bot', '¡Hola, {{ user.first_name|default:user.username }}! 👋 Soy FitBot. Puedo analizar tu progreso de peso y calorías, o responder cualquier pregunta de fitness. ¿En qué te ayudo?');
+      addChips();
     }
     setTimeout(function(){ input.focus(); }, 250);
   }
