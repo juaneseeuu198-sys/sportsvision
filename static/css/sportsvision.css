@@ -28,7 +28,6 @@
 body.sv-body {
   font-family: 'Barlow', sans-serif;
   background: #07081a;
-  background-attachment: fixed;
   color: var(--sv-text);
   min-height: 100vh;
   margin: 0;
