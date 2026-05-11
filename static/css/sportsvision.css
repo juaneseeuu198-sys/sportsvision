@@ -190,6 +190,7 @@ body.sv-body {
 .sv-main-content {
   position: relative;
   z-index: 1;
+  padding-top: calc(62px + env(safe-area-inset-top, 0px));
 }
 
 /* ── Fondos por sección (en el body directamente — compatible con todos los WebViews) ── */
@@ -250,8 +251,10 @@ body.page-pro {
   padding-top: calc(10px + env(safe-area-inset-top, 0px));
   background: var(--sv-sidebar-bg);
   border-bottom: 1px solid var(--sv-border);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 40;
   backdrop-filter: blur(8px);
 }
