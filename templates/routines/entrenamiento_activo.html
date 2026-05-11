@@ -576,15 +576,22 @@ body.sv-body { background: #000 !important; }
       <span></span>
     </div>
 
-    <!-- Series completadas -->
+    <!-- Series completadas (editables) -->
     {% for serie in series %}
-    <div class="set-row">
+    <form method="post" class="set-row" style="padding:6px 0;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="actualizar_serie">
+      <input type="hidden" name="serie_id" value="{{ serie.id }}">
       <div class="set-num">{{ serie.numero_serie }}</div>
       <div class="set-prev">—</div>
-      <div class="set-val">{{ serie.peso|default:"—" }}</div>
-      <div class="set-val">{{ serie.repeticiones|default:"—" }}</div>
-      <div class="set-check done"><i class="bi bi-check-lg"></i></div>
-    </div>
+      <input type="number" name="peso" value="{{ serie.peso|default:'' }}"
+             class="set-input" placeholder="0" min="0" step="0.5">
+      <input type="number" name="repeticiones" value="{{ serie.repeticiones|default:'' }}"
+             class="set-input" placeholder="0" min="0" step="1">
+      <button type="submit" class="set-check done" style="border:none;cursor:pointer;">
+        <i class="bi bi-check-lg"></i>
+      </button>
+    </form>
     {% endfor %}
 
     <!-- Nueva serie -->

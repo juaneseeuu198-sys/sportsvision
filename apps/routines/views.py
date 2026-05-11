@@ -466,6 +466,19 @@ def iniciar_entrenamiento(request, rutina_id):
                     return redirect(f"{request.path}?ejercicio={ejercicio_idx}&listo=1")
                 return redirect(f"{request.path}?ejercicio={ejercicio_idx}&descanso=1")
 
+        elif action == 'actualizar_serie':
+            serie_id = request.POST.get('serie_id')
+            try:
+                serie = SerieEntrenamiento.objects.get(id=serie_id, entrenamiento=entrenamiento)
+                peso = request.POST.get('peso', '').strip()
+                reps = request.POST.get('repeticiones', '').strip()
+                serie.peso = float(peso) if peso else None
+                serie.repeticiones = int(reps) if reps else None
+                serie.save(update_fields=['peso', 'repeticiones'])
+            except (SerieEntrenamiento.DoesNotExist, ValueError):
+                pass
+            return redirect(f"{request.path}?ejercicio={ejercicio_idx}")
+
         elif action == 'siguiente_ejercicio':
             next_idx = min(ejercicio_idx + 1, len(ejercicios_list) - 1)
             return redirect(f"{request.path}?ejercicio={next_idx}")
