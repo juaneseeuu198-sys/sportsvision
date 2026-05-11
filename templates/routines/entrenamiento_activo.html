@@ -94,23 +94,37 @@ body.sv-body { background: #000 !important; }
 /* ── Background fijo con imagen del ejercicio ───── */
 .wk-bg {
   position: fixed; inset: 0; z-index: -1;
-  background: #000;
+  background: #05060f;
+}
+/* Capa base oscura con degradado tipo dashboard */
+.wk-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #0d0f1e 0%, #080b18 50%, #0a0a14 100%);
 }
 .wk-bg-gradient {
   position: absolute; inset: 0;
-  opacity: 1;
+  mix-blend-mode: screen;
+  opacity: .75;
+}
+/* Orbe secundario más sutil en esquina opuesta */
+.wk-bg-gradient::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 85% 80%, rgba(67,97,238,.18) 0%, transparent 55%);
 }
 .wk-bg-img {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
-  object-fit: cover; opacity: .25;
-  filter: blur(22px) saturate(1.6);
+  object-fit: cover; opacity: .12;
+  filter: blur(30px) saturate(2);
+  mix-blend-mode: luminosity;
 }
 .wk-bg-icon {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 260px; opacity: .08;
-  filter: blur(6px);
+  font-size: 300px; opacity: .04;
+  filter: blur(8px);
 }
 
 /* ── Exercise image (compacta, encima del card) ── */
@@ -460,18 +474,49 @@ body.sv-body { background: #000 !important; }
 <!-- Fondo dinámico -->
 <div class="wk-bg" aria-hidden="true">
   {% with s=ejercicio_actual.ejercicio.grupo_muscular.slug|default:"core" %}
-  <!-- Gradiente base por grupo muscular -->
+  <!-- Gradiente combinado por grupo muscular — dos orbes + oscuro base -->
   <div class="wk-bg-gradient" style="background:
-    {% if s == 'pecho' %}radial-gradient(ellipse at 30% 40%, rgba(67,97,238,.45) 0%, rgba(0,0,0,1) 70%)
-    {% elif s == 'espalda' %}radial-gradient(ellipse at 70% 30%, rgba(0,212,170,.35) 0%, rgba(0,0,0,1) 70%)
-    {% elif s == 'hombros' %}radial-gradient(ellipse at 50% 20%, rgba(251,191,36,.3) 0%, rgba(0,0,0,1) 70%)
-    {% elif s == 'biceps' or s == 'triceps' %}radial-gradient(ellipse at 30% 50%, rgba(139,92,246,.4) 0%, rgba(0,0,0,1) 70%)
-    {% elif s == 'piernas' %}radial-gradient(ellipse at 60% 60%, rgba(16,185,129,.35) 0%, rgba(0,0,0,1) 70%)
-    {% elif s == 'gluteos' %}radial-gradient(ellipse at 40% 70%, rgba(245,158,11,.3) 0%, rgba(0,0,0,1) 70%)
-    {% elif s == 'abdomen' or s == 'core' %}radial-gradient(ellipse at 50% 40%, rgba(239,68,68,.3) 0%, rgba(0,0,0,1) 70%)
-    {% elif s == 'cardio' %}radial-gradient(ellipse at 50% 30%, rgba(230,57,70,.4) 0%, rgba(0,0,0,1) 70%)
-    {% elif s == 'movilidad' %}radial-gradient(ellipse at 50% 50%, rgba(6,182,212,.3) 0%, rgba(0,0,0,1) 70%)
-    {% else %}radial-gradient(ellipse at 40% 40%, rgba(107,114,128,.35) 0%, rgba(0,0,0,1) 70%){% endif %}
+    {% if s == 'pecho' %}
+      radial-gradient(ellipse at 20% 30%, rgba(67,97,238,.55) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(139,92,246,.3) 0%, transparent 50%),
+      linear-gradient(160deg, #080b1e 0%, #0c0d18 100%)
+    {% elif s == 'espalda' %}
+      radial-gradient(ellipse at 70% 25%, rgba(0,212,170,.45) 0%, transparent 50%),
+      radial-gradient(ellipse at 25% 75%, rgba(16,185,129,.25) 0%, transparent 50%),
+      linear-gradient(160deg, #060e10 0%, #080d12 100%)
+    {% elif s == 'hombros' %}
+      radial-gradient(ellipse at 50% 20%, rgba(251,191,36,.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 75% 70%, rgba(245,158,11,.2) 0%, transparent 50%),
+      linear-gradient(160deg, #100e05 0%, #0d0b08 100%)
+    {% elif s == 'biceps' or s == 'triceps' %}
+      radial-gradient(ellipse at 25% 40%, rgba(139,92,246,.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 75% 65%, rgba(67,97,238,.3) 0%, transparent 50%),
+      linear-gradient(160deg, #0c080f 0%, #09070e 100%)
+    {% elif s == 'piernas' %}
+      radial-gradient(ellipse at 65% 55%, rgba(16,185,129,.45) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 30%, rgba(0,212,170,.25) 0%, transparent 50%),
+      linear-gradient(160deg, #060e0a 0%, #080c09 100%)
+    {% elif s == 'gluteos' %}
+      radial-gradient(ellipse at 40% 65%, rgba(245,158,11,.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 75% 25%, rgba(251,191,36,.2) 0%, transparent 50%),
+      linear-gradient(160deg, #0f0a04 0%, #0c0905 100%)
+    {% elif s == 'abdomen' or s == 'core' %}
+      radial-gradient(ellipse at 50% 35%, rgba(239,68,68,.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 70%, rgba(220,38,38,.2) 0%, transparent 50%),
+      linear-gradient(160deg, #0f0606 0%, #0c0606 100%)
+    {% elif s == 'cardio' %}
+      radial-gradient(ellipse at 50% 25%, rgba(230,57,70,.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(239,68,68,.25) 0%, transparent 50%),
+      linear-gradient(160deg, #100505 0%, #0d0505 100%)
+    {% elif s == 'movilidad' %}
+      radial-gradient(ellipse at 50% 45%, rgba(6,182,212,.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 70%, rgba(14,165,233,.2) 0%, transparent 50%),
+      linear-gradient(160deg, #050d10 0%, #060b0d 100%)
+    {% else %}
+      radial-gradient(ellipse at 35% 35%, rgba(107,114,128,.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 65%, rgba(75,85,99,.25) 0%, transparent 50%),
+      linear-gradient(160deg, #080808 0%, #0a0a0a 100%)
+    {% endif %}
   ;"></div>
   {% if ejercicio_actual.ejercicio.gif %}
     <img class="wk-bg-img" src="{{ ejercicio_actual.ejercicio.gif.url }}" alt="">
