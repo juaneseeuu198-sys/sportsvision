@@ -1824,28 +1824,30 @@ html.light-mode .theme-fab:hover {
 /* ══ FitBot Widget ═══════════════════════════════════════════════════════════ */
 .fitbot-widget {
   position: fixed;
-  bottom: 28px;
-  right: 90px;
-  width: 340px;
-  height: 480px;
-  background: rgba(7,8,26,0.92);
-  border: 1px solid rgba(67,97,238,0.3);
+  bottom: 230px;   /* encima de los 3 FABs */
+  right: 16px;
+  width: 320px;
+  height: 460px;
+  background: rgba(7,8,26,0.95);
+  border: 1px solid rgba(67,97,238,0.35);
   border-radius: 20px;
   backdrop-filter: blur(28px);
   display: flex;
   flex-direction: column;
   z-index: 1150;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
-  transform: scale(0.85) translateY(16px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  transform: scale(0.88) translateY(12px);
   opacity: 0;
   pointer-events: none;
   transform-origin: bottom right;
   transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+  visibility: hidden;
 }
 .fitbot-widget.open {
   transform: scale(1) translateY(0);
   opacity: 1;
   pointer-events: all;
+  visibility: visible;
 }
 
 .fitbot-widget-header {
@@ -1963,8 +1965,8 @@ html.light-mode .theme-fab:hover {
   .fitbot-widget {
     right: 8px; left: 8px;
     width: auto;
-    bottom: 90px;
-    height: 60vh;
+    bottom: 240px;
+    height: 55vh;
     border-radius: 16px;
   }
 }
