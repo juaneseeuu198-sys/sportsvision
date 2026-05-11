@@ -115,6 +115,13 @@
         </a>
       </li>
 
+      <li>
+        <a href="{% url 'chatbot' %}"
+           class="{% if request.resolver_match.url_name == 'chatbot' %}active{% endif %}">
+          <i class="bi bi-robot"></i><span>FitBot</span>
+        </a>
+      </li>
+
     </ul>
 
     <div class="sidebar-bottom">

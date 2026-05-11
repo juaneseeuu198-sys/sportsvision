@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from .forms import CaloriasForm, IMCForm, PlanNutricionalForm
 from .models import CalculoCaloria, PlanNutricional
 
@@ -605,3 +607,136 @@ def activar_plan(request, plan_id):
 @login_required
 def herramientas(request):
     return render(request, 'tools/herramientas.html')
+
+
+# ─── FitBot — Asistente IA ──────────────────────────────────────────────────────
+
+@login_required
+def chatbot(request):
+    if request.method == 'POST':
+        import json as _json
+        import requests as http_requests
+        from django.conf import settings
+        from apps.progress.models import RegistroPeso, MedicionCorporal
+        from apps.routines.models import Entrenamiento
+        from django.utils import timezone
+        from datetime import timedelta
+
+        try:
+            body = _json.loads(request.body)
+            user_message = body.get('message', '').strip()
+            action = body.get('action', '')
+        except Exception:
+            return JsonResponse({'error': 'invalid'}, status=400)
+
+        # Limpiar conversación
+        if action == 'clear':
+            request.session['fitbot_history'] = []
+            return JsonResponse({'ok': True})
+
+        if not user_message:
+            return JsonResponse({'error': 'empty'}, status=400)
+
+        # ── Contexto del usuario ──────────────────────────────────────────────
+        user = request.user
+        try:
+            profile = user.profile
+        except Exception:
+            profile = None
+
+        ctx = []
+
+        if profile:
+            nombre = user.first_name or user.username
+            ctx.append(f"Nombre: {nombre}")
+            if profile.peso:
+                ctx.append(f"Peso en perfil: {profile.peso} kg")
+            if profile.altura:
+                ctx.append(f"Altura: {profile.altura} cm")
+            if profile.peso and profile.altura and profile.altura > 0:
+                imc = round(profile.peso / (profile.altura / 100) ** 2, 1)
+                ctx.append(f"IMC actual: {imc}")
+
+        # Historial de pesos
+        pesos = list(RegistroPeso.objects.filter(usuario=user).order_by('-fecha')[:8])
+        if pesos:
+            peso_str = ', '.join([f"{p.fecha.strftime('%d/%m')}: {p.peso}kg" for p in pesos])
+            ctx.append(f"Historial de peso (reciente primero): {peso_str}")
+            if len(pesos) >= 2:
+                diff = pesos[0].peso - pesos[-1].peso
+                tendencia = f"{'bajó' if diff < 0 else 'subió'} {abs(round(diff, 1))}kg en {len(pesos)} registros"
+                ctx.append(f"Tendencia: {tendencia}")
+
+        # Cálculo calórico activo
+        try:
+            calculo = CalculoCaloria.objects.filter(usuario=user).latest('calculado_en')
+            ctx.append(f"Meta calórica diaria: {calculo.getd} kcal")
+            ctx.append(f"Objetivo: {calculo.objetivo}")
+            ctx.append(f"Macros diarios — Proteínas: {calculo.proteinas_g}g, Carbos: {calculo.carbos_g}g, Grasas: {calculo.grasas_g}g")
+        except CalculoCaloria.DoesNotExist:
+            pass
+
+        # Entrenamientos recientes
+        desde = timezone.now() - timedelta(days=30)
+        n_entrenos = Entrenamiento.objects.filter(
+            usuario=user, completado=True, iniciado_en__gte=desde
+        ).count()
+        if n_entrenos:
+            ctx.append(f"Entrenamientos completados (últimos 30 días): {n_entrenos}")
+
+        context_text = '\n'.join(ctx) if ctx else 'El usuario no tiene datos de progreso registrados aún.'
+
+        system_prompt = f"""Eres FitBot, el asistente personal de fitness y nutrición de SportsVision.
+
+Puedes hacer dos cosas:
+1. Analizar el progreso de peso y calorías del usuario usando sus datos reales
+2. Responder preguntas generales sobre ejercicio, nutrición, suplementos, descanso y bienestar
+
+DATOS REALES DEL USUARIO:
+{context_text}
+
+INSTRUCCIONES:
+- Responde siempre en español, de forma amigable y motivadora
+- Cuando el usuario pregunte por su progreso, usa sus datos reales y sé específico
+- Para preguntas generales de fitness/nutrición, responde con conocimiento experto y práctico
+- Mantén respuestas concisas (máximo 3-4 párrafos)
+- Usa emojis ocasionalmente para hacer la respuesta más amigable
+- Si no tienes datos suficientes para algo, dilo honestamente y sugiere qué registrar"""
+
+        # ── Historial de conversación ─────────────────────────────────────────
+        history = request.session.get('fitbot_history', [])
+        history.append({'role': 'user', 'content': user_message})
+
+        # ── Llamada a Claude API ──────────────────────────────────────────────
+        api_key = settings.ANTHROPIC_API_KEY
+        if not api_key:
+            return JsonResponse({'response': 'El asistente no está configurado. Contacta al administrador.'})
+
+        try:
+            resp = http_requests.post(
+                'https://api.anthropic.com/v1/messages',
+                headers={
+                    'x-api-key': api_key,
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json',
+                },
+                json={
+                    'model': 'claude-haiku-4-5-20251001',
+                    'max_tokens': 1024,
+                    'system': system_prompt,
+                    'messages': history[-20:],
+                },
+                timeout=30,
+            )
+            resp.raise_for_status()
+            bot_response = resp.json()['content'][0]['text']
+        except Exception:
+            bot_response = 'Lo siento, no puedo responder en este momento. Intenta de nuevo en unos segundos. 🙏'
+
+        # Guardar en sesión (máx 20 mensajes = 10 intercambios)
+        history.append({'role': 'assistant', 'content': bot_response})
+        request.session['fitbot_history'] = history[-20:]
+
+        return JsonResponse({'response': bot_response})
+
+    return render(request, 'tools/chatbot.html')

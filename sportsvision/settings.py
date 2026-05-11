@@ -136,7 +136,8 @@ LOGOUT_REDIRECT_URL = '/'
 # En desarrollo: muestra el email en consola
 # En producción: configura las variables de entorno para Gmail u otro servidor
 
-BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
+BREVO_API_KEY     = os.environ.get('BREVO_API_KEY', '')
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
 # URL base para los enlaces en los correos
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
