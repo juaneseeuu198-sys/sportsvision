@@ -739,4 +739,4 @@ INSTRUCCIONES:
 
         return JsonResponse({'response': bot_response})
 
-    return render(request, 'tools/chatbot.html')
+    return redirect('herramientas')
