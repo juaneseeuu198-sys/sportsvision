@@ -107,11 +107,15 @@ body.sv-body { background: #000 !important; }
   mix-blend-mode: screen;
   opacity: .75;
 }
-/* Orbe secundario más sutil en esquina opuesta */
+/* Orbe secundario en esquina inferior derecha */
 .wk-bg-gradient::after {
   content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 85% 80%, rgba(67,97,238,.18) 0%, transparent 55%);
+  position: absolute;
+  bottom: -20%; right: -15%;
+  width: 70%; height: 65%;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: .6;
 }
 .wk-bg-img {
   position: absolute; inset: 0;
@@ -474,6 +478,20 @@ body.sv-body { background: #000 !important; }
 <!-- Fondo dinámico -->
 <div class="wk-bg" aria-hidden="true">
   {% with s=ejercicio_actual.ejercicio.grupo_muscular.slug|default:"core" %}
+  <!-- Orbe inferior (esquina inferior derecha) -->
+  <div style="position:absolute;bottom:-20%;right:-15%;width:70%;height:65%;border-radius:50%;filter:blur(70px);opacity:.55;background:
+    {% if s == 'pecho' %}rgba(139,92,246,1)
+    {% elif s == 'espalda' %}rgba(16,185,129,1)
+    {% elif s == 'hombros' %}rgba(245,158,11,1)
+    {% elif s == 'biceps' or s == 'triceps' %}rgba(67,97,238,1)
+    {% elif s == 'piernas' %}rgba(6,182,212,1)
+    {% elif s == 'gluteos' %}rgba(251,191,36,1)
+    {% elif s == 'abdomen' or s == 'core' %}rgba(220,38,38,1)
+    {% elif s == 'cardio' %}rgba(239,68,68,1)
+    {% elif s == 'movilidad' %}rgba(14,165,233,1)
+    {% else %}rgba(107,114,128,1){% endif %}
+  ;"></div>
+
   <!-- Gradiente combinado por grupo muscular — dos orbes + oscuro base -->
   <div class="wk-bg-gradient" style="background:
     {% if s == 'pecho' %}
