@@ -19,3 +19,4 @@ android/.gradle/
 android/local.properties
 android/app/release/
 *.spec
+.claude/
