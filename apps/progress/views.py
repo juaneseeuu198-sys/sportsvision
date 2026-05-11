@@ -14,8 +14,13 @@ def calendario_progreso(request):
     """Calendario con historial de entrenamientos."""
     import calendar as cal_module
 
-    year  = int(request.GET.get('year',  timezone.now().year))
-    month = int(request.GET.get('month', timezone.now().month))
+    now = timezone.now()
+    try:
+        year  = int(request.GET.get('year',  now.year))
+        month = int(request.GET.get('month', now.month))
+    except (ValueError, TypeError):
+        year, month = now.year, now.month
+    month = max(1, min(12, month))
 
     meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
              'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -74,7 +79,10 @@ def calendario_progreso(request):
     next_month, next_year = (1,  year+1) if month == 12 else (month+1, year)
 
     # Detalle del día seleccionado
-    dia_sel = int(request.GET.get('dia', 0))
+    try:
+        dia_sel = int(request.GET.get('dia', 0))
+    except (ValueError, TypeError):
+        dia_sel = 0
     entrenamientos_dia = []
     plan_dia_sel = None
     if dia_sel:
@@ -91,7 +99,6 @@ def calendario_progreso(request):
 
     # Para cada día del calendario, calcular el weekday
     cal_data = cal_module.monthcalendar(year, month)
-    import datetime
     # Enriquecer cada celda con el día de la semana y el plan
     celdas_plan = {}  # {day_num: {plan_rutina, plan_descanso}}
     for week in cal_data:

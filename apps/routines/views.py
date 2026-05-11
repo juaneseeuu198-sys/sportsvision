@@ -395,7 +395,10 @@ def auto_generador(request):
     if request.method == 'POST':
         equipos_ids = request.POST.getlist('equipos')
         nivel = request.POST.get('nivel', 'principiante')
-        num_ejercicios = int(request.POST.get('num_ejercicios', 5))
+        try:
+            num_ejercicios = max(1, int(request.POST.get('num_ejercicios', 5)))
+        except (ValueError, TypeError):
+            num_ejercicios = 5
 
         ejercicios_qs = Ejercicio.objects.filter(nivel=nivel)
         if equipos_ids:
@@ -435,7 +438,10 @@ def iniciar_entrenamiento(request, rutina_id):
         defaults={'nombre': rutina.nombre}
     )
 
-    ejercicio_idx = int(request.GET.get('ejercicio', 0))
+    try:
+        ejercicio_idx = int(request.GET.get('ejercicio', 0))
+    except (ValueError, TypeError):
+        ejercicio_idx = 0
     ejercicios_list = list(ejercicios_rutina)
 
     if ejercicio_idx >= len(ejercicios_list):
@@ -484,7 +490,10 @@ def iniciar_entrenamiento(request, rutina_id):
             return redirect(f"{request.path}?ejercicio={next_idx}")
 
         elif action == 'ir_a_ejercicio':
-            idx = int(request.POST.get('idx', ejercicio_idx))
+            try:
+                idx = int(request.POST.get('idx', ejercicio_idx))
+            except (ValueError, TypeError):
+                idx = ejercicio_idx
             idx = max(0, min(idx, len(ejercicios_list) - 1))
             return redirect(f"{request.path}?ejercicio={idx}")
 
@@ -640,9 +649,12 @@ def generar_plan_auto(request):
     from .models import PlanDia
 
     nivel         = request.POST.get('nivel', 'principiante')
-    dias_entreno  = int(request.POST.get('dias_entreno', 3))
-    equipos_ids   = request.POST.getlist('equipos')
-    num_ejercicios = int(request.POST.get('num_ejercicios', 5))
+    try:
+        dias_entreno   = max(1, min(7, int(request.POST.get('dias_entreno', 3))))
+        num_ejercicios = max(1, int(request.POST.get('num_ejercicios', 5)))
+    except (ValueError, TypeError):
+        dias_entreno, num_ejercicios = 3, 5
+    equipos_ids = request.POST.getlist('equipos')
 
     # Splits según días de entrenamiento
     SPLITS = {

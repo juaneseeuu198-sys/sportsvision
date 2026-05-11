@@ -284,7 +284,7 @@ def perfil(request):
         ultimo_calculo = CalculoCaloria.objects.filter(
             usuario=request.user
         ).latest('calculado_en')
-    except Exception:
+    except CalculoCaloria.DoesNotExist:
         ultimo_calculo = None
 
     # IMC
@@ -660,8 +660,11 @@ def admin_crear_rutina(request, user_id):
                 nivel=nivel,
             )
             for i, ej_id in enumerate(ej_ids):
-                series = int(request.POST.get(f'series_{ej_id}', 3) or 3)
-                reps   = int(request.POST.get(f'reps_{ej_id}',   12) or 12)
+                try:
+                    series = int(request.POST.get(f'series_{ej_id}', 3) or 3)
+                    reps   = int(request.POST.get(f'reps_{ej_id}',   12) or 12)
+                except (ValueError, TypeError):
+                    series, reps = 3, 12
                 EjercicioRutina.objects.create(
                     rutina=rutina,
                     ejercicio_id=ej_id,
@@ -734,8 +737,11 @@ def sancionar_usuario(request, user_id):
         if usuario == request.user:
             messages.error(request, 'No puedes sancionarte a ti mismo.')
             return redirect('admin_ver_usuario', user_id=user_id)
-        dias  = int(request.POST.get('dias', 0))
-        horas = int(request.POST.get('horas', 0))
+        try:
+            dias  = max(0, int(request.POST.get('dias', 0)))
+            horas = max(0, int(request.POST.get('horas', 0)))
+        except (ValueError, TypeError):
+            dias = horas = 0
         razon = request.POST.get('razon', '').strip()
         if dias == 0 and horas == 0:
             usuario.profile.suspendido_hasta = None
@@ -759,7 +765,10 @@ def verificar_password_admin(request):
         password = request.POST.get('password', '')
         user_id  = request.POST.get('user_id', '')
         if authenticate(username=request.user.username, password=password):
-            target = get_object_or_404(User, id=user_id)
+            try:
+                target = get_object_or_404(User, id=int(user_id))
+            except (ValueError, TypeError):
+                return JsonResponse({'ok': False, 'error': 'ID inválido'})
             return JsonResponse({
                 'ok': True,
                 'telefono': target.profile.telefono or '—',

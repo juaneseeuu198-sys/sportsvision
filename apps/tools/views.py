@@ -529,9 +529,12 @@ def guardar_dieta(request):
 
     nombre          = request.POST.get('nombre', '').strip() or 'Mi Dieta'
     genero          = request.POST.get('genero')
-    edad            = int(request.POST.get('edad', 25))
-    peso            = float(request.POST.get('peso', 70))
-    altura          = float(request.POST.get('altura', 175))
+    try:
+        edad   = int(request.POST.get('edad', 25))
+        peso   = float(request.POST.get('peso', 70))
+        altura = float(request.POST.get('altura', 175))
+    except (ValueError, TypeError):
+        return redirect('calculadora_calorias')
     nivel_actividad = request.POST.get('nivel_actividad', 'activo')
     objetivo        = request.POST.get('objetivo', 'mantener')
 
