@@ -169,6 +169,20 @@
         {% if cliente.email %} · {{ cliente.email }}{% endif %}
         · Miembro desde {{ profile.fecha_registro|date:"d M Y" }}
       </div>
+      {% if profile.telefono or profile.direccion %}
+      <div style="margin-top:6px;display:flex;gap:14px;flex-wrap:wrap;">
+        {% if profile.telefono %}
+        <span style="font-size:12px;color:var(--sv-muted);">
+          <i class="bi bi-telephone-fill me-1" style="color:#00d4aa;"></i>{{ profile.telefono }}
+        </span>
+        {% endif %}
+        {% if profile.direccion %}
+        <span style="font-size:12px;color:var(--sv-muted);">
+          <i class="bi bi-geo-alt-fill me-1" style="color:#f4a261;"></i>{{ profile.direccion }}
+        </span>
+        {% endif %}
+      </div>
+      {% endif %}
       <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
         {% if profile.objetivo %}<span style="background:rgba(107,114,128,.15);border:1px solid rgba(107,114,128,.25);border-radius:8px;padding:2px 10px;font-size:11px;font-weight:700;color:#9ca3af;">{{ profile.get_objetivo_display }}</span>{% endif %}
         {% if profile.nivel %}<span style="background:rgba(67,97,238,.12);border:1px solid rgba(67,97,238,.25);border-radius:8px;padding:2px 10px;font-size:11px;font-weight:700;color:#7b9ffb;">{{ profile.get_nivel_display }}</span>{% endif %}
@@ -181,6 +195,33 @@
   {% for msg in messages %}
   <div class="alert mb-3" style="border-radius:12px;font-size:13px;background:rgba(0,212,170,.1);border-color:#00d4aa;color:#00d4aa;">{{ msg }}</div>
   {% endfor %}
+  {% endif %}
+
+  <!-- Contacto -->
+  {% if profile.telefono or profile.direccion %}
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-person-lines-fill"></i> Información de contacto</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      {% if profile.telefono %}
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.2);border-radius:12px;">
+        <i class="bi bi-telephone-fill" style="color:#00d4aa;font-size:18px;"></i>
+        <div>
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--sv-muted);">Teléfono</div>
+          <div style="font-size:15px;font-weight:700;color:var(--sv-text);">{{ profile.telefono }}</div>
+        </div>
+      </div>
+      {% endif %}
+      {% if profile.direccion %}
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(244,162,97,.06);border:1px solid rgba(244,162,97,.2);border-radius:12px;">
+        <i class="bi bi-geo-alt-fill" style="color:#f4a261;font-size:18px;"></i>
+        <div>
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--sv-muted);">Dirección</div>
+          <div style="font-size:15px;font-weight:700;color:var(--sv-text);">{{ profile.direccion }}</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
   {% endif %}
 
   <!-- Datos físicos -->

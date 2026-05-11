@@ -327,6 +327,8 @@
           <div style="font-size:11px;color:var(--sv-muted);">
             @{{ p.user.username }}
             {% if p.user.email %} · {{ p.user.email }}{% endif %}
+            {% if p.telefono %} · <i class="bi bi-telephone-fill"></i> {{ p.telefono }}{% endif %}
+            {% if p.direccion %} · <i class="bi bi-geo-alt-fill"></i> {{ p.direccion }}{% endif %}
           </div>
         </div>
         <!-- Datos rápidos -->
