@@ -56,6 +56,8 @@ class UserProfile(models.Model):
     fecha_registro     = models.DateTimeField(auto_now_add=True)
     suspendido_hasta   = models.DateTimeField(null=True, blank=True,
                                               help_text="Si está establecido, el usuario no puede iniciar sesión hasta esta fecha")
+    nota_moderacion    = models.TextField(blank=True, default='',
+                                          help_text="Razón del baneo o sanción")
 
     def generar_codigo(self):
         """Genera un código único de 6 caracteres para el profesional."""

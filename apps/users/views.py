@@ -714,8 +714,11 @@ def banear_usuario(request, user_id):
         if usuario == request.user:
             messages.error(request, 'No puedes banearte a ti mismo.')
             return redirect('admin_ver_usuario', user_id=user_id)
+        razon = request.POST.get('razon', '').strip()
         usuario.is_active = not usuario.is_active
         usuario.save()
+        usuario.profile.nota_moderacion = razon if not usuario.is_active else ''
+        usuario.profile.save(update_fields=['nota_moderacion'])
         accion = 'baneado' if not usuario.is_active else 'desbaneado'
         messages.success(request, f'Usuario {usuario.username} {accion} correctamente.')
     return redirect('admin_ver_usuario', user_id=user_id)
@@ -731,15 +734,18 @@ def sancionar_usuario(request, user_id):
         if usuario == request.user:
             messages.error(request, 'No puedes sancionarte a ti mismo.')
             return redirect('admin_ver_usuario', user_id=user_id)
-        dias = int(request.POST.get('dias', 0))
+        dias  = int(request.POST.get('dias', 0))
         horas = int(request.POST.get('horas', 0))
+        razon = request.POST.get('razon', '').strip()
         if dias == 0 and horas == 0:
             usuario.profile.suspendido_hasta = None
-            usuario.profile.save(update_fields=['suspendido_hasta'])
+            usuario.profile.nota_moderacion  = ''
+            usuario.profile.save(update_fields=['suspendido_hasta', 'nota_moderacion'])
             messages.success(request, f'Sanción de {usuario.username} levantada.')
         else:
             usuario.profile.suspendido_hasta = timezone.now() + timedelta(days=dias, hours=horas)
-            usuario.profile.save(update_fields=['suspendido_hasta'])
+            usuario.profile.nota_moderacion  = razon
+            usuario.profile.save(update_fields=['suspendido_hasta', 'nota_moderacion'])
             messages.success(request, f'{usuario.username} sancionado por {dias}d {horas}h.')
     return redirect('admin_ver_usuario', user_id=user_id)
 

@@ -168,13 +168,46 @@
     <a href="{% url 'admin_pro_dashboard' %}" class="page-back-btn">
       <i class="bi bi-arrow-left"></i> Panel Admin Pro
     </a>
-    <a href="{% url 'admin_crear_rutina' cliente.id %}"
-       style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:12px;
-              background:linear-gradient(135deg,#4361ee,#6b7280);color:#fff;font-weight:700;
-              font-size:13px;text-decoration:none;transition:opacity .2s;"
-       onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-      <i class="bi bi-plus-circle-fill"></i> Crear Rutina
-    </a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      {% if cliente != request.user %}
+        {% if not cliente.is_active %}
+          <!-- Desbanear -->
+          <form method="post" action="{% url 'banear_usuario' cliente.id %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-ban desbanear" onclick="return confirm('¿Desbanear a {{ cliente.username }}?')">
+              <i class="bi bi-check-circle-fill me-1"></i> Desbanear
+            </button>
+          </form>
+        {% else %}
+          <!-- Banear -->
+          <button type="button" class="btn-ban banear" onclick="abrirModalBan()">
+            <i class="bi bi-slash-circle-fill me-1"></i> Banear
+          </button>
+          <!-- Sancionar -->
+          <button type="button" class="btn-ban sancionar" onclick="abrirModalSancion()">
+            <i class="bi bi-clock-fill me-1"></i>
+            {% if profile.suspendido_hasta and profile.suspendido_hasta > now %}Editar sanción{% else %}Sancionar{% endif %}
+          </button>
+          {% if profile.suspendido_hasta and profile.suspendido_hasta > now %}
+          <form method="post" action="{% url 'sancionar_usuario' cliente.id %}" style="margin:0;">
+            {% csrf_token %}
+            <input type="hidden" name="dias" value="0">
+            <input type="hidden" name="horas" value="0">
+            <button type="submit" class="btn-ban levantar">
+              <i class="bi bi-x-lg me-1"></i> Levantar
+            </button>
+          </form>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+      <a href="{% url 'admin_crear_rutina' cliente.id %}"
+         style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:12px;
+                background:linear-gradient(135deg,#4361ee,#6b7280);color:#fff;font-weight:700;
+                font-size:13px;text-decoration:none;transition:opacity .2s;"
+         onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        <i class="bi bi-plus-circle-fill"></i> Crear Rutina
+      </a>
+    </div>
   </div>
 
   <!-- Header usuario -->
@@ -225,61 +258,78 @@
   {% endfor %}
   {% endif %}
 
-  <!-- ── Acciones de moderación ── -->
-  {% if cliente != request.user %}
-  <div class="data-section" style="border-color:rgba(239,68,68,.25);">
-    <div class="data-title" style="color:#f87171;border-color:rgba(239,68,68,.2);">
-      <i class="bi bi-shield-fill-exclamation"></i> Moderación
-      {% if not cliente.is_active %}
-      <span style="margin-left:auto;font-size:11px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:2px 10px;color:#f87171;">BANEADO</span>
-      {% elif profile.suspendido_hasta and profile.suspendido_hasta > now %}
-      <span style="margin-left:auto;font-size:11px;background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:2px 10px;color:#f59e0b;">SUSPENDIDO hasta {{ profile.suspendido_hasta|date:"d/m/Y H:i" }}</span>
-      {% endif %}
+  <!-- Estado de moderación (solo si está baneado/suspendido) -->
+  {% if not cliente.is_active %}
+  <div style="background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.3);border-radius:14px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+    <i class="bi bi-slash-circle-fill" style="color:#f87171;font-size:20px;"></i>
+    <div>
+      <div style="font-size:13px;font-weight:800;color:#f87171;">Usuario BANEADO</div>
+      {% if profile.nota_moderacion %}<div style="font-size:12px;color:rgba(248,113,113,.7);margin-top:2px;">Razón: {{ profile.nota_moderacion }}</div>{% endif %}
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;">
-      <!-- Ban -->
-      <form method="post" action="{% url 'banear_usuario' cliente.id %}"
-            onsubmit="return confirm('{% if cliente.is_active %}¿Banear permanentemente a {{ cliente.username }}?{% else %}¿Desbanear a {{ cliente.username }}?{% endif %}')">
-        {% csrf_token %}
-        <button type="submit" class="btn-ban {% if cliente.is_active %}banear{% else %}desbanear{% endif %}">
-          {% if cliente.is_active %}
-            <i class="bi bi-slash-circle-fill me-1"></i> Banear permanentemente
-          {% else %}
-            <i class="bi bi-check-circle-fill me-1"></i> Desbanear
-          {% endif %}
-        </button>
-      </form>
-
-      <!-- Sanción temporal -->
-      <form method="post" action="{% url 'sancionar_usuario' cliente.id %}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        {% csrf_token %}
-        <select name="dias" style="padding:8px 10px;border-radius:10px;border:1.5px solid rgba(245,158,11,.3);background:rgba(245,158,11,.08);color:#f59e0b;font-size:13px;font-weight:700;cursor:pointer;outline:none;">
-          <option value="0">0 días</option>
-          <option value="1">1 día</option>
-          <option value="3">3 días</option>
-          <option value="7">7 días</option>
-          <option value="14">14 días</option>
-          <option value="30">30 días</option>
-        </select>
-        <select name="horas" style="padding:8px 10px;border-radius:10px;border:1.5px solid rgba(245,158,11,.3);background:rgba(245,158,11,.08);color:#f59e0b;font-size:13px;font-weight:700;cursor:pointer;outline:none;">
-          <option value="0">0 horas</option>
-          <option value="6">6 horas</option>
-          <option value="12">12 horas</option>
-          <option value="24">24 horas</option>
-        </select>
-        <button type="submit" class="btn-ban sancionar">
-          <i class="bi bi-clock-fill me-1"></i> Sancionar
-        </button>
-        {% if profile.suspendido_hasta and profile.suspendido_hasta > now %}
-        <button type="submit" name="dias" value="0" class="btn-ban levantar"
-                onclick="this.form.horas.value='0'">
-          <i class="bi bi-x-lg me-1"></i> Levantar sanción
-        </button>
-        {% endif %}
-      </form>
+  </div>
+  {% elif profile.suspendido_hasta and profile.suspendido_hasta > now %}
+  <div style="background:rgba(245,158,11,.1);border:1.5px solid rgba(245,158,11,.3);border-radius:14px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+    <i class="bi bi-clock-fill" style="color:#f59e0b;font-size:20px;"></i>
+    <div>
+      <div style="font-size:13px;font-weight:800;color:#f59e0b;">Suspendido hasta {{ profile.suspendido_hasta|date:"d/m/Y H:i" }}</div>
+      {% if profile.nota_moderacion %}<div style="font-size:12px;color:rgba(245,158,11,.7);margin-top:2px;">Razón: {{ profile.nota_moderacion }}</div>{% endif %}
     </div>
   </div>
   {% endif %}
+
+  <!-- Modal Banear -->
+  <div class="pwd-modal-overlay" id="modalBan">
+    <div class="pwd-modal">
+      <h3 style="color:#f87171;"><i class="bi bi-slash-circle-fill me-2"></i>Banear usuario</h3>
+      <p>Esto bloqueará permanentemente a <strong style="color:#fff;">{{ cliente.username }}</strong>. Puedes desbanearlo después.</p>
+      <form method="post" action="{% url 'banear_usuario' cliente.id %}">
+        {% csrf_token %}
+        <textarea name="razon" class="pwd-input" placeholder="Razón del baneo (opcional)..." rows="3" style="resize:none;height:auto;"></textarea>
+        <button type="submit" class="pwd-btn-confirm" style="background:#ef4444;">
+          <i class="bi bi-slash-circle-fill me-1"></i> Confirmar baneo
+        </button>
+      </form>
+      <br><button class="pwd-btn-cancel" onclick="document.getElementById('modalBan').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal Sancionar -->
+  <div class="pwd-modal-overlay" id="modalSancion">
+    <div class="pwd-modal" style="max-width:400px;">
+      <h3 style="color:#f59e0b;"><i class="bi bi-clock-fill me-2"></i>Sancionar temporalmente</h3>
+      <p>El usuario <strong style="color:#fff;">{{ cliente.username }}</strong> no podrá iniciar sesión durante el tiempo seleccionado.</p>
+      <form method="post" action="{% url 'sancionar_usuario' cliente.id %}">
+        {% csrf_token %}
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <div style="flex:1;">
+            <label style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Días</label>
+            <select name="dias" class="pwd-input" style="margin:0;">
+              <option value="0">0 días</option>
+              <option value="1">1 día</option>
+              <option value="3">3 días</option>
+              <option value="7">7 días</option>
+              <option value="14">14 días</option>
+              <option value="30">30 días</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Horas</label>
+            <select name="horas" class="pwd-input" style="margin:0;">
+              <option value="0">0 horas</option>
+              <option value="6">6 horas</option>
+              <option value="12">12 horas</option>
+              <option value="24">24 horas</option>
+            </select>
+          </div>
+        </div>
+        <textarea name="razon" class="pwd-input" placeholder="Razón de la sanción (opcional)..." rows="3" style="resize:none;height:auto;"></textarea>
+        <button type="submit" class="pwd-btn-confirm" style="background:#f59e0b;color:#000;">
+          <i class="bi bi-clock-fill me-1"></i> Aplicar sanción
+        </button>
+      </form>
+      <br><button class="pwd-btn-cancel" onclick="document.getElementById('modalSancion').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
 
   <!-- Contacto con ojo de privacidad -->
   {% if profile.telefono or profile.direccion %}
@@ -690,6 +740,18 @@ function togglePlan(id, head) {
     icon.style.transform = open ? 'rotate(90deg)' : '';
   }
 }
+
+// ── Moderación ─────────────────────────────────────────
+function abrirModalBan() {
+  document.getElementById('modalBan').classList.add('open');
+}
+function abrirModalSancion() {
+  document.getElementById('modalSancion').classList.add('open');
+}
+['modalBan','modalSancion','pwdModal'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
+});
 
 // ── Privacidad ──────────────────────────────────────────
 function abrirModalPrivacidad() {
