@@ -604,7 +604,7 @@ document.getElementById('avatar-file-input').addEventListener('change', function
   var file = e.target.files[0];
   this.value = '';
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5 MB.'); return; }
+  if (file.size > 7.5 * 1024 * 1024) { alert('La imagen no puede superar 7.5 MB.'); return; }
 
   var reader = new FileReader();
   reader.onload = function(ev) {
