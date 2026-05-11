@@ -303,23 +303,11 @@
         <div style="display:flex;gap:8px;margin-bottom:12px;">
           <div style="flex:1;">
             <label style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Días</label>
-            <select name="dias" class="pwd-input" style="margin:0;">
-              <option value="0">0 días</option>
-              <option value="1">1 día</option>
-              <option value="3">3 días</option>
-              <option value="7">7 días</option>
-              <option value="14">14 días</option>
-              <option value="30">30 días</option>
-            </select>
+            <input type="number" name="dias" class="pwd-input" style="margin:0;" value="0" min="0" max="365" placeholder="0">
           </div>
           <div style="flex:1;">
             <label style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Horas</label>
-            <select name="horas" class="pwd-input" style="margin:0;">
-              <option value="0">0 horas</option>
-              <option value="6">6 horas</option>
-              <option value="12">12 horas</option>
-              <option value="24">24 horas</option>
-            </select>
+            <input type="number" name="horas" class="pwd-input" style="margin:0;" value="0" min="0" max="23" placeholder="0">
           </div>
         </div>
         <textarea name="razon" class="pwd-input" placeholder="Razón de la sanción (opcional)..." rows="3" style="resize:none;height:auto;"></textarea>
