@@ -217,6 +217,7 @@
 
 <!-- FitBot Mini Widget -->
 <div class="fitbot-widget" id="fitbotWidget"
+     style="display:none"
      data-url="{% url 'chatbot' %}"
      data-csrf="{{ csrf_token }}">
   <div class="fitbot-widget-header">
@@ -271,7 +272,10 @@
   function hideTyping() { var t=document.getElementById('fbTyping'); if(t) t.remove(); }
 
   function open() {
-    widget.classList.add('open');
+    widget.style.display = 'flex';
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { widget.classList.add('open'); });
+    });
     fab.classList.add('active');
     opened = true;
     if (!msgs.children.length) {
@@ -284,6 +288,7 @@
     widget.classList.remove('open');
     fab.classList.remove('active');
     opened = false;
+    setTimeout(function(){ widget.style.display = 'none'; }, 300);
   }
 
   fab.addEventListener('click', function() { opened ? close() : open(); });
