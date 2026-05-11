@@ -161,16 +161,7 @@
   <!-- Overlay para cerrar sidebar en móvil al tocar fuera -->
   <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);transition:opacity .3s;"></div>
 
-  <main class="sv-main" id="svMain">
-
-    <div class="fitness-bg-deco" aria-hidden="true">
-      <i class="bi bi-fire"></i>
-      <i class="bi bi-heart-pulse-fill"></i>
-      <i class="bi bi-trophy-fill"></i>
-      <i class="bi bi-lightning-fill"></i>
-      <i class="bi bi-bicycle"></i>
-      <i class="bi bi-egg-fried"></i>
-    </div>
+  <div class="sv-content-col" id="svContentCol">
 
     <div class="sv-topbar">
       <!-- Hamburger solo en escritorio; en móvil se usa swipe desde el borde -->
@@ -190,11 +181,24 @@
       </a>
     </div>
 
-    <div class="sv-main-content">
-      {% block content %}{% endblock %}
-    </div>
+    <main class="sv-main" id="svMain">
 
-  </main>
+      <div class="fitness-bg-deco" aria-hidden="true">
+        <i class="bi bi-fire"></i>
+        <i class="bi bi-heart-pulse-fill"></i>
+        <i class="bi bi-trophy-fill"></i>
+        <i class="bi bi-lightning-fill"></i>
+        <i class="bi bi-bicycle"></i>
+        <i class="bi bi-egg-fried"></i>
+      </div>
+
+      <div class="sv-main-content">
+        {% block content %}{% endblock %}
+      </div>
+
+    </main>
+
+  </div>
 
 </div>
 
