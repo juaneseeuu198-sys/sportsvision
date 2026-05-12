@@ -38,4 +38,7 @@ urlpatterns = [
     path('privacidad/revocar/<int:relacion_id>/',    views.revocar_profesional,  name='revocar_profesional'),
 
     path('terminos/', views.terminos_condiciones, name='terminos_condiciones'),
+    # Google OAuth
+    path('auth/google/',          views.google_login,    name='google_login'),
+    path('auth/google/callback/', views.google_callback, name='google_callback'),
 ]

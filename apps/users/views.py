@@ -992,3 +992,147 @@ def terminos_condiciones(request):
     return render(request, 'users/terminos_condiciones.html')
 
 
+# ─── Google OAuth ──────────────────────────────────────────────────────────────
+
+import urllib.parse
+import secrets
+import base64
+
+_GOOGLE_AUTH_URL     = 'https://accounts.google.com/o/oauth2/v2/auth'
+_GOOGLE_TOKEN_URL    = 'https://oauth2.googleapis.com/token'
+_GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
+
+
+def google_login(request):
+    """Redirige al usuario a la pantalla de autorización de Google."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    client_id = settings.GOOGLE_CLIENT_ID
+    if not client_id:
+        messages.error(request, 'El login con Google no está configurado todavía.')
+        return redirect('login')
+
+    state = secrets.token_urlsafe(32)
+    request.session['google_state'] = state
+
+    redirect_uri = settings.FRONTEND_URL.rstrip('/') + '/usuarios/auth/google/callback/'
+
+    params = urllib.parse.urlencode({
+        'client_id':     client_id,
+        'redirect_uri':  redirect_uri,
+        'response_type': 'code',
+        'scope':         'openid email profile',
+        'state':         state,
+        'access_type':   'online',
+        'prompt':        'select_account',
+    })
+    return redirect(f'{_GOOGLE_AUTH_URL}?{params}')
+
+
+@csrf_exempt
+def google_callback(request):
+    """Callback que recibe el código de autorización de Google."""
+    # Verificar state anti-CSRF
+    state = request.GET.get('state', '')
+    if state != request.session.get('google_state', ''):
+        messages.error(request, 'Error de seguridad en la autenticación. Intenta de nuevo.')
+        return redirect('login')
+
+    code = request.GET.get('code')
+    if not code:
+        messages.error(request, 'Google no devolvió autorización.')
+        return redirect('login')
+
+    redirect_uri = settings.FRONTEND_URL.rstrip('/') + '/usuarios/auth/google/callback/'
+
+    # Intercambiar code → access_token
+    try:
+        token_resp = http_requests.post(_GOOGLE_TOKEN_URL, data={
+            'code':          code,
+            'client_id':     settings.GOOGLE_CLIENT_ID,
+            'client_secret': settings.GOOGLE_CLIENT_SECRET,
+            'redirect_uri':  redirect_uri,
+            'grant_type':    'authorization_code',
+        }, timeout=15)
+        token_resp.raise_for_status()
+        access_token = token_resp.json().get('access_token')
+    except Exception:
+        messages.error(request, 'Error al conectar con Google. Intenta de nuevo.')
+        return redirect('login')
+
+    # Obtener datos del usuario
+    try:
+        info_resp = http_requests.get(
+            _GOOGLE_USERINFO_URL,
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=15,
+        )
+        info_resp.raise_for_status()
+        info = info_resp.json()
+    except Exception:
+        messages.error(request, 'No se pudo obtener información de Google.')
+        return redirect('login')
+
+    email      = info.get('email', '').lower()
+    name       = info.get('name', '')
+    picture    = info.get('picture', '')
+    google_id  = info.get('sub', '')
+
+    if not email:
+        messages.error(request, 'Google no compartió tu correo electrónico.')
+        return redirect('login')
+
+    # Buscar o crear usuario
+    user = None
+    created = False
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        parts = name.split(' ', 1)
+        username = email.split('@')[0]
+        base = username
+        n = 1
+        while User.objects.filter(username=username).exists():
+            username = f'{base}{n}'
+            n += 1
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            first_name=parts[0] if parts else '',
+            last_name=parts[1] if len(parts) > 1 else '',
+        )
+        user.set_unusable_password()
+        user.save()
+        created = True
+
+    # Verificar estado de la cuenta
+    if not user.is_active:
+        messages.error(request, 'Tu cuenta ha sido baneada. Contacta al administrador.')
+        return redirect('login')
+    try:
+        prof = user.profile
+        if prof.suspendido_hasta and prof.suspendido_hasta > timezone.now():
+            hasta = prof.suspendido_hasta.strftime('%d/%m/%Y %H:%M')
+            messages.error(request, f'Cuenta suspendida hasta el {hasta}.')
+            return redirect('login')
+        # Guardar avatar de Google si el usuario no tiene uno propio
+        if created and picture and not prof.avatar:
+            try:
+                img_resp = http_requests.get(picture, timeout=10)
+                if img_resp.ok:
+                    ext = 'jpg'
+                    b64 = base64.b64encode(img_resp.content).decode()
+                    prof.avatar_data = f'data:image/jpeg;base64,{b64}'
+                    prof.save(update_fields=['avatar_data'])
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
+    if created:
+        return redirect('bienvenido')
+    return redirect('dashboard')
+
+

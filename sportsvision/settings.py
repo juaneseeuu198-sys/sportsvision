@@ -138,6 +138,8 @@ LOGOUT_REDIRECT_URL = '/'
 
 BREVO_API_KEY     = os.environ.get('BREVO_API_KEY', '')
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+GOOGLE_CLIENT_ID     = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
 
 # URL base para los enlaces en los correos
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
