@@ -1189,8 +1189,6 @@ def completar_perfil_google(request):
 
             profile.save()
 
-            request.session.pop('google_picture_url', None)
-
             try:
                 if objetivo:
                     from apps.routines.views import generar_plan_inicial
