@@ -1174,19 +1174,8 @@ def completar_perfil_google(request):
             profile.limitaciones    = form.cleaned_data.get('limitaciones') or []
             profile.acepto_terminos = form.cleaned_data.get('acepto_terminos', False)
 
-            # Descargar y guardar foto de Google como base64
-            if google_picture_url and not profile.avatar_data:
-                try:
-                    img_resp = http_requests.get(google_picture_url, timeout=10)
-                    if img_resp.ok:
-                        b64 = base64.b64encode(img_resp.content).decode()
-                        profile.avatar_data = f'data:image/jpeg;base64,{b64}'
-                except Exception:
-                    pass
-
             profile.save()
 
-            request.session.pop('completar_perfil_google', None)
             request.session.pop('google_picture_url', None)
 
             try:
