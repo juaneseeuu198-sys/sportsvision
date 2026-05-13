@@ -1189,9 +1189,12 @@ def completar_perfil_google(request):
             request.session.pop('completar_perfil_google', None)
             request.session.pop('google_picture_url', None)
 
-            if objetivo:
-                from apps.routines.views import generar_plan_inicial
-                generar_plan_inicial(request.user, objetivo)
+            try:
+                if objetivo:
+                    from apps.routines.views import generar_plan_inicial
+                    generar_plan_inicial(request.user, objetivo)
+            except Exception:
+                pass
 
             return redirect('bienvenido')
     else:
