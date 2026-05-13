@@ -14,6 +14,7 @@ class SuspensionMiddleware:
         '/usuarios/registro/verificar/',
         '/usuarios/registro/completar/',
         '/usuarios/auth/',
+        '/usuarios/auth/google/completar-perfil/',
         '/',
         '/manifest.json',
         '/sw.js',

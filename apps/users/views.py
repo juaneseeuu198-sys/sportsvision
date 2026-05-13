@@ -1131,9 +1131,8 @@ def google_callback(request):
 
     login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
     if created:
-        # Guardar URL de foto de Google en sesión para mostrarla en el formulario
-        request.session['completar_perfil_google'] = True
         request.session['google_picture_url'] = picture
+        request.session.save()
         return redirect('completar_perfil_google')
     return redirect('dashboard')
 
@@ -1141,8 +1140,12 @@ def google_callback(request):
 @login_required
 def completar_perfil_google(request):
     """Nuevo usuario de Google completa su perfil (objetivo, datos físicos, salud)."""
-    if not request.session.get('completar_perfil_google'):
-        return redirect('dashboard')
+    # Si el usuario ya tiene perfil completo (acepto_terminos=True), va al dashboard
+    try:
+        if request.user.profile.acepto_terminos:
+            return redirect('dashboard')
+    except Exception:
+        pass  # Sin perfil todavía → continúa al formulario
 
     google_picture_url = request.session.get('google_picture_url', '')
 
