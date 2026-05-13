@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from datetime import timedelta
 import random
 import requests as http_requests
-from .forms import RegistroForm, EditarUsuarioForm, EditarPerfilForm
+from .forms import RegistroForm, EditarUsuarioForm, EditarPerfilForm, CompletarPerfilGoogleForm
 from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailPreVerification
 
 
@@ -1116,12 +1116,11 @@ def google_callback(request):
             hasta = prof.suspendido_hasta.strftime('%d/%m/%Y %H:%M')
             messages.error(request, f'Cuenta suspendida hasta el {hasta}.')
             return redirect('login')
-        # Guardar avatar de Google si el usuario no tiene uno propio
-        if created and picture and not prof.avatar:
+        # Usuario existente: guardar avatar si no tiene uno
+        if not created and picture and not prof.avatar and not prof.avatar_data:
             try:
                 img_resp = http_requests.get(picture, timeout=10)
                 if img_resp.ok:
-                    ext = 'jpg'
                     b64 = base64.b64encode(img_resp.content).decode()
                     prof.avatar_data = f'data:image/jpeg;base64,{b64}'
                     prof.save(update_fields=['avatar_data'])
@@ -1132,7 +1131,73 @@ def google_callback(request):
 
     login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
     if created:
-        return redirect('bienvenido')
+        # Guardar URL de foto de Google en sesión para mostrarla en el formulario
+        request.session['completar_perfil_google'] = True
+        request.session['google_picture_url'] = picture
+        return redirect('completar_perfil_google')
     return redirect('dashboard')
+
+
+@login_required
+def completar_perfil_google(request):
+    """Nuevo usuario de Google completa su perfil (objetivo, datos físicos, salud)."""
+    if not request.session.get('completar_perfil_google'):
+        return redirect('dashboard')
+
+    google_picture_url = request.session.get('google_picture_url', '')
+
+    if request.method == 'POST':
+        form = CompletarPerfilGoogleForm(request.POST)
+        if form.is_valid():
+            objetivo = form.cleaned_data.get('objetivo') or ''
+            nivel_por_objetivo = {
+                'ganar_musculo': 'intermedio',
+                'rendimiento':   'avanzado',
+            }
+            nivel = nivel_por_objetivo.get(objetivo, 'principiante')
+
+            # Guardar nombre en el User
+            request.user.first_name = form.cleaned_data.get('first_name', '')
+            request.user.save(update_fields=['first_name'])
+
+            # Crear o actualizar perfil
+            profile, _ = UserProfile.objects.get_or_create(user=request.user)
+            profile.edad            = form.cleaned_data.get('edad')
+            profile.peso            = form.cleaned_data.get('peso')
+            profile.altura          = form.cleaned_data.get('altura')
+            profile.genero          = form.cleaned_data.get('genero') or ''
+            profile.objetivo        = objetivo
+            profile.nivel           = nivel
+            profile.limitaciones    = form.cleaned_data.get('limitaciones') or []
+            profile.acepto_terminos = form.cleaned_data.get('acepto_terminos', False)
+
+            # Descargar y guardar foto de Google como base64
+            if google_picture_url and not profile.avatar_data:
+                try:
+                    img_resp = http_requests.get(google_picture_url, timeout=10)
+                    if img_resp.ok:
+                        b64 = base64.b64encode(img_resp.content).decode()
+                        profile.avatar_data = f'data:image/jpeg;base64,{b64}'
+                except Exception:
+                    pass
+
+            profile.save()
+
+            request.session.pop('completar_perfil_google', None)
+            request.session.pop('google_picture_url', None)
+
+            if objetivo:
+                from apps.routines.views import generar_plan_inicial
+                generar_plan_inicial(request.user, objetivo)
+
+            return redirect('bienvenido')
+    else:
+        form = CompletarPerfilGoogleForm(initial={'first_name': request.user.first_name})
+
+    return render(request, 'users/completar_perfil_google.html', {
+        'form': form,
+        'google_picture_url': google_picture_url,
+        'google_email': request.user.email,
+    })
 
 

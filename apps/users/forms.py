@@ -124,6 +124,27 @@ class RegistroForm(UserCreationForm):
         )
 
 
+class CompletarPerfilGoogleForm(forms.Form):
+    first_name = forms.CharField(required=True, max_length=50, widget=forms.TextInput(attrs={
+        'class': 'form-control sv-input', 'placeholder': 'Ej: Carlos',
+    }))
+    edad = forms.IntegerField(required=False, min_value=10, max_value=100, widget=forms.NumberInput(attrs={
+        'class': 'form-control sv-input', 'placeholder': '25',
+    }))
+    peso = forms.FloatField(required=False, min_value=20, max_value=300, widget=forms.NumberInput(attrs={
+        'class': 'form-control sv-input', 'placeholder': '70.0', 'step': '0.1',
+    }))
+    altura = forms.FloatField(required=False, min_value=100, max_value=250, widget=forms.NumberInput(attrs={
+        'class': 'form-control sv-input', 'placeholder': '175',
+    }))
+    genero       = forms.ChoiceField(required=False, choices=[('', 'Prefiero no decir')] + GENERO_CHOICES)
+    objetivo     = forms.ChoiceField(required=False, choices=[('', '')] + UserProfile.OBJETIVO_CHOICES)
+    limitaciones = forms.MultipleChoiceField(required=False, choices=LIMITACION_CHOICES)
+    acepto_terminos = forms.BooleanField(required=True, error_messages={
+        'required': 'Debes aceptar los Términos y Condiciones para continuar.'
+    })
+
+
 class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
