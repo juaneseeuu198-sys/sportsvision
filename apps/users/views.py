@@ -353,7 +353,9 @@ def editar_perfil(request):
         profile_form = EditarPerfilForm(request.POST, request.FILES, instance=profile)
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
-            profile_form.save()
+            p = profile_form.save(commit=False)
+            p.limitaciones = profile_form.cleaned_data.get('limitaciones') or []
+            p.save()
             if avatar_b64 and avatar_b64.startswith('data:image'):
                 profile.avatar_data = avatar_b64
                 profile.save(update_fields=['avatar_data'])

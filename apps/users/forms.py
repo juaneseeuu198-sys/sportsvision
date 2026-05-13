@@ -16,16 +16,25 @@ class EditarUsuarioForm(forms.ModelForm):
 
 
 class EditarPerfilForm(forms.ModelForm):
+    limitaciones = forms.MultipleChoiceField(required=False, choices=LIMITACION_CHOICES)
+
     class Meta:
         model = UserProfile
-        fields = ['edad', 'peso', 'altura', 'avatar', 'telefono', 'direccion']
+        fields = ['edad', 'peso', 'altura', 'avatar', 'telefono', 'direccion', 'objetivo', 'limitaciones']
         widgets = {
             'edad':      forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Edad'}),
             'peso':      forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Peso (kg)', 'step': '0.1'}),
             'altura':    forms.NumberInput(attrs={'class': 'sv-input', 'placeholder': 'Altura (cm)'}),
             'telefono':  forms.TextInput(attrs={'class': 'sv-input', 'placeholder': '+57 300 000 0000'}),
             'direccion': forms.TextInput(attrs={'class': 'sv-input', 'placeholder': 'Calle 123 # 45-67, Ciudad'}),
+            'objetivo':  forms.Select(attrs={'class': 'sv-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Inicializar limitaciones desde el JSONField del perfil
+        if self.instance and self.instance.pk:
+            self.initial['limitaciones'] = self.instance.limitaciones or []
 
 
 GENERO_CHOICES = [

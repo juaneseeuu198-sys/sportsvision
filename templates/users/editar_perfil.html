@@ -48,6 +48,19 @@
   }
   .sv-input { width: 100%; }
 
+  input[type=radio]:checked + label {
+    border-color: var(--sv-purple) !important;
+    background: rgba(107,114,128,.18) !important;
+    box-shadow: 0 0 0 3px rgba(107,114,128,.15);
+  }
+  .lim-edit-label:hover { border-color: rgba(251,146,60,.4) !important; color: rgba(255,255,255,.8) !important; }
+  input[type=checkbox]:checked + .lim-edit-label {
+    border-color: #f97316 !important;
+    background: rgba(249,115,22,.15) !important;
+    color: #fdba74 !important;
+    box-shadow: 0 0 0 2px rgba(249,115,22,.2);
+  }
+
   /* ── Modal de recorte ───────────────────────────────── */
   .crop-overlay {
     display: none; position: fixed; inset: 0; z-index: 9999;
@@ -237,6 +250,53 @@
             <span class="input-unit-badge">cm</span>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Objetivo -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-bullseye"></i> Mi objetivo</div>
+      <div class="objetivo-group" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+        {% for val, label in profile_form.objetivo.field.choices %}{% if val %}
+        <div>
+          <input type="radio" name="objetivo" value="{{ val }}" id="obj_{{ val }}"
+                 style="display:none;" {% if profile_form.objetivo.value == val %}checked{% endif %}>
+          <label for="obj_{{ val }}"
+                 style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;
+                        border-radius:14px;border:1.5px solid rgba(255,255,255,.1);
+                        background:rgba(255,255,255,.04);cursor:pointer;transition:all .2s;text-align:center;">
+            <span style="font-size:11px;font-weight:800;color:rgba(255,255,255,.85);">
+              {% if val == 'bajar_peso' %}🔥{% elif val == 'mantener_peso' %}⚖️{% elif val == 'ganar_musculo' %}💪{% elif val == 'mejorar_resistencia' %}🏃{% elif val == 'mejorar_flexibilidad' %}🧘{% elif val == 'rendimiento' %}🏆{% endif %}
+              {{ label }}
+            </span>
+          </label>
+        </div>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+
+    <!-- Limitaciones / Salud -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-heart-pulse-fill"></i> Condiciones de salud</div>
+      <p style="color:rgba(255,255,255,.4);font-size:13px;margin-bottom:16px;">
+        Selecciona las condiciones que aplican. Esta información nos ayuda a personalizar tu plan.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        {% for val, label in profile_form.limitaciones.field.choices %}
+        <div>
+          <input type="checkbox" name="limitaciones" value="{{ val }}" id="lim_e_{{ val }}"
+                 style="display:none;"
+                 {% if val in profile_form.limitaciones.value %}checked{% endif %}>
+          <label for="lim_e_{{ val }}"
+                 style="display:flex;align-items:center;gap:8px;padding:10px 12px;
+                        border-radius:12px;border:1.5px solid rgba(255,255,255,.1);
+                        background:rgba(255,255,255,.04);font-size:12px;font-weight:700;
+                        color:rgba(255,255,255,.5);cursor:pointer;transition:all .2s;"
+                 class="lim-edit-label">
+            {{ label }}
+          </label>
+        </div>
+        {% endfor %}
       </div>
     </div>
 
