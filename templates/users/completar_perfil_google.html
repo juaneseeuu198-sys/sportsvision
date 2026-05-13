@@ -394,11 +394,10 @@
     goToStep(1);
   {% endif %}
 
-  document.getElementById('btn-crear').addEventListener('click', function() {
-    const acepto = document.getElementById('acepto_terminos');
-    if (acepto && !acepto.checked) return; // deja que el servidor valide
-    this.disabled = true;
-    this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Guardando...';
+  document.getElementById('reg-form').addEventListener('submit', function() {
+    const btn = document.getElementById('btn-crear');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Guardando...';
   });
 
   document.getElementById('btn-next1').addEventListener('click', () => {

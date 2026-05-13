@@ -174,6 +174,19 @@ def registro(request):
 @login_required
 def bienvenido(request):
     """Página de bienvenida con los siguientes pasos tras verificar el correo."""
+    # Guardar foto de Google si quedó pendiente en sesión
+    picture_url = request.session.pop('google_picture_url', None)
+    if picture_url:
+        try:
+            profile, _ = UserProfile.objects.get_or_create(user=request.user)
+            if not profile.avatar_data:
+                img_resp = http_requests.get(picture_url, timeout=8)
+                if img_resp.ok:
+                    b64 = base64.b64encode(img_resp.content).decode()
+                    profile.avatar_data = f'data:image/jpeg;base64,{b64}'
+                    profile.save(update_fields=['avatar_data'])
+        except Exception:
+            pass
     return render(request, 'users/bienvenido.html')
 
 
