@@ -19,6 +19,10 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
+    <!-- Instalación de APKs para auto-update -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -46,6 +50,17 @@
                 <data android:scheme="sportsvision" android:host="auth" />
             </intent-filter>
         </activity>
+
+        <!-- FileProvider para instalar APK descargado -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.sportsvision.app.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

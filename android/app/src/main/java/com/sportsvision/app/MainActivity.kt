@@ -2,12 +2,18 @@ package com.sportsvision.app
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.view.Gravity
 import android.view.ViewGroup
 import android.webkit.*
@@ -19,6 +25,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import org.json.JSONObject
+import java.io.File
+import java.net.URL
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,7 +40,10 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val BASE_URL = "https://web-production-f0f4b.up.railway.app"
         private const val GOOGLE_LOGIN_PATH = "/usuarios/auth/google/"
+        private const val CURRENT_VERSION_CODE = 2  // Cambiar al compilar nueva versión
     }
+
+    private var downloadId: Long = -1
 
     private val permisos: Array<String>
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -194,6 +208,9 @@ class MainActivity : AppCompatActivity() {
         // Manejar deep link si la app se abrió desde sportsvision://auth?token=...
         intent?.data?.let { manejarDeepLink(it) } ?: webView.loadUrl(BASE_URL)
 
+        // Verificar actualizaciones al iniciar
+        verificarActualizacion()
+
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (webView.canGoBack()) {
@@ -225,6 +242,75 @@ class MainActivity : AppCompatActivity() {
         } else {
             webView.loadUrl(BASE_URL)
         }
+    }
+
+    private fun verificarActualizacion() {
+        thread {
+            try {
+                val json = URL("$BASE_URL/api/version/").readText()
+                val obj = JSONObject(json)
+                val serverVersion = obj.getInt("version_code")
+                val versionName = obj.getString("version_name")
+                val apkUrl = obj.getString("apk_url")
+
+                if (serverVersion > CURRENT_VERSION_CODE) {
+                    runOnUiThread {
+                        AlertDialog.Builder(this)
+                            .setTitle("Nueva versión disponible")
+                            .setMessage("Versión $versionName disponible. ¿Deseas actualizar ahora?")
+                            .setPositiveButton("Actualizar") { _, _ ->
+                                descargarEInstalar(apkUrl, versionName)
+                            }
+                            .setNegativeButton("Después", null)
+                            .show()
+                    }
+                }
+            } catch (e: Exception) {
+                // Sin conexión o error — ignorar
+            }
+        }
+    }
+
+    private fun descargarEInstalar(apkUrl: String, versionName: String) {
+        val apkFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "SportsVision-$versionName.apk")
+        if (apkFile.exists()) apkFile.delete()
+
+        val request = DownloadManager.Request(Uri.parse(apkUrl)).apply {
+            setTitle("SportsVision $versionName")
+            setDescription("Descargando actualización...")
+            setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            setDestinationUri(Uri.fromFile(apkFile))
+        }
+
+        val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        downloadId = dm.enqueue(request)
+
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context, intent: Intent) {
+                val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (id == downloadId) {
+                    unregisterReceiver(this)
+                    instalarApk(apkFile)
+                }
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        }
+        Toast.makeText(this, "Descargando actualización...", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun instalarApk(apkFile: File) {
+        val uri = FileProvider.getUriForFile(this, "com.sportsvision.app.fileprovider", apkFile)
+        val install = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        startActivity(install)
     }
 
     private fun abrirCustomTabs(url: String) {

@@ -4,7 +4,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
+from django.http import JsonResponse
 from apps.users import views as user_views
+
+
+def app_version(request):
+    return JsonResponse({
+        'version_code': settings.APP_VERSION_CODE,
+        'version_name': settings.APP_VERSION_NAME,
+        'apk_url': f"{settings.FRONTEND_URL}/static/app/SportsVision.apk",
+    })
 
 urlpatterns = [
     # ── PWA ───────────────────────────────────────────────────────────────────
@@ -17,6 +26,7 @@ urlpatterns = [
         content_type='application/javascript',
     ), name='sw'),
 
+    path('api/version/', app_version, name='app_version'),
     path('i18n/', include('django.conf.urls.i18n')),  # set_language
     path('admin/', admin.site.urls),
     path('', user_views.landing, name='landing'),

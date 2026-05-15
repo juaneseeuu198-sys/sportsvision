@@ -136,6 +136,10 @@ LOGOUT_REDIRECT_URL = '/'
 # En desarrollo: muestra el email en consola
 # En producción: configura las variables de entorno para Gmail u otro servidor
 
+# ── Versión de la app Android ──────────────────────────────────────────────────
+APP_VERSION_CODE = 2  # Incrementar cada vez que se suba un nuevo APK
+APP_VERSION_NAME = '1.1'
+
 BREVO_API_KEY     = os.environ.get('BREVO_API_KEY', '')
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 GOOGLE_CLIENT_ID     = os.environ.get('GOOGLE_CLIENT_ID', '')
