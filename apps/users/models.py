@@ -152,10 +152,12 @@ class SolicitudProfesional(models.Model):
 
 class MobileLoginToken(models.Model):
     """Token de un solo uso para transferir la sesión de Google OAuth al WebView de la app."""
-    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mobile_tokens')
-    token      = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_used    = models.BooleanField(default=False)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mobile_tokens')
+    token       = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at  = models.DateTimeField(auto_now_add=True)
+    is_used     = models.BooleanField(default=False)
+    is_new_user = models.BooleanField(default=False)
+    picture_url = models.URLField(blank=True, default='')
 
     def is_expired(self):
         return timezone.now() > self.created_at + timezone.timedelta(seconds=120)

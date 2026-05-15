@@ -1175,10 +1175,13 @@ def google_callback(request):
 
     if is_mobile:
         # Flujo app móvil: generar token de un solo uso y redirigir al deep link
-        mobile_token = MobileLoginToken.objects.create(user=user)
+        mobile_token = MobileLoginToken.objects.create(
+            user=user,
+            is_new_user=created,
+            picture_url=picture or '',
+        )
         if created:
             request.session['google_picture_url'] = picture
-            request.session['completar_perfil_google_mobile'] = True
             request.session.save()
         html = f"""<!DOCTYPE html><html><head><meta charset="utf-8">
         <meta http-equiv="refresh" content="2;url=sportsvision://auth?token={mobile_token.token}">
@@ -1217,12 +1220,9 @@ def mobile_login(request):
             messages.error(request, 'Tu cuenta ha sido baneada.')
             return redirect('login')
         login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
-        # Transferir datos de sesión si era registro nuevo
-        picture_url = request.session.get('google_picture_url', '')
-        is_new = request.session.get('completar_perfil_google_mobile', False)
-        if picture_url:
-            request.session['google_picture_url'] = picture_url
-        if is_new:
+        if mobile_token.picture_url:
+            request.session['google_picture_url'] = mobile_token.picture_url
+        if mobile_token.is_new_user:
             return redirect('completar_perfil_google')
         return redirect('dashboard')
     except Exception:

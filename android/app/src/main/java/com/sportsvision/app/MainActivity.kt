@@ -272,14 +272,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun descargarEInstalar(apkUrl: String, versionName: String) {
-        val apkFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "SportsVision-$versionName.apk")
-        if (apkFile.exists()) apkFile.delete()
+        val fileName = "SportsVision-$versionName.apk"
 
         val request = DownloadManager.Request(Uri.parse(apkUrl)).apply {
             setTitle("SportsVision $versionName")
             setDescription("Descargando actualización...")
             setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            setDestinationUri(Uri.fromFile(apkFile))
+            setDestinationInExternalFilesDir(
+                this@MainActivity, Environment.DIRECTORY_DOWNLOADS, fileName
+            )
         }
 
         val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -288,10 +289,12 @@ class MainActivity : AppCompatActivity() {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context, intent: Intent) {
                 val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                if (id == downloadId) {
-                    unregisterReceiver(this)
-                    instalarApk(apkFile)
-                }
+                if (id != downloadId) return
+                try { unregisterReceiver(this) } catch (_: Exception) {}
+                val apkFile = File(
+                    getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName
+                )
+                if (apkFile.exists()) instalarApk(apkFile)
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
