@@ -4,6 +4,28 @@ from django.contrib.auth.models import User
 from .models import UserProfile
 
 
+GENERO_CHOICES = [
+    ('M', 'Masculino'),
+    ('F', 'Femenino'),
+    ('O', 'Otro'),
+]
+
+LIMITACION_CHOICES = [
+    ('asma',              'Asma o problemas respiratorios'),
+    ('cardiaco',          'Problemas cardíacos'),
+    ('hipertension',      'Hipertensión'),
+    ('diabetes',          'Diabetes'),
+    ('lesion_muscular',   'Lesión muscular'),
+    ('lesion_rodilla',    'Lesión de rodilla'),
+    ('lesion_espalda',    'Lesión de espalda / columna'),
+    ('lesion_hombro',     'Lesión de hombro'),
+    ('articulacion',      'Articulación con riesgo'),
+    ('movilidad_reducida','Movilidad reducida'),
+    ('embarazo',          'Embarazo / postparto'),
+    ('otra',              'Otra condición'),
+]
+
+
 class EditarUsuarioForm(forms.ModelForm):
     class Meta:
         model = User
@@ -35,28 +57,6 @@ class EditarPerfilForm(forms.ModelForm):
         # Inicializar limitaciones desde el JSONField del perfil
         if self.instance and self.instance.pk:
             self.initial['limitaciones'] = self.instance.limitaciones or []
-
-
-GENERO_CHOICES = [
-    ('M', 'Masculino'),
-    ('F', 'Femenino'),
-    ('O', 'Otro'),
-]
-
-LIMITACION_CHOICES = [
-    ('asma',              'Asma o problemas respiratorios'),
-    ('cardiaco',          'Problemas cardíacos'),
-    ('hipertension',      'Hipertensión'),
-    ('diabetes',          'Diabetes'),
-    ('lesion_muscular',   'Lesión muscular'),
-    ('lesion_rodilla',    'Lesión de rodilla'),
-    ('lesion_espalda',    'Lesión de espalda / columna'),
-    ('lesion_hombro',     'Lesión de hombro'),
-    ('articulacion',      'Articulación con riesgo'),
-    ('movilidad_reducida','Movilidad reducida'),
-    ('embarazo',          'Embarazo / postparto'),
-    ('otra',              'Otra condición'),
-]
 
 
 class RegistroForm(UserCreationForm):

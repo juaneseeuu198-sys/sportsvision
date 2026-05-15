@@ -12,7 +12,7 @@ from datetime import timedelta
 import random
 import requests as http_requests
 from .forms import RegistroForm, EditarUsuarioForm, EditarPerfilForm, CompletarPerfilGoogleForm
-from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailPreVerification
+from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailPreVerification, MobileLoginToken
 
 
 def landing(request):
@@ -1054,12 +1054,16 @@ def google_login(request):
 
     redirect_uri = settings.FRONTEND_URL.rstrip('/') + '/usuarios/auth/google/callback/'
 
+    # Incluir indicador de app móvil en el state
+    from_app = request.GET.get('from') == 'app'
+    state_value = f"{state}:mobile" if from_app else state
+
     params = urllib.parse.urlencode({
         'client_id':     client_id,
         'redirect_uri':  redirect_uri,
         'response_type': 'code',
         'scope':         'openid email profile',
-        'state':         state,
+        'state':         state_value,
         'access_type':   'online',
         'prompt':        'select_account',
     })
@@ -1069,8 +1073,10 @@ def google_login(request):
 @csrf_exempt
 def google_callback(request):
     """Callback que recibe el código de autorización de Google."""
-    # Verificar state anti-CSRF
-    state = request.GET.get('state', '')
+    # Verificar state anti-CSRF (puede venir con sufijo :mobile)
+    state_raw = request.GET.get('state', '')
+    is_mobile = state_raw.endswith(':mobile')
+    state = state_raw[:-7] if is_mobile else state_raw
     if state != request.session.get('google_state', ''):
         messages.error(request, 'Error de seguridad en la autenticación. Intenta de nuevo.')
         return redirect('login')
@@ -1166,11 +1172,62 @@ def google_callback(request):
         pass
 
     login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
+
+    if is_mobile:
+        # Flujo app móvil: generar token de un solo uso y redirigir al deep link
+        mobile_token = MobileLoginToken.objects.create(user=user)
+        if created:
+            request.session['google_picture_url'] = picture
+            request.session['completar_perfil_google_mobile'] = True
+            request.session.save()
+        html = f"""<!DOCTYPE html><html><head><meta charset="utf-8">
+        <meta http-equiv="refresh" content="2;url=sportsvision://auth?token={mobile_token.token}">
+        </head><body style="background:#0b0c18;color:#fff;font-family:sans-serif;
+        display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;">
+        <div>
+          <div style="font-size:48px;margin-bottom:16px;">✅</div>
+          <h2 style="color:#00d4aa;">¡Autenticado!</h2>
+          <p style="color:#aaa;">Volviendo a SportsVision...</p>
+          <script>window.location='sportsvision://auth?token={mobile_token.token}';</script>
+        </div></body></html>"""
+        from django.http import HttpResponse
+        return HttpResponse(html)
+
     if created:
         request.session['google_picture_url'] = picture
         request.session.save()
         return redirect('completar_perfil_google')
     return redirect('dashboard')
+
+
+@csrf_exempt
+def mobile_login(request):
+    """Valida el token de un solo uso y crea sesión en el WebView de la app."""
+    token_str = request.GET.get('token', '')
+    try:
+        import uuid as uuid_module
+        token_uuid = uuid_module.UUID(token_str)
+        mobile_token = MobileLoginToken.objects.get(token=token_uuid, is_used=False)
+        if mobile_token.is_expired():
+            raise Exception('expired')
+        mobile_token.is_used = True
+        mobile_token.save()
+        user = mobile_token.user
+        if not user.is_active:
+            messages.error(request, 'Tu cuenta ha sido baneada.')
+            return redirect('login')
+        login(request, user, backend='apps.users.backends.EmailOrUsernameBackend')
+        # Transferir datos de sesión si era registro nuevo
+        picture_url = request.session.get('google_picture_url', '')
+        is_new = request.session.get('completar_perfil_google_mobile', False)
+        if picture_url:
+            request.session['google_picture_url'] = picture_url
+        if is_new:
+            return redirect('completar_perfil_google')
+        return redirect('dashboard')
+    except Exception:
+        messages.error(request, 'El enlace de acceso expiró. Inicia sesión de nuevo.')
+        return redirect('login')
 
 
 @login_required

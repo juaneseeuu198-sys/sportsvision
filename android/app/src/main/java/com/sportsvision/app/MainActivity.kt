@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
@@ -24,6 +25,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var loader: ProgressBar
     private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
+
+    companion object {
+        private const val BASE_URL = "https://web-production-f0f4b.up.railway.app"
+        private const val GOOGLE_LOGIN_PATH = "/usuarios/auth/google/"
+    }
 
     private val permisos: Array<String>
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -62,7 +68,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Layout raíz con fondo oscuro
         val root = FrameLayout(this).apply {
             setBackgroundColor(Color.parseColor("#0b0c18"))
             layoutParams = ViewGroup.LayoutParams(
@@ -71,7 +76,6 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        // WebView
         webView = WebView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -88,14 +92,11 @@ class MainActivity : AppCompatActivity() {
                 setSupportZoom(false)
                 builtInZoomControls    = false
                 displayZoomControls    = false
-                // Siempre descarga HTML/CSS fresco — evita caché con URLs de CSS viejas (con hash)
                 cacheMode              = android.webkit.WebSettings.LOAD_NO_CACHE
             }
-            // Limpia caché al iniciar para que nunca use HTML antiguo con URLs de CSS obsoletas
             clearCache(true)
         }
 
-        // Spinner de carga centrado
         loader = ProgressBar(this).apply {
             isIndeterminate = true
             indeterminateTintList = android.content.res.ColorStateList.valueOf(
@@ -108,7 +109,6 @@ class MainActivity : AppCompatActivity() {
         root.addView(loader)
         setContentView(root)
 
-        // Habilitar cookies — necesario para que Django valide el token CSRF en formularios POST
         CookieManager.getInstance().apply {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(webView, true)
@@ -120,9 +120,23 @@ class MainActivity : AppCompatActivity() {
                 request: WebResourceRequest
             ): Boolean {
                 val url = request.url.toString()
-                return if (url.startsWith("https://web-production-f0f4b.up.railway.app")) {
+
+                // Google OAuth → abrir en Chrome Custom Tabs con flag ?from=app
+                if (url.startsWith("$BASE_URL$GOOGLE_LOGIN_PATH") ||
+                    url.contains("accounts.google.com")) {
+                    val targetUrl = if (url.startsWith("$BASE_URL$GOOGLE_LOGIN_PATH") &&
+                                        !url.contains("from=app")) {
+                        if (url.contains("?")) "$url&from=app" else "$url?from=app"
+                    } else url
+                    abrirCustomTabs(targetUrl)
+                    return true
+                }
+
+                // URLs de nuestra app → cargar en WebView
+                return if (url.startsWith(BASE_URL)) {
                     false
                 } else {
+                    // Otros enlaces externos → navegador del sistema
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     true
                 }
@@ -152,7 +166,7 @@ class MainActivity : AppCompatActivity() {
                         No se pudo conectar a SportsVision.<br>
                         Verifica tu conexión a internet.
                       </p>
-                      <button onclick="window.location.href='https://web-production-f0f4b.up.railway.app'"
+                      <button onclick="window.location.href='$BASE_URL'"
                         style="margin-top:20px;background:#7b2ff7;color:#fff;border:none;
                                border-radius:12px;padding:14px 32px;font-size:16px;cursor:pointer;">
                         Reintentar
@@ -177,9 +191,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        webView.loadUrl("https://web-production-f0f4b.up.railway.app")
+        // Manejar deep link si la app se abrió desde sportsvision://auth?token=...
+        intent?.data?.let { manejarDeepLink(it) } ?: webView.loadUrl(BASE_URL)
 
-        // Botón atrás del sistema (reemplaza onBackPressed() obsoleto en API 33+)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (webView.canGoBack()) {
@@ -190,6 +204,34 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    // Recibe deep links cuando la app ya está abierta (launchMode=singleTask)
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.data?.let { manejarDeepLink(it) }
+    }
+
+    private fun manejarDeepLink(uri: Uri) {
+        if (uri.scheme == "sportsvision" && uri.host == "auth") {
+            val token = uri.getQueryParameter("token")
+            if (!token.isNullOrEmpty()) {
+                // Cargar la URL de validación del token directamente en el WebView
+                loader.visibility = android.view.View.VISIBLE
+                webView.loadUrl("$BASE_URL/usuarios/auth/mobile/?token=$token")
+            } else {
+                webView.loadUrl(BASE_URL)
+            }
+        } else {
+            webView.loadUrl(BASE_URL)
+        }
+    }
+
+    private fun abrirCustomTabs(url: String) {
+        val customTabsIntent = CustomTabsIntent.Builder()
+            .setShowTitle(true)
+            .build()
+        customTabsIntent.launchUrl(this, Uri.parse(url))
     }
 
     private fun solicitarPermisosYAbrir() {

@@ -150,6 +150,23 @@ class SolicitudProfesional(models.Model):
         return f"Solicitud de {self.usuario.username} ({self.estado})"
 
 
+class MobileLoginToken(models.Model):
+    """Token de un solo uso para transferir la sesión de Google OAuth al WebView de la app."""
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mobile_tokens')
+    token      = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used    = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timezone.timedelta(seconds=120)
+
+    class Meta:
+        verbose_name = "Token de login móvil"
+
+    def __str__(self):
+        return f"MobileToken de {self.user.username}"
+
+
 class EmailPreVerification(models.Model):
     """Verifica el email ANTES de crear la cuenta (paso 1 del registro)."""
     email      = models.EmailField()
