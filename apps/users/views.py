@@ -1007,6 +1007,27 @@ def terminos_condiciones(request):
     return render(request, 'users/terminos_condiciones.html')
 
 
+@login_required
+def desactivar_cuenta(request):
+    if request.method == 'POST':
+        user = request.user
+        logout(request)
+        user.is_active = False
+        user.save()
+        messages.info(request, 'Tu cuenta ha sido desactivada. Escríbenos para reactivarla.')
+    return redirect('landing')
+
+
+@login_required
+def eliminar_cuenta(request):
+    if request.method == 'POST':
+        user = request.user
+        logout(request)
+        user.delete()
+        messages.success(request, 'Tu cuenta ha sido eliminada correctamente.')
+    return redirect('landing')
+
+
 # ─── Google OAuth ──────────────────────────────────────────────────────────────
 
 import urllib.parse
