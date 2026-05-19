@@ -176,7 +176,7 @@
               <i class="bi bi-play-fill"></i> Iniciar
             </a>
             <button type="button" class="btn-eliminar" title="Eliminar"
-                    onclick="confirmarEliminar('{{ rutina.id }}', '{{ rutina.nombre|escapejs }}')">
+                    onclick="confirmarEliminar('{{ rutina.id }}', '{{ rutina.nombre|escapejs }}', this)">
               <i class="bi bi-trash3"></i>
             </button>
           </div>
@@ -212,15 +212,13 @@
                      background:transparent;color:rgba(255,255,255,.6);font-weight:700;cursor:pointer;">
         Cancelar
       </button>
-      <form id="form-eliminar-rutina" method="post" style="flex:1;">
-        {% csrf_token %}
-        <button type="submit"
-                style="width:100%;padding:11px;border-radius:12px;border:none;
-                       background:linear-gradient(135deg,#ef4444,#b91c1c);
-                       color:#fff;font-weight:800;cursor:pointer;">
-          Sí, eliminar
-        </button>
-      </form>
+      <button id="btn-confirmar-eliminar" onclick="ejecutarEliminar()"
+              style="flex:1;padding:11px;border-radius:12px;border:none;
+                     background:linear-gradient(135deg,#ef4444,#b91c1c);
+                     color:#fff;font-weight:800;cursor:pointer;">
+        Sí, eliminar
+      </button>
+      <input type="hidden" id="csrf-eliminar" value="{{ csrf_token }}">
     </div>
   </div>
 </div>
@@ -229,14 +227,70 @@
 
 {% block extra_js %}
 <script>
-function confirmarEliminar(id, nombre) {
+var _eliminarId   = null;
+var _eliminarCard = null;
+
+function confirmarEliminar(id, nombre, triggerBtn) {
+  _eliminarId   = id;
+  _eliminarCard = triggerBtn ? triggerBtn.closest('.rutina-item') : null;
   document.getElementById('modal-rutina-nombre').textContent = '"' + nombre + '"';
-  document.getElementById('form-eliminar-rutina').action = '/rutinas/eliminar/' + id + '/';
   document.getElementById('modal-eliminar-rutina').style.display = 'flex';
 }
 
+function cerrarModal() {
+  document.getElementById('modal-eliminar-rutina').style.display = 'none';
+  _eliminarId   = null;
+  _eliminarCard = null;
+}
+
+function ejecutarEliminar() {
+  if (!_eliminarId) return;
+
+  var btn = document.getElementById('btn-confirmar-eliminar');
+  btn.disabled = true;
+  btn.textContent = 'Eliminando…';
+
+  fetch('/rutinas/eliminar/' + _eliminarId + '/', {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': document.getElementById('csrf-eliminar').value,
+    },
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (!data.ok) throw new Error('Error del servidor');
+
+    cerrarModal();
+
+    // Animar y sacar la tarjeta del DOM
+    if (_eliminarCard) {
+      _eliminarCard.style.transition = 'opacity .3s, transform .3s';
+      _eliminarCard.style.opacity = '0';
+      _eliminarCard.style.transform = 'scale(.92)';
+      setTimeout(function() {
+        _eliminarCard.remove();
+        // Si no quedan rutinas, mostrar estado vacío
+        if (!document.querySelector('.rutina-item')) {
+          document.getElementById('lista-rutinas').innerHTML =
+            '<div class="col-12"><div class="sv-panel text-center py-5">' +
+            '<i class="bi bi-clipboard-x" style="font-size:3rem;color:var(--sv-purple-light);"></i>' +
+            '<p class="mt-3" style="color:var(--sv-purple-light);">No tienes rutinas guardadas.</p>' +
+            '<a href="/rutinas/nueva/paso1/" class="btn btn-sv-sm mt-2"><i class="bi bi-plus-lg"></i> Crear rutina</a>' +
+            '</div></div>';
+        }
+      }, 320);
+    }
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.textContent = 'Sí, eliminar';
+    alert('Ocurrió un error. Inténtalo de nuevo.');
+  });
+}
+
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') document.getElementById('modal-eliminar-rutina').style.display = 'none';
+  if (e.key === 'Escape') cerrarModal();
 });
 
 function filtrarRutinas(q) {

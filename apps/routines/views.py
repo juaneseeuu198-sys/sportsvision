@@ -851,8 +851,10 @@ def plan_semanal(request):
 
 @login_required
 def eliminar_rutina(request, rutina_id):
-    from django.contrib import messages
     rutina = get_object_or_404(Rutina, id=rutina_id, usuario=request.user)
-    rutina.delete()
-    messages.success(request, 'Rutina eliminada correctamente.')
-    return redirect('dashboard')
+    if request.method == 'POST':
+        rutina.delete()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'ok': True})
+        messages.success(request, 'Rutina eliminada correctamente.')
+    return redirect('mis_rutinas')

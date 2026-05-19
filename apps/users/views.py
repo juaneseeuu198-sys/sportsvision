@@ -558,7 +558,7 @@ def admin_ver_usuario(request, user_id):
         return redirect('dashboard')
 
     cliente = get_object_or_404(User, id=user_id)
-    profile = cliente.profile
+    profile, _ = UserProfile.objects.get_or_create(user=cliente)
 
     from django.db.models import Prefetch
     from apps.routines.models import Entrenamiento, SerieEntrenamiento, Rutina, EjercicioRutina, PlanDia

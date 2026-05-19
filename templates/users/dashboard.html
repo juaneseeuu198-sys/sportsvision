@@ -354,10 +354,10 @@ html.light-mode .dash-empty p           { color: #64748b; }
         <a href="{% url 'iniciar_entrenamiento' rutina.id %}" class="btn-rcard btn-rcard-play">
           <i class="bi bi-play-fill"></i> Iniciar
         </a>
-        <a href="{% url 'eliminar_rutina' rutina.id %}" class="btn-rcard btn-rcard-del"
-           onclick="return confirm('¿Eliminar esta rutina?')">
+        <button type="button" class="btn-rcard btn-rcard-del"
+                onclick="dashEliminar({{ rutina.id }}, '{{ rutina.nombre|escapejs }}', this)">
           <i class="bi bi-trash3"></i>
-        </a>
+        </button>
       </div>
     </div>
     {% endfor %}
@@ -373,4 +373,86 @@ html.light-mode .dash-empty p           { color: #64748b; }
   {% endif %}
 
 </div>
+
+<!-- Modal eliminar rutina (dashboard) -->
+<div id="dash-modal-del" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:rgba(0,0,0,.78);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--sv-bg-card);border:1.5px solid rgba(248,113,113,.3);
+              border-radius:20px;padding:28px 24px;max-width:360px;width:100%;text-align:center;">
+    <div style="font-size:34px;margin-bottom:10px;">🗑️</div>
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f87171;margin-bottom:6px;">
+      ¿Eliminar rutina?
+    </h3>
+    <p id="dash-del-nombre" style="color:rgba(255,255,255,.55);font-size:13px;margin-bottom:18px;"></p>
+    <div style="display:flex;gap:10px;">
+      <button onclick="dashCerrarModal()"
+              style="flex:1;padding:10px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);
+                     background:transparent;color:rgba(255,255,255,.6);font-weight:700;cursor:pointer;">
+        Cancelar
+      </button>
+      <button id="dash-btn-confirmar" onclick="dashEjecutar()"
+              style="flex:1;padding:10px;border-radius:12px;border:none;
+                     background:linear-gradient(135deg,#ef4444,#b91c1c);
+                     color:#fff;font-weight:800;cursor:pointer;">
+        Sí, eliminar
+      </button>
+    </div>
+  </div>
+</div>
+<input type="hidden" id="dash-csrf" value="{{ csrf_token }}">
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var _dashId   = null;
+var _dashCard = null;
+
+function dashEliminar(id, nombre, btn) {
+  _dashId   = id;
+  _dashCard = btn ? btn.closest('.rutina-card2') : null;
+  document.getElementById('dash-del-nombre').textContent = '"' + nombre + '"';
+  document.getElementById('dash-modal-del').style.display = 'flex';
+}
+function dashCerrarModal() {
+  document.getElementById('dash-modal-del').style.display = 'none';
+}
+function dashEjecutar() {
+  if (!_dashId) return;
+  var card  = _dashCard;
+  var btn   = document.getElementById('dash-btn-confirmar');
+  btn.disabled    = true;
+  btn.textContent = 'Eliminando…';
+
+  fetch('/rutinas/eliminar/' + _dashId + '/', {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': document.getElementById('dash-csrf').value,
+    },
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.ok) throw new Error();
+    dashCerrarModal();
+    if (card) {
+      card.style.transition = 'opacity .28s, transform .28s';
+      card.style.opacity    = '0';
+      card.style.transform  = 'scale(.92)';
+      setTimeout(function() { card.remove(); }, 300);
+    }
+    btn.disabled    = false;
+    btn.textContent = 'Sí, eliminar';
+  })
+  .catch(function() {
+    btn.disabled    = false;
+    btn.textContent = 'Sí, eliminar';
+    dashCerrarModal();
+    alert('No se pudo eliminar. Inténtalo de nuevo.');
+  });
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') dashCerrarModal();
+});
+</script>
 {% endblock %}
