@@ -10,6 +10,10 @@ from django.conf import settings
 from django.http import JsonResponse
 from datetime import timedelta
 import random
+import uuid
+import base64
+import secrets
+import urllib.parse
 import requests as http_requests
 from .forms import RegistroForm, EditarUsuarioForm, EditarPerfilForm, CompletarPerfilGoogleForm
 from .models import UserProfile, RelacionProfesional, SolicitudProfesional, EmailPreVerification, MobileLoginToken
@@ -528,13 +532,13 @@ def revisar_solicitud(request, solicitud_id):
             solicitud.save()
 
             # Actualizar el perfil del usuario a profesional
-            profile = solicitud.usuario.profile
-            profile.rol         = 'profesional'
+            profile, _ = UserProfile.objects.get_or_create(user=solicitud.usuario)
+            profile.rol          = 'profesional'
             profile.especialidad = solicitud.especialidad
             if not profile.codigo_pro:
                 profile.generar_codigo()
             else:
-                profile.save()
+                profile.save(update_fields=['rol', 'especialidad'])
 
             messages.success(request,
                 f'✅ {solicitud.usuario.username} ahora es profesional. '
@@ -1030,10 +1034,6 @@ def eliminar_cuenta(request):
 
 # ─── Google OAuth ──────────────────────────────────────────────────────────────
 
-import urllib.parse
-import secrets
-import base64
-
 _GOOGLE_AUTH_URL     = 'https://accounts.google.com/o/oauth2/v2/auth'
 _GOOGLE_TOKEN_URL    = 'https://oauth2.googleapis.com/token'
 _GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
@@ -1208,8 +1208,7 @@ def mobile_login(request):
     """Valida el token de un solo uso y crea sesión en el WebView de la app."""
     token_str = request.GET.get('token', '')
     try:
-        import uuid as uuid_module
-        token_uuid = uuid_module.UUID(token_str)
+        token_uuid = uuid.UUID(token_str)
         mobile_token = MobileLoginToken.objects.get(token=token_uuid, is_used=False)
         if mobile_token.is_expired():
             raise Exception('expired')
