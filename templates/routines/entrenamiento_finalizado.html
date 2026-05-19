@@ -1,6 +1,28 @@
 {% extends 'base/base.html' %}
 {% block title %}Entrenamiento Completado{% endblock %}
 
+{% block extra_css %}
+<style>
+.finish-muscle-section {
+  margin-bottom: 20px;
+}
+.finish-muscle-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: 12px;
+}
+.finish-muscle-wrap {
+  display: flex;
+  justify-content: center;
+}
+/* Agrandar el mapa en la pantalla de finalización */
+.finish-muscle-wrap .mmap-svg { width: 100px; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="sv-page-content">
 <div class="finish-page">
@@ -39,6 +61,16 @@
         <div class="fsc-label">Reps totales</div>
       </div>
     </div>
+
+    <!-- Músculos trabajados -->
+    {% if muscle_slugs %}
+    <div class="finish-muscle-section">
+      <div class="finish-muscle-title">Músculos trabajados</div>
+      <div class="finish-muscle-wrap">
+        {% include 'partials/_muscle_map.html' with map_slugs=muscle_slugs %}
+      </div>
+    </div>
+    {% endif %}
 
     <!-- Exercise breakdown -->
     <div class="finish-summary-panel">

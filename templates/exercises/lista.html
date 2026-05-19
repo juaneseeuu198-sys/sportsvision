@@ -72,6 +72,11 @@
           <div class="sv-ex-media">
             {% if ex.imagen %}
               <img src="{{ ex.imagen.url }}" alt="{{ ex.nombre }}">
+            {% elif ex.grupo_muscular %}
+              <img src="{% static 'img/muscles/' %}{{ ex.grupo_muscular.slug }}.svg"
+                   alt="{{ ex.grupo_muscular.nombre }}"
+                   style="width:100%;height:100%;object-fit:contain;padding:18px;opacity:.75;"
+                   onerror="this.outerHTML='<div class=\'sv-ex-fallback\'><i class=\'bi bi-activity\'></i><span>{{ ex.grupo_muscular.nombre }}</span></div>'">
             {% else %}
               <div class="sv-ex-fallback">
                 <i class="bi bi-image"></i>

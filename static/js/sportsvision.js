@@ -134,6 +134,49 @@ document.querySelectorAll('.spin').forEach(el => {
   el.style.animation = 'spin 0.6s linear infinite';
 });
 
+// ---- MUSCLE MAP MINI — activador global ----
+(function () {
+  const MMAP_COLORS = {
+    pecho:        { fill: 'rgba(67,97,238,.18)',   stroke: '#4361ee' },
+    espalda:      { fill: 'rgba(0,212,170,.18)',   stroke: '#00d4aa' },
+    hombros:      { fill: 'rgba(249,115,22,.18)',  stroke: '#f97316' },
+    biceps:       { fill: 'rgba(156,163,175,.18)', stroke: '#9ca3af' },
+    triceps:      { fill: 'rgba(230,57,70,.18)',   stroke: '#e63946' },
+    abdomen:      { fill: 'rgba(244,162,97,.18)',  stroke: '#f4a261' },
+    piernas:      { fill: 'rgba(236,72,153,.18)',  stroke: '#ec4899' },
+    gluteos:      { fill: 'rgba(167,139,250,.18)', stroke: '#a78bfa' },
+    pantorrillas: { fill: 'rgba(34,211,238,.18)',  stroke: '#22d3ee' },
+    antebrazos:   { fill: 'rgba(134,239,172,.18)', stroke: '#86efac' },
+    core:         { fill: 'rgba(251,191,36,.18)',  stroke: '#fbbf24' },
+  };
+
+  function activateMuscleMap(container) {
+    var active = new Set(
+      (container.dataset.muscles || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+    container.querySelectorAll('[data-muscle]').forEach(function (el) {
+      var c = MMAP_COLORS[el.dataset.muscle];
+      if (c && active.has(el.dataset.muscle)) {
+        el.style.fill        = c.fill;
+        el.style.stroke      = c.stroke;
+        el.style.strokeWidth = '1.8';
+      } else {
+        el.style.fill        = 'rgba(255,255,255,0.04)';
+        el.style.stroke      = 'rgba(255,255,255,0.09)';
+        el.style.strokeWidth = '1';
+      }
+    });
+  }
+
+  function initAllMuscleMaps() {
+    document.querySelectorAll('.muscle-map-mini').forEach(activateMuscleMap);
+  }
+
+  document.addEventListener('DOMContentLoaded', initAllMuscleMaps);
+  // Exponer para activación dinámica si se añaden mapas después del load
+  window.activateMuscleMap = activateMuscleMap;
+})();
+
 // ---- INIT on DOMContentLoaded ----
 document.addEventListener('DOMContentLoaded', () => {
   initEquipCards();

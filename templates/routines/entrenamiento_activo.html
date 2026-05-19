@@ -1,4 +1,5 @@
 ﻿{% extends 'base/base.html' %}
+{% load static %}
 {% block title %}Entrenamiento — {{ ejercicio_actual.ejercicio.nombre }}{% endblock %}
 
 {% block extra_css %}
@@ -588,12 +589,10 @@ body.sv-body { background: #000 !important; }
           {% elif ej.ejercicio.imagen %}
             <img src="{{ ej.ejercicio.imagen.url }}" alt="">
           {% else %}
-            {% with s=ej.ejercicio.grupo_muscular.slug|default:"core" %}
-              {% if s == 'pecho' %}💪{% elif s == 'espalda' %}🏋️{% elif s == 'hombros' %}🔝
-              {% elif s == 'biceps' %}💪{% elif s == 'triceps' %}🦾{% elif s == 'piernas' %}🦵
-              {% elif s == 'gluteos' %}⚡{% elif s == 'abdomen' %}🎯{% elif s == 'core' %}🔥
-              {% elif s == 'cardio' %}❤️{% elif s == 'movilidad' %}🧘{% else %}🏋️{% endif %}
-            {% endwith %}
+            <img src="{% static 'img/muscles/' %}{{ ej.ejercicio.grupo_muscular.slug|default:'core' }}.svg"
+                 alt="{{ ej.ejercicio.grupo_muscular.nombre|default:'' }}"
+                 style="width:100%;height:100%;object-fit:contain;padding:6px;opacity:.75;"
+                 onerror="this.outerHTML='🏋️'">
           {% endif %}
         </div>
         <span class="ex-carousel-label">{{ ej.ejercicio.nombre|truncatechars:8 }}</span>
@@ -614,12 +613,10 @@ body.sv-body { background: #000 !important; }
       <img src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
     {% else %}
       <div class="ex-image-icon">
-        {% with s=ejercicio_actual.ejercicio.grupo_muscular.slug|default:"core" %}
-          {% if s == 'pecho' %}💪{% elif s == 'espalda' %}🏋️{% elif s == 'hombros' %}🔝
-          {% elif s == 'biceps' %}💪{% elif s == 'triceps' %}🦾{% elif s == 'piernas' %}🦵
-          {% elif s == 'gluteos' %}⚡{% elif s == 'abdomen' %}🎯{% elif s == 'core' %}🔥
-          {% elif s == 'cardio' %}❤️{% elif s == 'movilidad' %}🧘{% else %}🏋️{% endif %}
-        {% endwith %}
+        <img src="{% static 'img/muscles/' %}{{ ejercicio_actual.ejercicio.grupo_muscular.slug|default:'core' }}.svg"
+             alt="{{ ejercicio_actual.ejercicio.grupo_muscular.nombre|default:'' }}"
+             style="width:100%;max-height:220px;object-fit:contain;opacity:.65;filter:drop-shadow(0 0 24px rgba(255,255,255,.08));"
+             onerror="this.outerHTML='<span style=\'font-size:72px\'>🏋️</span>'">
       </div>
     {% endif %}
   </div>

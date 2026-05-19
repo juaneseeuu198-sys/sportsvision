@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
+  <!-- torso -->
+  <path d="M 55,30 L 145,30 L 155,52 L 152,190 L 128,202 L 100,205 L 72,202 L 48,190 L 45,52 Z"
+        fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.1)" stroke-width="1.5"/>
+  <!-- pecho hint -->
+  <polygon points="50,33 100,42 100,80 52,82" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+  <polygon points="100,42 150,33 148,82 100,80" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+  <!-- ABDOMEN 6-PACK -->
+  <!-- fila 1 -->
+  <rect x="72" y="86" width="22" height="22" rx="5" fill="rgba(244,162,97,.3)" stroke="#f4a261" stroke-width="1.8"/>
+  <rect x="106" y="86" width="22" height="22" rx="5" fill="rgba(244,162,97,.3)" stroke="#f4a261" stroke-width="1.8"/>
+  <!-- fila 2 -->
+  <rect x="72" y="112" width="22" height="22" rx="5" fill="rgba(244,162,97,.3)" stroke="#f4a261" stroke-width="1.8"/>
+  <rect x="106" y="112" width="22" height="22" rx="5" fill="rgba(244,162,97,.3)" stroke="#f4a261" stroke-width="1.8"/>
+  <!-- fila 3 -->
+  <rect x="72" y="138" width="22" height="22" rx="5" fill="rgba(244,162,97,.3)" stroke="#f4a261" stroke-width="1.8"/>
+  <rect x="106" y="138" width="22" height="22" rx="5" fill="rgba(244,162,97,.3)" stroke="#f4a261" stroke-width="1.8"/>
+  <!-- línea alba (centro) -->
+  <line x1="100" y1="84" x2="100" y2="162" stroke="#f4a261" stroke-width="1" opacity=".4"/>
+  <!-- label -->
+  <text x="100" y="228" text-anchor="middle" font-family="Barlow,sans-serif" font-size="18" font-weight="800" fill="#f4a261" opacity=".85">ABDOMEN</text>
+</svg>

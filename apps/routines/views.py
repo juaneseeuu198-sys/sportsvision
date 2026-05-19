@@ -539,14 +539,24 @@ def finalizar_entrenamiento(request, entrenamiento_id):
     entrenamiento.terminado_en = timezone.now()
     entrenamiento.save()
 
-    series = SerieEntrenamiento.objects.filter(entrenamiento=entrenamiento).select_related('ejercicio')
+    series = SerieEntrenamiento.objects.filter(
+        entrenamiento=entrenamiento
+    ).select_related('ejercicio__grupo_muscular')
     total_reps = sum(s.repeticiones or 0 for s in series)
     ejercicios_count = series.values('ejercicio').distinct().count()
+
+    muscle_slugs = ','.join(dict.fromkeys(
+        s.ejercicio.grupo_muscular.slug
+        for s in series
+        if s.ejercicio.grupo_muscular_id
+    ))
+
     return render(request, 'routines/entrenamiento_finalizado.html', {
         'entrenamiento': entrenamiento,
         'series': series,
         'total_reps': total_reps,
         'ejercicios_count': ejercicios_count,
+        'muscle_slugs': muscle_slugs,
     })
 
 

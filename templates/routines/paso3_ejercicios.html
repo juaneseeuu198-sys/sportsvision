@@ -1,4 +1,5 @@
 {% extends 'base/base.html' %}
+{% load static %}
 {% block title %}Agregar Ejercicio — SportsVision{% endblock %}
 
 {% block extra_css %}
@@ -454,7 +455,8 @@
     <div class="ae-thumb">
       {% if ej.gif %}<img src="{{ ej.gif.url }}" alt="{{ ej.nombre }}">
       {% elif ej.imagen %}<img src="{{ ej.imagen.url }}" alt="{{ ej.nombre }}">
-      {% else %}<span class="ae-thumb-placeholder"><i class="bi bi-person-fill"></i></span>
+      {% elif ej.grupo_muscular %}<img src="{% static 'img/muscles/' %}{{ ej.grupo_muscular.slug }}.svg" alt="{{ ej.grupo_muscular.nombre }}" style="width:100%;height:100%;object-fit:contain;padding:6px;opacity:.75;" onerror="this.outerHTML='<i class=\'bi bi-activity\' style=\'color:#6b7280;font-size:20px;\'></i>'">
+      {% else %}<span class="ae-thumb-placeholder"><i class="bi bi-activity" style="color:#6b7280;font-size:20px;"></i></span>
       {% endif %}
     </div>
     <div class="ae-exercise-info">
@@ -544,7 +546,7 @@
     <div class="ae-sheet-row" id="sg-{{ g.id }}" onclick="toggleGrupo({{ g.id }}, '{{ g.nombre }}', this)">
       <div class="ae-sheet-thumb">
         {% if g.imagen %}<img src="{{ g.imagen.url }}" alt="{{ g.nombre }}">
-        {% else %}<i class="bi bi-person-fill" style="color:#6b7280;font-size:20px;"></i>
+        {% else %}<img src="{% static 'img/muscles/' %}{{ g.slug }}.svg" alt="{{ g.nombre }}" style="width:100%;height:100%;object-fit:contain;padding:4px;opacity:.8;" onerror="this.outerHTML='<i class=\'bi bi-activity\' style=\'color:#6b7280;font-size:20px;\'></i>'">
         {% endif %}
       </div>
       <span class="ae-sheet-label">{{ g.nombre }}</span>

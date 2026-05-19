@@ -53,6 +53,13 @@
 
     .sv-main { transition: margin-left 0.3s ease; }
     .sv-layout.sidebar-collapsed .sv-main { margin-left: 0 !important; }
+
+    /* ── Muscle Map Mini — estilos globales ─────────────── */
+    .muscle-map-mini { display: inline-flex; }
+    .mmap-panels { display: flex; gap: 4px; align-items: flex-start; }
+    .mmap-svg { display: block; width: 62px; height: auto; overflow: visible; }
+    .mmap-sil { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.09); stroke-width: 1.5; }
+    .mmap-path { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.09); stroke-width: 1; transition: fill .2s, stroke .2s; }
   </style>
 
   {% block extra_css %}{% endblock %}
@@ -81,8 +88,15 @@
       </li>
 
       <li>
+        <a href="{% url 'mis_rutinas' %}"
+           class="{% if request.resolver_match.url_name == 'mis_rutinas' %}active{% endif %}">
+          <i class="bi bi-collection-fill"></i><span>{% trans "Mis Rutinas" %}</span>
+        </a>
+      </li>
+
+      <li>
         <a href="{% url 'paso3_ejercicios' %}"
-           class="{% if request.resolver_match.url_name in 'paso3_ejercicios mis_rutinas iniciar_entrenamiento finalizar_entrenamiento eliminar_rutina' %}active{% endif %}">
+           class="{% if request.resolver_match.url_name in 'paso3_ejercicios iniciar_entrenamiento finalizar_entrenamiento eliminar_rutina' %}active{% endif %}">
           <i class="bi bi-trophy-fill"></i><span>{% trans "Nueva Rutina" %}</span>
         </a>
       </li>

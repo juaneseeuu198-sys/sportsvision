@@ -1,161 +1,97 @@
-﻿{% extends 'base/base.html' %}
+{% extends 'base/base.html' %}
 {% load static %}
 {% block title %}Nueva Rutina — Músculos{% endblock %}
 
 {% block extra_css %}
 <style>
-/* ── Grid de tarjetas de músculos ─────────────────────── */
-.muscle-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-  margin-bottom: 28px;
+/* ── Body Viewer ─────────────────────────────────────── */
+.body-viewer {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
-
-.muscle-card {
-  position: relative;
-  border-radius: 18px;
-  border: 2px solid rgba(255,255,255,0.08);
+.body-panel {
   background: var(--sv-bg-card);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 18px 14px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 0 14px;
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-  user-select: none;
-  min-height: 170px;
 }
-
-.muscle-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.4);
-}
-
-.muscle-card.selected {
-  border-color: #4361ee;
-  box-shadow: 0 0 0 3px rgba(67,97,238,0.3);
-}
-
-/* imagen que ocupa el área superior de la tarjeta */
-.muscle-card-img {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: 16px;
-}
-.muscle-card-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  transition: transform 0.25s;
-  filter: brightness(0.82);
-}
-.muscle-card:hover .muscle-card-img img { transform: scale(1.06); }
-.muscle-card.selected .muscle-card-img img { filter: brightness(1); }
-
-/* overlay degradado para que el nombre se lea */
-.muscle-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 60%;
-  background: linear-gradient(to top, rgba(10,12,40,0.92) 0%, transparent 100%);
-  border-radius: 0 0 16px 16px;
-  pointer-events: none;
-}
-
-/* nombre del músculo */
-.muscle-label {
-  position: relative;
-  z-index: 2;
+.body-panel-label {
+  font-size: 10px;
   font-weight: 800;
-  font-size: 12px;
-  text-align: center;
-  color: #ccc;
-  letter-spacing: 0.3px;
-  transition: color 0.2s;
-  padding: 0 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 12px;
 }
-.muscle-card.selected .muscle-label { color: #fff; }
+.body-svg { display: block; overflow: visible; }
 
-/* badge check */
-.muscle-check {
-  position: absolute;
-  top: 10px; right: 10px;
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  background: #4361ee;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: #fff;
-  z-index: 3;
-  opacity: 0;
-  transform: scale(0.4);
-  transition: opacity 0.2s, transform 0.2s;
+/* ── SVG shapes ──────────────────────────────────────── */
+.sil {
+  fill: rgba(255,255,255,0.04);
+  stroke: rgba(255,255,255,0.09);
+  stroke-width: 1.5;
 }
-.muscle-card.selected .muscle-check { opacity: 1; transform: scale(1); }
+.m-path {
+  cursor: pointer;
+  fill: rgba(255,255,255,0.05);
+  stroke: rgba(255,255,255,0.10);
+  stroke-width: 1.2;
+  transition: fill .15s, stroke .15s;
+}
+.m-path:hover {
+  fill: rgba(67,97,238,0.22);
+  stroke: rgba(67,97,238,.6);
+}
 
-/* pills seleccionados */
+/* ── Pills ───────────────────────────────────────────── */
 .selected-pills {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  padding: 12px 0 4px; min-height: 44px;
-  justify-content: center; align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  min-height: 44px;
+  padding: 4px 20px 16px;
 }
 .muscle-pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  border-radius: 20px; padding: 4px 12px 4px 14px;
-  font-size: 12px; font-family: 'Barlow', sans-serif; font-weight: 700;
-  background: rgba(67,97,238,.18); border: 1.5px solid #7b9ffb; color: #7b9ffb;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 20px;
+  padding: 4px 10px 4px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Barlow', sans-serif;
+  border-width: 1.5px;
+  border-style: solid;
 }
-.muscle-pill .pill-remove {
-  background: none; border: none; cursor: pointer;
-  padding: 0; line-height: 1; opacity: .7; font-size: 14px; color: inherit;
-}
-.muscle-pill .pill-remove:hover { opacity: 1; }
-.no-sel-hint { color: rgba(255,255,255,.22); font-size: 12px; font-style: italic; }
-
-/* fallback cuando no hay imagen */
-.muscle-card-img.no-img {
-  background: var(--sv-bg-panel);
-  display: flex; align-items: center; justify-content: center;
-}
-.muscle-card-img.no-img::before {
-  content: attr(data-icon);
-  font-size: 52px;
+.pill-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
   line-height: 1;
+  opacity: .7;
+  font-size: 13px;
+  color: inherit;
+}
+.pill-remove:hover { opacity: 1; }
+.no-sel-hint {
+  color: rgba(255,255,255,.22);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 44px;
 }
 
-/* colores de borde por grupo */
-.muscle-pecho.selected         { border-color: #4361ee; box-shadow: 0 0 0 3px rgba(67,97,238,0.3); }
-.muscle-espalda.selected       { border-color: #00d4aa; box-shadow: 0 0 0 3px rgba(0,212,170,0.3); }
-.muscle-hombros.selected       { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.3); }
-.muscle-biceps.selected        { border-color: #6b7280; box-shadow: 0 0 0 3px rgba(107,114,128,0.3); }
-.muscle-triceps.selected       { border-color: #e63946; box-shadow: 0 0 0 3px rgba(230,57,70,0.3); }
-.muscle-abdomen.selected       { border-color: #f4a261; box-shadow: 0 0 0 3px rgba(244,162,97,0.3); }
-.muscle-piernas.selected       { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236,72,153,0.3); }
-.muscle-gluteos.selected       { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,0.3); }
-.muscle-pantorrillas.selected  { border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.3); }
-.muscle-antebrazos.selected    { border-color: #86efac; box-shadow: 0 0 0 3px rgba(134,239,172,0.3); }
-.muscle-core.selected          { border-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,0.3); }
-
-.muscle-pecho.selected .muscle-check         { background: #4361ee; }
-.muscle-espalda.selected .muscle-check       { background: #00d4aa; }
-.muscle-hombros.selected .muscle-check       { background: #f97316; }
-.muscle-biceps.selected .muscle-check        { background: #6b7280; }
-.muscle-triceps.selected .muscle-check       { background: #e63946; }
-.muscle-abdomen.selected .muscle-check       { background: #f4a261; }
-.muscle-piernas.selected .muscle-check       { background: #ec4899; }
-.muscle-gluteos.selected .muscle-check       { background: #a78bfa; }
-.muscle-pantorrillas.selected .muscle-check  { background: #22d3ee; }
-.muscle-antebrazos.selected .muscle-check    { background: #86efac; }
-.muscle-core.selected .muscle-check          { background: #fbbf24; }
-
-@media (max-width: 900px) { .muscle-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 640px) { .muscle-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; } .muscle-card { min-height: 130px; } }
-@media (max-width: 400px) { .muscle-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 420px) {
+  .body-svg { width: 128px !important; }
+}
 </style>
 {% endblock %}
 
@@ -163,43 +99,128 @@
 <div class="sv-page-content">
   {% include 'routines/step_header.html' with paso_actual=2 %}
   <p style="text-align:center;color:rgba(255,255,255,.45);font-size:13px;margin-bottom:20px;">
-    Selecciona los grupos musculares que quieres trabajar
+    Toca un área del cuerpo para seleccionarla
   </p>
 
   <form method="post" id="form-musculos">
     {% csrf_token %}
 
-    <div class="muscle-grid">
-      {% for grupo in grupos %}
-      <label class="muscle-card muscle-{{ grupo.slug }}"
-             for="mg_{{ grupo.id }}"
-             id="card_{{ grupo.slug }}">
-        <input type="checkbox" name="grupos" value="{{ grupo.id }}"
-               id="mg_{{ grupo.id }}" class="muscle-checkbox" hidden>
+    <!-- Checkboxes ocultos para el POST -->
+    {% for grupo in grupos %}
+    <input type="checkbox" name="grupos" value="{{ grupo.id }}"
+           id="mg_{{ grupo.id }}" data-slug="{{ grupo.slug|escapejs }}"
+           class="muscle-checkbox" hidden>
+    {% endfor %}
 
-        <span class="muscle-check"><i class="bi bi-check-lg"></i></span>
+    <!-- ═══════════════ BODY SVGs ═══════════════ -->
+    <div class="body-viewer">
 
-        <div class="muscle-card-img"
-             data-icon="{{ grupo.icono|default:'💪' }}">
-          <img src="{% static 'img/muscles/' %}{{ grupo.slug }}.png"
-               alt="{{ grupo.nombre }}"
-               onerror="this.parentElement.classList.add('no-img'); this.style.display='none';">
-        </div>
+      <!-- FRONTAL -->
+      <div class="body-panel">
+        <div class="body-panel-label">Frontal</div>
+        <svg class="body-svg" width="155" viewBox="0 0 200 510" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- silhouette -->
+          <ellipse cx="100" cy="36" rx="30" ry="32" class="sil"/>
+          <rect x="88" y="64" width="24" height="22" rx="5" class="sil"/>
+          <path d="M 44,85 L 156,85 L 162,105 L 162,198 L 148,248 L 132,262 L 100,265 L 68,262 L 52,248 L 38,198 L 38,105 Z" class="sil"/>
+          <rect x="15" y="90" width="26" height="92" rx="13" class="sil"/>
+          <rect x="159" y="90" width="26" height="92" rx="13" class="sil"/>
+          <rect x="9" y="184" width="22" height="76" rx="10" class="sil"/>
+          <rect x="169" y="184" width="22" height="76" rx="10" class="sil"/>
+          <ellipse cx="20" cy="270" rx="15" ry="11" class="sil"/>
+          <ellipse cx="180" cy="270" rx="15" ry="11" class="sil"/>
+          <rect x="52" y="265" width="38" height="108" rx="14" class="sil"/>
+          <rect x="110" y="265" width="38" height="108" rx="14" class="sil"/>
+          <ellipse cx="71" cy="376" rx="19" ry="13" class="sil"/>
+          <ellipse cx="129" cy="376" rx="19" ry="13" class="sil"/>
+          <rect x="55" y="388" width="32" height="90" rx="13" class="sil"/>
+          <rect x="113" y="388" width="32" height="90" rx="13" class="sil"/>
+          <ellipse cx="76" cy="484" rx="26" ry="12" class="sil"/>
+          <ellipse cx="131" cy="484" rx="26" ry="12" class="sil"/>
 
-        <span class="muscle-label">{{ grupo.nombre }}</span>
-      </label>
-      {% endfor %}
+          <!-- Pecho -->
+          <polygon class="m-path" data-muscle="pecho" points="48,90 100,98 100,142 50,144"/>
+          <polygon class="m-path" data-muscle="pecho" points="100,98 152,90 150,144 100,142"/>
+          <!-- Hombros -->
+          <ellipse class="m-path" data-muscle="hombros" cx="31" cy="110" rx="20" ry="23"/>
+          <ellipse class="m-path" data-muscle="hombros" cx="169" cy="110" rx="20" ry="23"/>
+          <!-- Bíceps -->
+          <rect class="m-path" data-muscle="biceps" x="18" y="120" width="20" height="58" rx="9"/>
+          <rect class="m-path" data-muscle="biceps" x="162" y="120" width="20" height="58" rx="9"/>
+          <!-- Antebrazos -->
+          <rect class="m-path" data-muscle="antebrazos" x="11" y="187" width="18" height="70" rx="8"/>
+          <rect class="m-path" data-muscle="antebrazos" x="171" y="187" width="18" height="70" rx="8"/>
+          <!-- Abdomen -->
+          <rect class="m-path" data-muscle="abdomen" x="76" y="148" width="16" height="18" rx="4"/>
+          <rect class="m-path" data-muscle="abdomen" x="108" y="148" width="16" height="18" rx="4"/>
+          <rect class="m-path" data-muscle="abdomen" x="76" y="170" width="16" height="18" rx="4"/>
+          <rect class="m-path" data-muscle="abdomen" x="108" y="170" width="16" height="18" rx="4"/>
+          <rect class="m-path" data-muscle="abdomen" x="76" y="192" width="16" height="18" rx="4"/>
+          <rect class="m-path" data-muscle="abdomen" x="108" y="192" width="16" height="18" rx="4"/>
+          <!-- Core (obliques) -->
+          <polygon class="m-path" data-muscle="core" points="50,145 74,145 70,228 44,240"/>
+          <polygon class="m-path" data-muscle="core" points="150,145 126,145 130,228 156,240"/>
+          <!-- Piernas (quads) -->
+          <rect class="m-path" data-muscle="piernas" x="54" y="268" width="35" height="104" rx="13"/>
+          <rect class="m-path" data-muscle="piernas" x="111" y="268" width="35" height="104" rx="13"/>
+          <!-- Pantorrillas -->
+          <rect class="m-path" data-muscle="pantorrillas" x="57" y="390" width="27" height="84" rx="11"/>
+          <rect class="m-path" data-muscle="pantorrillas" x="116" y="390" width="27" height="84" rx="11"/>
+        </svg>
+      </div>
+
+      <!-- POSTERIOR -->
+      <div class="body-panel">
+        <div class="body-panel-label">Posterior</div>
+        <svg class="body-svg" width="155" viewBox="0 0 200 510" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- silhouette -->
+          <ellipse cx="100" cy="36" rx="30" ry="32" class="sil"/>
+          <rect x="88" y="64" width="24" height="22" rx="5" class="sil"/>
+          <path d="M 44,85 L 156,85 L 162,105 L 162,198 L 148,248 L 132,262 L 100,265 L 68,262 L 52,248 L 38,198 L 38,105 Z" class="sil"/>
+          <rect x="15" y="90" width="26" height="92" rx="13" class="sil"/>
+          <rect x="159" y="90" width="26" height="92" rx="13" class="sil"/>
+          <rect x="9" y="184" width="22" height="76" rx="10" class="sil"/>
+          <rect x="169" y="184" width="22" height="76" rx="10" class="sil"/>
+          <ellipse cx="20" cy="270" rx="15" ry="11" class="sil"/>
+          <ellipse cx="180" cy="270" rx="15" ry="11" class="sil"/>
+          <rect x="52" y="265" width="38" height="108" rx="14" class="sil"/>
+          <rect x="110" y="265" width="38" height="108" rx="14" class="sil"/>
+          <ellipse cx="71" cy="376" rx="19" ry="13" class="sil"/>
+          <ellipse cx="129" cy="376" rx="19" ry="13" class="sil"/>
+          <rect x="55" y="388" width="32" height="90" rx="13" class="sil"/>
+          <rect x="113" y="388" width="32" height="90" rx="13" class="sil"/>
+          <ellipse cx="76" cy="484" rx="26" ry="12" class="sil"/>
+          <ellipse cx="131" cy="484" rx="26" ry="12" class="sil"/>
+
+          <!-- Hombros (rear deltoids) -->
+          <ellipse class="m-path" data-muscle="hombros" cx="31" cy="105" rx="20" ry="22"/>
+          <ellipse class="m-path" data-muscle="hombros" cx="169" cy="105" rx="20" ry="22"/>
+          <!-- Espalda: traps + lats + lumbar -->
+          <polygon class="m-path" data-muscle="espalda" points="48,88 152,88 164,115 152,124 100,132 48,124 36,115"/>
+          <polygon class="m-path" data-muscle="espalda" points="36,115 52,122 56,204 38,215"/>
+          <polygon class="m-path" data-muscle="espalda" points="164,115 148,122 144,204 162,215"/>
+          <rect class="m-path" data-muscle="espalda" x="72" y="200" width="56" height="44" rx="8"/>
+          <!-- Tríceps -->
+          <rect class="m-path" data-muscle="triceps" x="17" y="118" width="21" height="60" rx="9"/>
+          <rect class="m-path" data-muscle="triceps" x="162" y="118" width="21" height="60" rx="9"/>
+          <!-- Antebrazos -->
+          <rect class="m-path" data-muscle="antebrazos" x="11" y="184" width="18" height="70" rx="8"/>
+          <rect class="m-path" data-muscle="antebrazos" x="171" y="184" width="18" height="70" rx="8"/>
+          <!-- Glúteos -->
+          <ellipse class="m-path" data-muscle="gluteos" cx="73" cy="278" rx="29" ry="26"/>
+          <ellipse class="m-path" data-muscle="gluteos" cx="127" cy="278" rx="29" ry="26"/>
+          <!-- Piernas (hamstrings) -->
+          <rect class="m-path" data-muscle="piernas" x="54" y="306" width="35" height="88" rx="13"/>
+          <rect class="m-path" data-muscle="piernas" x="111" y="306" width="35" height="88" rx="13"/>
+          <!-- Pantorrillas -->
+          <ellipse class="m-path" data-muscle="pantorrillas" cx="71" cy="428" rx="17" ry="46"/>
+          <ellipse class="m-path" data-muscle="pantorrillas" cx="129" cy="428" rx="17" ry="46"/>
+        </svg>
+      </div>
     </div>
 
-    <!-- Pills seleccionados -->
+    <!-- Pills de selección -->
     <div id="selected-pills" class="selected-pills">
-      {% for grupo in grupos %}
-      <span class="muscle-pill" id="pill_{{ grupo.slug }}" style="display:none">
-        {{ grupo.nombre }}
-        <button type="button" class="pill-remove"
-                data-slug="{{ grupo.slug }}" aria-label="Quitar">&#x2715;</button>
-      </span>
-      {% endfor %}
       <span id="no-sel-hint" class="no-sel-hint">Ningún músculo seleccionado</span>
     </div>
 
@@ -214,6 +235,7 @@
   </form>
 </div>
 
+<!-- Mapa slug → {id, nombre} desde Django -->
 <script type="application/json" id="grupos-data">
 [{% for g in grupos %}{"slug":"{{ g.slug|escapejs }}","id":{{ g.id }},"name":"{{ g.nombre|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
 </script>
@@ -222,54 +244,94 @@
 {% block extra_js %}
 <script>
 (function () {
-  const gruposData = JSON.parse(document.getElementById("grupos-data").textContent);
+  const COLORS = {
+    pecho:        { color: '#4361ee', bg: 'rgba(67,97,238,.15)'   },
+    espalda:      { color: '#00d4aa', bg: 'rgba(0,212,170,.15)'   },
+    hombros:      { color: '#f97316', bg: 'rgba(249,115,22,.15)'  },
+    biceps:       { color: '#9ca3af', bg: 'rgba(156,163,175,.15)' },
+    triceps:      { color: '#e63946', bg: 'rgba(230,57,70,.15)'   },
+    abdomen:      { color: '#f4a261', bg: 'rgba(244,162,97,.15)'  },
+    piernas:      { color: '#ec4899', bg: 'rgba(236,72,153,.15)'  },
+    gluteos:      { color: '#a78bfa', bg: 'rgba(167,139,250,.15)' },
+    pantorrillas: { color: '#22d3ee', bg: 'rgba(34,211,238,.15)'  },
+    antebrazos:   { color: '#86efac', bg: 'rgba(134,239,172,.15)' },
+    core:         { color: '#fbbf24', bg: 'rgba(251,191,36,.15)'  },
+  };
 
-  const groups = {};
+  // Construir mapa slug → {checkbox, nombre}
+  const gruposData = JSON.parse(document.getElementById('grupos-data').textContent);
+  const grupos = {};
   gruposData.forEach(g => {
-    groups[g.slug] = {
-      cb:   document.getElementById("mg_" + g.id),
-      card: document.getElementById("card_" + g.slug),
-      pill: document.getElementById("pill_" + g.slug),
+    grupos[g.slug] = {
+      cb:   document.getElementById('mg_' + g.id),
+      name: g.name,
     };
   });
 
-  const noHint = document.getElementById("no-sel-hint");
+  const noHint  = document.getElementById('no-sel-hint');
+  const pillsEl = document.getElementById('selected-pills');
 
-  function refreshHint() {
-    noHint.style.display =
-      Object.values(groups).some(g => g.cb?.checked) ? "none" : "inline";
+  function isSelected(slug) {
+    return grupos[slug]?.cb?.checked ?? false;
+  }
+
+  function applyColors() {
+    document.querySelectorAll('.m-path').forEach(el => {
+      const slug = el.dataset.muscle;
+      const c = COLORS[slug];
+      if (!c) return;
+      if (isSelected(slug)) {
+        el.style.fill        = c.bg;
+        el.style.stroke      = c.color;
+        el.style.strokeWidth = '2';
+      } else {
+        el.style.fill        = '';
+        el.style.stroke      = '';
+        el.style.strokeWidth = '';
+      }
+    });
+  }
+
+  function renderPills() {
+    pillsEl.querySelectorAll('.muscle-pill').forEach(p => p.remove());
+    const anySelected = Object.entries(grupos).some(([, g]) => g.cb?.checked);
+    noHint.style.display = anySelected ? 'none' : 'inline';
+
+    Object.entries(grupos).forEach(([slug, g]) => {
+      if (!g.cb?.checked) return;
+      const c = COLORS[slug] || { color: '#4361ee', bg: 'rgba(67,97,238,.15)' };
+      const pill = document.createElement('span');
+      pill.className = 'muscle-pill';
+      pill.style.color       = c.color;
+      pill.style.borderColor = c.color;
+      pill.style.background  = c.bg;
+      pill.innerHTML = `${g.name}<button type="button" class="pill-remove" data-slug="${slug}" aria-label="Quitar">&#x2715;</button>`;
+      pill.querySelector('.pill-remove').addEventListener('click', () => deselect(slug));
+      pillsEl.appendChild(pill);
+    });
   }
 
   function select(slug) {
-    const g = groups[slug]; if (!g) return;
+    const g = grupos[slug]; if (!g?.cb) return;
     g.cb.checked = true;
-    g.card?.classList.add("selected");
-    if (g.pill) g.pill.style.display = "inline-flex";
-    refreshHint();
+    applyColors(); renderPills();
   }
   function deselect(slug) {
-    const g = groups[slug]; if (!g) return;
+    const g = grupos[slug]; if (!g?.cb) return;
     g.cb.checked = false;
-    g.card?.classList.remove("selected");
-    if (g.pill) g.pill.style.display = "none";
-    refreshHint();
+    applyColors(); renderPills();
+  }
+  function toggle(slug) {
+    isSelected(slug) ? deselect(slug) : select(slug);
   }
 
-  // Cada tarjeta es un <label> → el checkbox se activa solo,
-  // pero sincronizamos el estado visual aquí.
-  document.querySelectorAll(".muscle-checkbox").forEach(cb => {
-    cb.addEventListener("change", () => {
-      const slug = cb.id.replace("mg_", "");
-      const g = Object.entries(groups).find(([s, v]) => v.cb === cb)?.[0];
-      if (g) cb.checked ? select(g) : deselect(g);
-    });
+  document.querySelectorAll('.m-path').forEach(el => {
+    el.addEventListener('click', () => toggle(el.dataset.muscle));
   });
 
-  document.querySelectorAll(".pill-remove").forEach(btn => {
-    btn.addEventListener("click", () => deselect(btn.dataset.slug));
-  });
-
-  refreshHint();
+  // Estado inicial (por si el usuario vuelve atrás con valores ya marcados)
+  applyColors();
+  renderPills();
 })();
 </script>
 {% endblock %}

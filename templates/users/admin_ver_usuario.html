@@ -1,4 +1,5 @@
 ﻿{% extends 'base/base.html' %}
+{% load plan_tags %}
 {% block title %}Usuario: {{ cliente.username }} — Admin Pro{% endblock %}
 
 {% block extra_css %}
@@ -463,11 +464,9 @@
             {% if r.es_auto_generada %}<span style="background:rgba(107,114,128,.15);border:1px solid rgba(107,114,128,.3);border-radius:6px;padding:1px 6px;font-size:10px;color:#9ca3af;margin-left:4px;">Auto</span>{% endif %}
           </div>
         </div>
-        <!-- Grupos musculares -->
-        <div style="display:flex;gap:4px;flex-wrap:wrap;max-width:200px;justify-content:flex-end;">
-          {% for gm in r.grupos_musculares.all %}
-          <span style="font-size:10px;background:rgba(67,97,238,.12);border:1px solid rgba(67,97,238,.25);border-radius:6px;padding:1px 6px;color:#7b9ffb;">{{ gm.nombre }}</span>
-          {% endfor %}
+        <!-- Mini muscle map -->
+        <div style="flex-shrink:0;">
+          {% include 'partials/_muscle_map.html' with map_slugs=r|muscle_slugs_str %}
         </div>
       </div>
       <div class="rutina-body" id="rb-{{ r.id }}">

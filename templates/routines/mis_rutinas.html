@@ -1,5 +1,109 @@
 {% extends 'base/base.html' %}
+{% load static %}
+{% load plan_tags %}
 {% block title %}Mis Rutinas — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.rutina-card-new {
+  background: var(--sv-bg-card);
+  border: 1.5px solid var(--sv-border);
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  transition: border-color .2s, transform .2s;
+}
+.rutina-card-new:hover {
+  border-color: rgba(67,97,238,.45);
+  transform: translateY(-2px);
+}
+.rutina-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rutina-card-body {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.rutina-map-wrap {
+  flex-shrink: 0;
+}
+.rutina-info-col {
+  flex: 1;
+  min-width: 0;
+}
+.rutina-name-new {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--sv-text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rutina-meta {
+  font-size: 11px;
+  color: var(--sv-muted);
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.rutina-muscles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.muscle-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+  border: 1px solid rgba(67,97,238,.3);
+  background: rgba(67,97,238,.1);
+  color: #7b9ffb;
+}
+.rutina-card-footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn-iniciar {
+  flex: 1;
+  background: var(--sv-blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: 'Barlow', sans-serif;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  transition: background .15s;
+}
+.btn-iniciar:hover { background: #3451d1; color: #fff; }
+.btn-eliminar {
+  background: rgba(230,57,70,.12);
+  border: 1.5px solid rgba(230,57,70,.3);
+  color: #f87171;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .15s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+.btn-eliminar:hover { background: rgba(230,57,70,.22); }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="sv-page-content">
@@ -13,29 +117,78 @@
     </a>
   </div>
 
+  <!-- Buscador -->
   {% if rutinas %}
-    <div class="row g-3">
+  <div style="margin-bottom:20px;">
+    <div style="position:relative;">
+      <i class="bi bi-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--sv-muted);font-size:15px;pointer-events:none;"></i>
+      <input type="text" id="buscador-rutinas" placeholder="Buscar rutina por nombre o músculo..."
+             style="width:100%;padding:12px 14px 12px 40px;border-radius:14px;
+                    background:var(--sv-bg-card);border:1.5px solid var(--sv-border);
+                    color:var(--sv-text);font-size:14px;outline:none;transition:border-color .2s;"
+             oninput="filtrarRutinas(this.value)"
+             onfocus="this.style.borderColor='var(--sv-purple)'"
+             onblur="this.style.borderColor='var(--sv-border)'">
+    </div>
+    <p id="sin-resultados" style="display:none;color:var(--sv-muted);text-align:center;margin-top:24px;font-size:14px;">
+      <i class="bi bi-search me-2"></i>No se encontraron rutinas.
+    </p>
+  </div>
+  {% endif %}
+
+  {% if rutinas %}
+    <div class="row g-3" id="lista-rutinas">
       {% for rutina in rutinas %}
-      <div class="col-md-6 col-lg-4">
-        <div class="rutina-card">
-          <div class="d-flex justify-content-between align-items-start">
-            <h5 class="rutina-name">{{ rutina.nombre }}</h5>
+      <div class="col-md-6 col-lg-4 rutina-item"
+           data-nombre="{{ rutina.nombre|lower }}"
+           data-musculos="{% for er in rutina.ejercicios_rutina.all %}{% if er.ejercicio.grupo_muscular %}{{ er.ejercicio.grupo_muscular.nombre|lower }} {% endif %}{% endfor %}">
+        <div class="rutina-card-new">
+
+          <!-- Nombre + nivel -->
+          <div class="rutina-card-top">
+            <div style="font-size:15px;font-weight:800;color:var(--sv-text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              {{ rutina.nombre }}
+            </div>
             <span class="nivel-badge nivel-{{ rutina.nivel }}">{{ rutina.get_nivel_display }}</span>
           </div>
-          <p class="rutina-info">
-            <i class="bi bi-list-check"></i> {{ rutina.total_ejercicios }} ejercicio{{ rutina.total_ejercicios|pluralize }}
-            &nbsp;|&nbsp;
-            <i class="bi bi-clock"></i> {{ rutina.creada_en|date:"d/m/Y" }}
-            {% if rutina.es_auto_generada %}
-            &nbsp;|&nbsp; <span style="color:var(--sv-green)"><i class="bi bi-lightning-fill"></i> Auto</span>
-            {% endif %}
-          </p>
-          {% if rutina.descripcion %}
-            <p class="rutina-info mt-1">{{ rutina.descripcion }}</p>
-          {% endif %}
-          <a href="{% url 'iniciar_entrenamiento' rutina.id %}" class="btn btn-sv-sm mt-2">
-            <i class="bi bi-play-fill"></i> Iniciar
-          </a>
+
+          <!-- Body map + info -->
+          <div class="rutina-card-body">
+            <div class="rutina-map-wrap">
+              {% include 'partials/_muscle_map.html' with map_slugs=rutina|muscle_slugs_str %}
+            </div>
+            <div class="rutina-info-col">
+              <div class="rutina-meta">
+                <i class="bi bi-list-check"></i> {{ rutina.total_ejercicios }} ejercicio{{ rutina.total_ejercicios|pluralize }}<br>
+                <i class="bi bi-clock"></i> {{ rutina.creada_en|date:"d/m/Y" }}
+                {% if rutina.es_auto_generada %}
+                &nbsp;<i class="bi bi-lightning-fill" style="color:var(--sv-green)"></i>
+                {% endif %}
+              </div>
+              <!-- Etiquetas de músculos en texto -->
+              <div class="rutina-muscles-list">
+                {% for er in rutina.ejercicios_rutina.all %}
+                  {% if er.ejercicio.grupo_muscular %}
+                  <span class="muscle-tag">{{ er.ejercicio.grupo_muscular.nombre }}</span>
+                  {% endif %}
+                {% empty %}
+                  <span class="muscle-tag" style="opacity:.5">Sin músculos</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="rutina-card-footer">
+            <a href="{% url 'iniciar_entrenamiento' rutina.id %}" class="btn-iniciar">
+              <i class="bi bi-play-fill"></i> Iniciar
+            </a>
+            <button type="button" class="btn-eliminar" title="Eliminar"
+                    onclick="confirmarEliminar('{{ rutina.id }}', '{{ rutina.nombre|escapejs }}')">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </div>
+
         </div>
       </div>
       {% endfor %}
@@ -50,4 +203,63 @@
     </div>
   {% endif %}
 </div>
+
+<!-- Modal confirmar eliminar -->
+<div id="modal-eliminar-rutina" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--sv-bg-card);border:1.5px solid rgba(248,113,113,.3);
+              border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center;">
+    <div style="font-size:36px;margin-bottom:12px;">🗑️</div>
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#f87171;margin-bottom:8px;">
+      ¿Eliminar rutina?
+    </h3>
+    <p id="modal-rutina-nombre" style="color:rgba(255,255,255,.6);font-size:14px;margin-bottom:20px;"></p>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('modal-eliminar-rutina').style.display='none'"
+              style="flex:1;padding:11px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);
+                     background:transparent;color:rgba(255,255,255,.6);font-weight:700;cursor:pointer;">
+        Cancelar
+      </button>
+      <form id="form-eliminar-rutina" method="post" style="flex:1;">
+        {% csrf_token %}
+        <button type="submit"
+                style="width:100%;padding:11px;border-radius:12px;border:none;
+                       background:linear-gradient(135deg,#ef4444,#b91c1c);
+                       color:#fff;font-weight:800;cursor:pointer;">
+          Sí, eliminar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmarEliminar(id, nombre) {
+  document.getElementById('modal-rutina-nombre').textContent = '"' + nombre + '"';
+  document.getElementById('form-eliminar-rutina').action = '/rutinas/eliminar/' + id + '/';
+  document.getElementById('modal-eliminar-rutina').style.display = 'flex';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') document.getElementById('modal-eliminar-rutina').style.display = 'none';
+});
+
+function filtrarRutinas(q) {
+  q = q.toLowerCase().trim();
+  var items = document.querySelectorAll('.rutina-item');
+  var visibles = 0;
+  items.forEach(function(item) {
+    var nombre = item.dataset.nombre || '';
+    var musculos = item.dataset.musculos || '';
+    var match = !q || nombre.includes(q) || musculos.includes(q);
+    item.style.display = match ? '' : 'none';
+    if (match) visibles++;
+  });
+  var sinRes = document.getElementById('sin-resultados');
+  if (sinRes) sinRes.style.display = visibles === 0 ? 'block' : 'none';
+}
+</script>
 {% endblock %}
