@@ -1,6 +1,5 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% load plan_tags %}
 {% block title %}Mis Rutinas — SportsVision{% endblock %}
 
 {% block extra_css %}
@@ -152,30 +151,23 @@
             <span class="nivel-badge nivel-{{ rutina.nivel }}">{{ rutina.get_nivel_display }}</span>
           </div>
 
-          <!-- Body map + info -->
-          <div class="rutina-card-body">
-            <div class="rutina-map-wrap">
-              {% include 'partials/_muscle_map.html' with map_slugs=rutina|muscle_slugs_str %}
-            </div>
-            <div class="rutina-info-col">
-              <div class="rutina-meta">
-                <i class="bi bi-list-check"></i> {{ rutina.total_ejercicios }} ejercicio{{ rutina.total_ejercicios|pluralize }}<br>
-                <i class="bi bi-clock"></i> {{ rutina.creada_en|date:"d/m/Y" }}
-                {% if rutina.es_auto_generada %}
-                &nbsp;<i class="bi bi-lightning-fill" style="color:var(--sv-green)"></i>
-                {% endif %}
-              </div>
-              <!-- Etiquetas de músculos en texto -->
-              <div class="rutina-muscles-list">
-                {% for er in rutina.ejercicios_rutina.all %}
-                  {% if er.ejercicio.grupo_muscular %}
-                  <span class="muscle-tag">{{ er.ejercicio.grupo_muscular.nombre }}</span>
-                  {% endif %}
-                {% empty %}
-                  <span class="muscle-tag" style="opacity:.5">Sin músculos</span>
-                {% endfor %}
-              </div>
-            </div>
+          <!-- Info -->
+          <div class="rutina-meta">
+            <i class="bi bi-list-check"></i> {{ rutina.ejercicios_rutina.count }} ejercicio{{ rutina.ejercicios_rutina.count|pluralize }}<br>
+            <i class="bi bi-clock"></i> {{ rutina.creada_en|date:"d/m/Y" }}
+            {% if rutina.es_auto_generada %}
+            &nbsp;<i class="bi bi-lightning-fill" style="color:var(--sv-green)"></i> Auto
+            {% endif %}
+          </div>
+          <!-- Etiquetas de músculos -->
+          <div class="rutina-muscles-list">
+            {% for er in rutina.ejercicios_rutina.all %}
+              {% if er.ejercicio.grupo_muscular %}
+              <span class="muscle-tag">{{ er.ejercicio.grupo_muscular.nombre }}</span>
+              {% endif %}
+            {% empty %}
+              <span class="muscle-tag" style="opacity:.5">Sin ejercicios</span>
+            {% endfor %}
           </div>
 
           <!-- Acciones -->
