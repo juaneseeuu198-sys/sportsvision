@@ -1187,9 +1187,443 @@ Equipo: 8 tipos
 
 
 ================================================================================
+11. GOOGLE OAUTH  (Login / Registro con Google)
+================================================================================
+
+------------------------------------------------------------------------
+11.1 CONFIGURACIÓN
+------------------------------------------------------------------------
+Variables de entorno requeridas (Railway → Variables):
+  GOOGLE_CLIENT_ID      → ID del cliente OAuth 2.0 de Google Cloud Console
+  GOOGLE_CLIENT_SECRET  → Secret del cliente OAuth 2.0
+  FRONTEND_URL          → URL base de la app (ej: https://web-production-f0f4b.up.railway.app)
+
+Redirect URI registrada en Google Cloud Console:
+  https://web-production-f0f4b.up.railway.app/usuarios/auth/google/callback/
+
+------------------------------------------------------------------------
+11.2 MODELO: MobileLoginToken  (apps/users/models.py)
+------------------------------------------------------------------------
+Token de un solo uso para transferir la sesión de OAuth al WebView de la app.
+
+Campos:
+  user        → ForeignKey a User
+  token       → UUID único autogenerado (editable=False)
+  created_at  → DateTimeField automático
+  is_used     → Boolean (False por defecto)
+  is_new_user → Boolean (True si el usuario se registró en esta sesión)
+  picture_url → URLField (URL de la foto de perfil de Google)
+
+Métodos:
+  is_expired() → True si han pasado más de 120 segundos desde created_at
+
+------------------------------------------------------------------------
+11.3 VISTAS  (apps/users/views.py)
+------------------------------------------------------------------------
+
+google_login(request)
+  → GET: construye la URL de autorización de Google con parámetros:
+       client_id, redirect_uri, scope (openid email profile),
+       state (token anti-CSRF guardado en sesión),
+       access_type=online, prompt=select_account
+  → Si ?from=app en la URL: añade ":mobile" al state para identificar
+    que la petición viene desde la app Android
+  → Redirige al usuario a accounts.google.com
+
+google_callback(request)
+  → Recibe el code y state de Google
+  → Verifica state anti-CSRF (detecta sufijo ":mobile" para app)
+  → Intercambia code → access_token con POST a oauth2.googleapis.com/token
+  → Obtiene datos del usuario (email, name, picture, sub) de googleapis.com
+  → Busca o crea el User de Django:
+       Si existe por email → user existente (created=False)
+       Si no existe → crea User con username derivado del email (created=True)
+  → Verifica baneos y suspensiones
+  → Llama a login(request, user)
+  → Flujo WEB (is_mobile=False):
+       Si created=True → guarda picture_url en sesión → redirect completar_perfil_google
+       Si created=False → redirect dashboard
+  → Flujo MÓVIL (is_mobile=True):
+       Crea MobileLoginToken(user, is_new_user=created, picture_url=picture)
+       Retorna HTML con JS: window.location='sportsvision://auth?token={uuid}'
+
+mobile_login(request)
+  → GET con ?token=UUID
+  → Valida el token: existe, no usado, no expirado
+  → Marca token como usado
+  → login(request, user)
+  → Si token.picture_url: guarda en sesión para mostrar en completar_perfil_google
+  → Si token.is_new_user → redirect completar_perfil_google
+  → Si no → redirect dashboard
+
+completar_perfil_google(request)
+  → Requiere @login_required
+  → Si el usuario ya tiene profile.acepto_terminos=True → redirect dashboard
+  → GET: muestra formulario CompletarPerfilGoogleForm con first_name pre-rellenado
+  → POST: guarda nombre, edad, peso, altura, género, objetivo, limitaciones y términos
+           Actualiza nivel según objetivo (ganar_musculo→intermedio, rendimiento→avanzado)
+           Llama a generar_plan_inicial() si hay objetivo (con try/except)
+           Redirect a bienvenido
+
+bienvenido(request)
+  → Requiere @login_required
+  → Si hay 'google_picture_url' en sesión:
+       Descarga la imagen con timeout=8s
+       La convierte a base64 y la guarda en profile.avatar_data
+       Elimina la clave de sesión
+  → Renderiza users/bienvenido.html
+
+desactivar_cuenta(request)
+  → Solo POST, requiere @login_required
+  → Llama a logout()
+  → Pone user.is_active = False y guarda
+  → Redirect a landing con mensaje informativo
+
+eliminar_cuenta(request)
+  → Solo POST, requiere @login_required
+  → Llama a logout()
+  → Llama a user.delete() (elimina el usuario y toda su data por CASCADE)
+  → Redirect a landing
+
+------------------------------------------------------------------------
+11.4 FORMULARIO: CompletarPerfilGoogleForm  (apps/users/forms.py)
+------------------------------------------------------------------------
+Formulario para usuarios nuevos de Google que completan su perfil.
+No hereda de UserCreationForm (no pide contraseña).
+
+Campos:
+  first_name      → CharField requerido
+  edad            → IntegerField opcional (10–100)
+  peso            → FloatField opcional (20–300 kg)
+  altura          → FloatField opcional (100–250 cm)
+  genero          → ChoiceField opcional (M/F/O)
+  objetivo        → ChoiceField opcional (opciones de UserProfile.OBJETIVO_CHOICES)
+  limitaciones    → MultipleChoiceField opcional (LIMITACION_CHOICES)
+  acepto_terminos → BooleanField requerido
+
+------------------------------------------------------------------------
+11.5 URLs de Google OAuth  (apps/users/urls.py)
+------------------------------------------------------------------------
+  /usuarios/auth/google/                  → google_login
+  /usuarios/auth/google/callback/         → google_callback
+  /usuarios/auth/google/completar-perfil/ → completar_perfil_google
+  /usuarios/auth/mobile/                  → mobile_login
+
+------------------------------------------------------------------------
+11.6 FLUJO WEB: Registro con Google
+------------------------------------------------------------------------
+1. Usuario hace clic en "Continuar con Google" en /usuarios/login/ o
+   /usuarios/registro/
+2. google_login() redirige a Google con el state guardado en sesión
+3. Google muestra pantalla de selección de cuenta
+4. Google redirige a /usuarios/auth/google/callback/?code=...&state=...
+5. google_callback() verifica state, intercambia code por token,
+   obtiene datos del usuario de Google
+6. Si el usuario es NUEVO:
+   a. Se crea la cuenta User en Django
+   b. Se guarda picture_url en sesión
+   c. Redirect a /usuarios/auth/google/completar-perfil/
+   d. Usuario llena los 3 pasos: perfil → objetivo → salud/términos
+   e. Perfil creado, plan generado si hay objetivo
+   f. Redirect a /usuarios/bienvenido/
+   g. bienvenido() descarga y guarda la foto de Google como avatar
+7. Si el usuario EXISTE:
+   a. Se hace login automático
+   b. Redirect a /dashboard/
+
+------------------------------------------------------------------------
+11.7 FLUJO MÓVIL: Login con Google desde la App Android
+------------------------------------------------------------------------
+1. Usuario toca "Continuar con Google" en la app
+2. WebView intercepta la URL /usuarios/auth/google/?from=app
+3. MainActivity abre Chrome Custom Tabs con la URL + ?from=app
+4. Google muestra selección de cuenta en Custom Tabs
+5. google_callback() detecta ":mobile" en el state
+6. Crea MobileLoginToken(user, is_new_user, picture_url)
+7. Retorna página HTML con JS: window.location='sportsvision://auth?token={uuid}'
+8. Chrome Custom Tabs detecta el esquema sportsvision://, lo entrega al sistema
+9. Android enruta el Intent a MainActivity (intent-filter en AndroidManifest)
+10. onNewIntent() extrae el token del URI
+11. WebView carga /usuarios/auth/mobile/?token={uuid}
+12. mobile_login() valida el token, hace login, redirige a dashboard o
+    completar_perfil_google según is_new_user
+
+
+================================================================================
+12. PANEL DE ADMINISTRACIÓN  (Admin Pro)
+================================================================================
+
+------------------------------------------------------------------------
+12.1 MODELOS ADICIONALES EN users/models.py
+------------------------------------------------------------------------
+
+RelacionProfesional
+  → Vincula un profesional con un usuario con permisos granulares
+  → Estados: pendiente | activa | revocada | rechazada
+  → Permisos: ver_datos_basicos, ver_entrenamientos, ver_mediciones,
+              ver_nutricion, ver_salud
+
+SolicitudProfesional
+  → Solicitud de un usuario para convertirse en profesional
+  → Estados: pendiente | aprobada | rechazada
+  → Campos: especialidad, experiencia, motivo, nota_admin, revisado_por
+
+EmailPreVerification
+  → Código OTP de 6 dígitos para verificar email antes del registro
+  → Expira en 15 minutos
+
+MobileLoginToken
+  → Token UUID de un solo uso para login desde la app Android
+  → Expira en 120 segundos
+  → Campos: is_new_user, picture_url
+
+------------------------------------------------------------------------
+12.2 ROLES DE USUARIO
+------------------------------------------------------------------------
+profile.rol puede ser:
+  'usuario'    → Usuario normal (por defecto)
+  'profesional'→ Entrenador/profesional aprobado
+  'admin_pro'  → Administrador principal de la plataforma
+
+Adicionalmente, admin_pro puede tener is_staff=True y is_superuser=True
+para acceder al /admin/ de Django.
+
+------------------------------------------------------------------------
+12.3 VISTAS DEL PANEL ADMIN PRO
+------------------------------------------------------------------------
+
+admin_pro_dashboard(request)
+  → Muestra: solicitudes pendientes, historial de revisiones,
+             profesionales activos, lista de todos los usuarios
+  → Búsqueda por nombre, username o email
+  → Solo accesible si _es_admin_pro(user)
+
+admin_ver_usuario(request, user_id)
+  → Vista detallada del perfil de cualquier usuario
+  → Usa get_or_create para el perfil (evita error 500 si no tiene perfil)
+  → Muestra: entrenamientos recientes, rutinas, plan semanal,
+             mediciones corporales, planes nutricionales, estadísticas
+  → Permite: banear/desbanear, sancionar temporalmente, crear rutinas
+
+revisar_solicitud(request, solicitud_id)
+  → Admin aprueba o rechaza solicitudes de profesional
+  → Si aprueba: profile.rol='profesional', genera código de invitación
+                usa get_or_create para el perfil
+
+------------------------------------------------------------------------
+12.4 FLUJO: Crear un nuevo Administrador
+------------------------------------------------------------------------
+Desde la terminal (Django shell):
+  python manage.py shell -c "
+  from django.contrib.auth.models import User
+  from apps.users.models import UserProfile
+  email = 'nuevo@gmail.com'
+  user, created = User.objects.get_or_create(email=email, defaults={'username': 'nuevo'})
+  user.is_staff = True
+  user.is_superuser = True
+  user.save()
+  profile, _ = UserProfile.objects.get_or_create(user=user)
+  profile.rol = 'admin_pro'
+  profile.save()
+  "
+
+El nuevo admin puede entrar con Google usando ese email y tendrá
+acceso al Panel Pro y al /admin/ de Django.
+
+
+================================================================================
+13. APP ANDROID  (android/)
+================================================================================
+
+------------------------------------------------------------------------
+13.1 ESTRUCTURA
+------------------------------------------------------------------------
+  android/
+  ├── app/
+  │   ├── src/main/
+  │   │   ├── java/com/sportsvision/app/
+  │   │   │   └── MainActivity.kt       → Actividad principal
+  │   │   ├── AndroidManifest.xml
+  │   │   └── res/
+  │   │       └── xml/file_paths.xml    → Rutas para FileProvider
+  │   └── build.gradle                  → Dependencias del módulo
+  └── build.gradle                      → Configuración raíz
+
+------------------------------------------------------------------------
+13.2 DEPENDENCIAS  (app/build.gradle)
+------------------------------------------------------------------------
+  androidx.appcompat:appcompat:1.6.1
+  androidx.core:core-ktx:1.12.0
+  androidx.browser:browser:1.7.0         → Chrome Custom Tabs (OAuth Google)
+
+------------------------------------------------------------------------
+13.3 MANIFEST  (AndroidManifest.xml)
+------------------------------------------------------------------------
+Permisos:
+  INTERNET, ACCESS_NETWORK_STATE
+  READ_EXTERNAL_STORAGE (Android ≤12), READ_MEDIA_IMAGES (Android 13+)
+  CAMERA
+  REQUEST_INSTALL_PACKAGES   → para instalar actualizaciones
+
+Intent Filters en MainActivity:
+  1. MAIN / LAUNCHER → pantalla de inicio
+  2. VIEW / BROWSABLE / sportsvision://auth → recibe el token de Google OAuth
+     después de que Chrome Custom Tabs completa la autenticación
+
+Provider:
+  FileProvider → com.sportsvision.app.fileprovider
+  Rutas: external-files-path / Downloads/
+
+------------------------------------------------------------------------
+13.4 MAINACTIVITY — FUNCIONALIDADES
+------------------------------------------------------------------------
+
+WebView:
+  → Carga https://web-production-f0f4b.up.railway.app
+  → JavaScript habilitado, DOM Storage, sin zoom
+  → Cookies aceptadas (necesario para sesiones Django)
+  → LOAD_NO_CACHE para siempre obtener contenido fresco
+
+shouldOverrideUrlLoading():
+  → URLs de railway.app → carga en WebView (false)
+  → URLs de Google OAuth (/auth/google/ o accounts.google.com):
+       Abre Chrome Custom Tabs con ?from=app añadido
+  → Otras URLs externas → Intent ACTION_VIEW (navegador del sistema)
+
+onNewIntent() / manejarDeepLink():
+  → Recibe sportsvision://auth?token=UUID
+  → Carga /usuarios/auth/mobile/?token=UUID en el WebView
+  → El WebView procesa el token → login → redirige a dashboard
+
+verificarActualizacion():
+  → Se ejecuta en un hilo separado al iniciar la app
+  → GET https://web-production-f0f4b.up.railway.app/api/version/
+  → Compara version_code del servidor con CURRENT_VERSION_CODE
+  → Si servidor > local: muestra AlertDialog con opción "Actualizar"
+
+descargarEInstalar():
+  → Usa DownloadManager para descargar el APK a Downloads/
+  → BroadcastReceiver escucha ACTION_DOWNLOAD_COMPLETE
+  → Al terminar: instala el APK usando FileProvider + ACTION_VIEW
+
+------------------------------------------------------------------------
+13.5 CONSTANTE DE VERSIÓN
+------------------------------------------------------------------------
+En MainActivity.kt:
+  CURRENT_VERSION_CODE = 2   // Actualizar cada vez que se genere un nuevo APK
+
+En settings.py:
+  APP_VERSION_CODE = 2       // Debe coincidir con CURRENT_VERSION_CODE
+  APP_VERSION_NAME = '1.1'
+
+Endpoint de versión:
+  GET /api/version/
+  Respuesta JSON: { "version_code": 2, "version_name": "1.1",
+                    "apk_url": "https://.../static/app/SportsVision.apk" }
+
+------------------------------------------------------------------------
+13.6 FLUJO: Publicar una actualización de la App
+------------------------------------------------------------------------
+1. Hacer los cambios en el código
+2. En MainActivity.kt: incrementar CURRENT_VERSION_CODE (ej: 2 → 3)
+3. En settings.py: incrementar APP_VERSION_CODE (2 → 3) y APP_VERSION_NAME
+4. En Android Studio: Build → Generate App Bundles or APKs → Build APK(s)
+5. Copiar el APK generado a static/app/SportsVision.apk
+6. git add -A && git commit && git push
+7. Railway redespliega automáticamente
+8. La próxima vez que los usuarios abran la app, verán el diálogo de actualización
+
+
+================================================================================
+14. NUEVAS FUNCIONALIDADES DE USUARIO (Resumen)
+================================================================================
+
+------------------------------------------------------------------------
+14.1 Sidebar actualizado
+------------------------------------------------------------------------
+Orden del menú principal:
+  Home | Mis Rutinas | Nueva Rutina | Plan Semanal |
+  Progreso | Herramientas | Mis Dietas
+
+"Mis Rutinas" aparece antes de "Nueva Rutina" para acceso rápido
+a las rutinas existentes.
+
+------------------------------------------------------------------------
+14.2 Mis Rutinas — Buscador y Eliminación
+------------------------------------------------------------------------
+Página /rutinas/mis-rutinas/:
+  → Buscador en tiempo real: filtra por nombre de rutina o grupo muscular
+  → filtrarRutinas(q): oculta/muestra .rutina-item según data-nombre y data-musculos
+  → Botón "Eliminar" en cada tarjeta abre un modal de confirmación
+    con el nombre de la rutina
+  → El modal hace POST a /rutinas/eliminar/{id}/
+
+------------------------------------------------------------------------
+14.3 Editar Perfil — Objetivo y Limitaciones
+------------------------------------------------------------------------
+Página /usuarios/perfil/editar/ ahora incluye:
+  Sección "Mi objetivo": 6 cards con radio buttons
+  Sección "Condiciones de salud": checkboxes de 12 condiciones
+  El EditarPerfilForm guarda estos campos en UserProfile
+  Las limitaciones se guardan como JSONField
+
+------------------------------------------------------------------------
+14.4 Gestión de cuenta
+------------------------------------------------------------------------
+En /usuarios/perfil/ (al fondo de la página):
+  → "Desactivar cuenta": pausa el acceso (is_active=False)
+     El usuario NO puede iniciar sesión hasta reactivarla manualmente
+     Los datos se conservan
+  → "Eliminar cuenta": borra permanentemente al usuario y TODOS sus datos
+     Requiere escribir "ELIMINAR" para confirmar
+     Esta acción NO se puede deshacer
+
+
+================================================================================
+15. BASE DE DATOS ACTUALIZADA — MODELOS Y RELACIONES
+================================================================================
+
+User (Django Auth)
+  │
+  ├── UserProfile (OneToOne)
+  │     → objetivo, nivel, limitaciones, avatar_data (base64),
+  │       rol (usuario/profesional/admin_pro), codigo_pro,
+  │       suspendido_hasta, nota_moderacion
+  │
+  ├── MobileLoginToken (ForeignKey, varios por usuario)
+  │     → token UUID, is_used, is_new_user, picture_url
+  │     → Expira en 120 segundos
+  │
+  ├── EmailPreVerification (ForeignKey)
+  │     → codigo OTP, expira en 15 minutos
+  │
+  ├── SolicitudProfesional (OneToOne)
+  │     → especialidad, experiencia, motivo, estado, nota_admin
+  │
+  ├── RelacionProfesional (ForeignKey, muchas)
+  │     → profesional FK, estado, permisos granulares
+  │
+  ├── Rutina (ForeignKey, muchas por usuario)
+  │     └── EjercicioRutina → Ejercicio → GrupoMuscular
+  │
+  ├── Entrenamiento (ForeignKey)
+  │     └── SerieEntrenamiento → Ejercicio
+  │
+  ├── PlanDia (7 por usuario)
+  │
+  ├── AnotacionCalendario (ForeignKey)
+  ├── MedicionCorporal (ForeignKey)
+  ├── RegistroPeso (ForeignKey)
+  ├── CalculoCaloria (ForeignKey)
+  └── PlanNutricional (ForeignKey)
+
+
+================================================================================
                         FIN DEL DOCUMENTO
 ================================================================================
-SportsVision — Documentación generada Mayo 2026
+SportsVision — Documentación actualizada Mayo 2026
 Total de ejercicios en BD: 283  |  Grupos musculares: 13
 Apps: users, exercises, routines, progress, tools
+Nuevas funcionalidades: Google OAuth, App Android, Auto-update APK,
+                        Mis Rutinas con buscador, Gestión de cuenta
 ================================================================================
