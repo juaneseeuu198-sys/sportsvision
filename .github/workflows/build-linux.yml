@@ -45,6 +45,9 @@ jobs:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: Create empty db.sqlite3 for PyInstaller bundle
+        run: touch db.sqlite3
+
       - name: Build Linux binary
         run: pyinstaller SportsVision.spec --clean
 
@@ -87,6 +90,9 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: sportsvision.settings
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Create empty db.sqlite3 for PyInstaller bundle
+        run: New-Item -ItemType File -Path db.sqlite3 -Force
 
       - name: Build Windows executable
         run: pyinstaller SportsVision.spec --clean
