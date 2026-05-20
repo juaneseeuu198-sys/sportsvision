@@ -786,19 +786,23 @@ body.sv-body { background: #000 !important; }
   {% endif %}
 
   <!-- SIGUIENTE / TERMINAR -->
+  {% if es_ultimo %}
   <form method="post" style="margin:0;padding:12px 12px 20px;">
     {% csrf_token %}
-    <input type="hidden" name="action" value="siguiente_ejercicio">
-    {% if es_ultimo %}
+    <input type="hidden" name="action" value="terminar_entrenamiento">
     <button type="submit" class="btn-next finish">
       <i class="bi bi-trophy-fill me-2"></i> Finalizar entrenamiento
     </button>
-    {% else %}
+  </form>
+  {% else %}
+  <form method="post" style="margin:0;padding:12px 12px 20px;">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="siguiente_ejercicio">
     <button type="submit" class="btn-next">
       Siguiente ejercicio <i class="bi bi-arrow-right ms-1"></i>
     </button>
-    {% endif %}
   </form>
+  {% endif %}
 
 </div>
 {% endwith %}

@@ -58,6 +58,11 @@ class Ejercicio(models.Model):
         null=True, blank=True,
         help_text="Duración estimada en minutos (sólo para ejercicios de cardio/movilidad)"
     )
+    musculos_secundarios = models.TextField(blank=True, default='')
+    musculos_antagonistas = models.TextField(blank=True, default='')
+    errores_comunes = models.TextField(blank=True, default='')
+    variantes = models.TextField(blank=True, default='')
+    comentarios = models.TextField(blank=True, default='')
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:

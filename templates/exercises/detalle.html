@@ -221,6 +221,33 @@
     {% endfor %}
   </div>
 
+  <!-- Músculos involucrados -->
+  {% if ejercicio.musculos_secundarios or ejercicio.musculos_antagonistas %}
+  <div class="ex-card">
+    <div class="ex-card-title">
+      <i class="bi bi-diagram-3"></i> Músculos involucrados
+    </div>
+    {% if ejercicio.grupo_muscular %}
+    <div class="ex-info-row">
+      <span class="ex-info-label" style="min-width:130px;">Principal</span>
+      <span class="ex-info-val" style="color:#00d4aa;">{{ ejercicio.grupo_muscular.nombre }}</span>
+    </div>
+    {% endif %}
+    {% if ejercicio.musculos_secundarios %}
+    <div class="ex-info-row">
+      <span class="ex-info-label" style="min-width:130px;">Secundarios</span>
+      <span class="ex-info-val">{{ ejercicio.musculos_secundarios }}</span>
+    </div>
+    {% endif %}
+    {% if ejercicio.musculos_antagonistas %}
+    <div class="ex-info-row">
+      <span class="ex-info-label" style="min-width:130px;">Antagonistas</span>
+      <span class="ex-info-val" style="color:#9ca3af;">{{ ejercicio.musculos_antagonistas }}</span>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
   <!-- Instrucciones -->
   <div class="ex-card">
     <div class="ex-card-title">
@@ -247,6 +274,51 @@
       <p style="color:#6b7280;font-size:13px;margin:0;">Sin instrucciones todavía.</p>
     {% endif %}
   </div>
+
+  <!-- Errores comunes -->
+  {% if ejercicio.errores_comunes %}
+  <div class="ex-card">
+    <div class="ex-card-title">
+      <i class="bi bi-exclamation-triangle"></i> Errores comunes
+    </div>
+    <div class="ex-instructions" id="errText" style="display:none;">{{ ejercicio.errores_comunes }}</div>
+    <ul class="ex-steps" id="errList" style="list-style:none;padding:0;margin:0;"></ul>
+    <script>
+    (function(){
+      var raw = document.getElementById('errText').textContent;
+      var lines = raw.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+      var ul = document.getElementById('errList');
+      if(lines.length <= 1){
+        ul.outerHTML = '<p class="ex-instructions" style="color:rgba(248,113,113,.85);">' + raw + '</p>';
+      } else {
+        lines.forEach(function(line){
+          ul.innerHTML += '<li class="ex-step"><div class="ex-step-num" style="background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.3);color:#f87171;min-width:22px;height:22px;font-size:14px;">✕</div><div class="ex-step-text" style="color:rgba(248,113,113,.85);">'+line+'</div></li>';
+        });
+      }
+    })();
+    </script>
+  </div>
+  {% endif %}
+
+  <!-- Comentarios del entrenador -->
+  {% if ejercicio.comentarios %}
+  <div class="ex-card" style="border-color:rgba(0,212,170,.15);background:rgba(0,212,170,.04);">
+    <div class="ex-card-title">
+      <i class="bi bi-lightbulb"></i> Consejo del entrenador
+    </div>
+    <p style="color:rgba(255,255,255,.8);font-size:14px;line-height:1.7;margin:0;">{{ ejercicio.comentarios }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Variantes -->
+  {% if ejercicio.variantes %}
+  <div class="ex-card">
+    <div class="ex-card-title">
+      <i class="bi bi-shuffle"></i> Variantes
+    </div>
+    <p style="color:rgba(255,255,255,.75);font-size:13px;line-height:1.7;margin:0;">{{ ejercicio.variantes }}</p>
+  </div>
+  {% endif %}
 
   <!-- Detalles -->
   <div class="ex-card">

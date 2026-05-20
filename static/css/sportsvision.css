@@ -195,10 +195,15 @@ body.sv-body {
 
 /* ── Fondos por sección (en el body directamente — compatible con todos los WebViews) ── */
 body.page-home {
-  background:
-    radial-gradient(ellipse at 15% 25%, rgba(67,97,238,.55) 0%, transparent 50%),
-    radial-gradient(ellipse at 85% 80%, rgba(0,212,170,.4) 0%, transparent 50%),
-    #07081a;
+  background-color: #07081a;
+  background-image:
+    radial-gradient(ellipse at 15% 25%, rgba(67,97,238,.45) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 80%, rgba(0,212,170,.3) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(7,8,26,.72) 0%, rgba(7,8,26,.55) 40%, rgba(7,8,26,.78) 100%),
+    url('/static/images/gym_bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
 }
 body.page-perfil {
   background:
