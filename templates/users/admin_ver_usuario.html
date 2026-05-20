@@ -464,9 +464,8 @@
             {% if r.es_auto_generada %}<span style="background:rgba(107,114,128,.15);border:1px solid rgba(107,114,128,.3);border-radius:6px;padding:1px 6px;font-size:10px;color:#9ca3af;margin-left:4px;">Auto</span>{% endif %}
           </div>
         </div>
-        <!-- Mini muscle map -->
-        <div style="flex-shrink:0;">
-          {% include 'partials/_muscle_map.html' with map_slugs=r|muscle_slugs_str %}
+        <div style="flex-shrink:0;font-size:11px;color:var(--sv-muted);">
+          {{ r|muscle_slugs_str|default:"" }}
         </div>
       </div>
       <div class="rutina-body" id="rb-{{ r.id }}">
