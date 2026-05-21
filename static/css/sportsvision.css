@@ -197,7 +197,7 @@ body.sv-body {
 body.page-home {
   background-color: #07081a;
   background-image:
-    linear-gradient(180deg, rgba(7,8,26,.7) 0%, rgba(7,8,26,.52) 40%, rgba(7,8,26,.75) 100%),
+    linear-gradient(180deg, rgba(7,8,26,.85) 0%, rgba(7,8,26,.75) 40%, rgba(7,8,26,.88) 100%),
     url('/static/images/gym_bg.jpg');
   background-size: cover;
   background-position: center top;
