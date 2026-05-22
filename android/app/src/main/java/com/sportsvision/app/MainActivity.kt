@@ -192,6 +192,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Manejar descargas (PDF, APK, etc.) desde el WebView
+        webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
+            try {
+                val request = DownloadManager.Request(Uri.parse(url)).apply {
+                    setMimeType(mimetype)
+                    addRequestHeader("Cookie", CookieManager.getInstance().getCookie(url))
+                    addRequestHeader("User-Agent", userAgent)
+                    setDescription("Descargando archivo...")
+                    setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    setDestinationInExternalPublicDir(
+                        Environment.DIRECTORY_DOWNLOADS,
+                        android.webkit.URLUtil.guessFileName(url, contentDisposition, mimetype)
+                    )
+                }
+                val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                dm.enqueue(request)
+                Toast.makeText(this, "Descargando PDF...", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                // Fallback: abrir en navegador
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            }
+        }
+
         webView.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
                 webView: WebView?,
