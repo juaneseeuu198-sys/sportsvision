@@ -18,4 +18,6 @@ urlpatterns = [
     path('mis-dietas/activar-plan/<int:plan_id>/',  views.activar_plan,            name='activar_plan'),
     # FitBot
     path('asistente/',                              views.chatbot,                 name='chatbot'),
+    # PDF downloads
+    path('mis-dietas/<int:plan_id>/pdf/',           views.descargar_dieta_pdf,     name='descargar_dieta_pdf'),
 ]

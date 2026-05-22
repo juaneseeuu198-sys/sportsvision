@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from .forms import CaloriasForm, IMCForm, PlanNutricionalForm
 from .models import CalculoCaloria, PlanNutricional
@@ -881,3 +881,105 @@ INSTRUCCIONES:
         return JsonResponse({'response': bot_response})
 
     return redirect('herramientas')
+
+
+@login_required
+def descargar_dieta_pdf(request, plan_id):
+    from io import BytesIO
+    from django.utils import timezone
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.units import cm
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    )
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+
+    plan = get_object_or_404(PlanNutricional, id=plan_id, usuario=request.user)
+    dias = plan.plan_json if isinstance(plan.plan_json, list) else []
+
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4,
+                            leftMargin=2*cm, rightMargin=2*cm,
+                            topMargin=2*cm, bottomMargin=2*cm)
+    styles = getSampleStyleSheet()
+
+    def mk(name, **kw):
+        return ParagraphStyle(name, parent=styles['Normal'], **kw)
+
+    C = colors.HexColor
+    story = []
+    story.append(Paragraph('SPORTSVISION',
+        mk('brand', fontSize=11, textColor=C('#6b7280'), spaceAfter=2)))
+    story.append(Paragraph(plan.nombre or 'Plan Nutricional',
+        mk('title', fontSize=22, textColor=C('#00d4aa'), spaceAfter=6)))
+
+    objetivo = plan.objetivo or '-'
+    resumen = (
+        f'Objetivo: {objetivo}  ·  {plan.calorias_dia} kcal/dia  ·  '
+        f'Proteinas: {plan.proteinas_g}g  ·  Carbos: {plan.carbos_g}g  ·  '
+        f'Grasas: {plan.grasas_g}g'
+    )
+    story.append(Paragraph(resumen,
+        mk('sub', fontSize=9, textColor=C('#9ca3af'), spaceAfter=8)))
+    story.append(HRFlowable(width='100%', thickness=1, color=C('#1e293b')))
+    story.append(Spacer(1, 0.4*cm))
+
+    for i, dia_data in enumerate(dias):
+        dia_nombre = dia_data.get('dia', '')
+        meals = dia_data.get('meals', [])
+
+        story.append(Paragraph(dia_nombre,
+            mk(f'dia{i}', fontSize=12, textColor=C('#00d4aa'),
+               fontName='Helvetica-Bold', spaceBefore=10, spaceAfter=4)))
+
+        header = ['Comida', 'Hora', 'Descripcion', 'Kcal', 'P', 'C', 'G']
+        data = [header]
+        for m in meals:
+            p_val = str(m.get('p', '')) + 'g'
+            c_val = str(m.get('c', '')) + 'g'
+            f_val = str(m.get('f', '')) + 'g'
+            data.append([
+                Paragraph(m.get('n', ''), mk(f'mn{i}', fontSize=8, textColor=C('#e2e8f0'))),
+                m.get('time', ''),
+                Paragraph(m.get('d', ''), mk(f'md{i}', fontSize=7, textColor=C('#9ca3af'))),
+                str(m.get('k', '')),
+                p_val, c_val, f_val,
+            ])
+
+        tbl = Table(data,
+                    colWidths=[3.5*cm, 1.5*cm, 6*cm, 1.2*cm, 1*cm, 1*cm, 1*cm],
+                    repeatRows=1)
+        tbl.setStyle(TableStyle([
+            ('BACKGROUND',    (0, 0), (-1, 0),  C('#0d1b2a')),
+            ('TEXTCOLOR',     (0, 0), (-1, 0),  C('#00d4aa')),
+            ('FONTNAME',      (0, 0), (-1, 0),  'Helvetica-Bold'),
+            ('FONTSIZE',      (0, 0), (-1, 0),  8),
+            ('ROWBACKGROUNDS',(0, 1), (-1, -1), [C('#111827'), C('#1a2035')]),
+            ('TEXTCOLOR',     (0, 1), (-1, -1), C('#e2e8f0')),
+            ('FONTSIZE',      (0, 1), (-1, -1), 8),
+            ('ALIGN',         (0, 0), (-1, -1), 'CENTER'),
+            ('ALIGN',         (0, 0), (0, -1),  'LEFT'),
+            ('ALIGN',         (2, 0), (2, -1),  'LEFT'),
+            ('GRID',          (0, 0), (-1, -1), 0.25, C('#374151')),
+            ('TOPPADDING',    (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('LEFTPADDING',   (0, 0), (-1, -1), 5),
+            ('VALIGN',        (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        story.append(tbl)
+
+    story.append(Spacer(1, 0.6*cm))
+    fecha = timezone.now().strftime('%d/%m/%Y %H:%M')
+    story.append(Paragraph(
+        f'Generado por SportsVision · {fecha}',
+        mk('footer', fontSize=7, textColor=C('#4b5563'), alignment=TA_CENTER)))
+
+    doc.build(story)
+    buf.seek(0)
+    filename = (plan.nombre or 'dieta').replace(' ', '_').lower()
+    response = HttpResponse(buf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="dieta_{filename}.pdf"'
+    return response
+

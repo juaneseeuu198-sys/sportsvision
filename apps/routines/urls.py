@@ -14,4 +14,5 @@ urlpatterns = [
     path('plan-semanal/', views.plan_semanal, name='plan_semanal'),
     path('plan-semanal/generar/', views.generar_plan_auto, name='generar_plan_auto'),
     path('plan-semanal/recomendado/', views.aplicar_plan_recomendado, name='plan_recomendado'),
+    path('<int:rutina_id>/pdf/', views.descargar_rutina_pdf, name='descargar_rutina_pdf'),
 ]

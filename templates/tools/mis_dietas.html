@@ -294,6 +294,11 @@ html.light-mode .plan-modal-close:hover { background: rgba(0,0,0,.12); }
             <button type="submit" class="btn-dieta-activar w-100"><i class="bi bi-star me-1"></i>Usar este plan</button>
           </form>
           {% endif %}
+          <a href="{% url 'descargar_dieta_pdf' p.id %}"
+             style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(0,212,170,.12);border:1.5px solid rgba(0,212,170,.3);color:#00d4aa;text-decoration:none;transition:background .2s;"
+             title="Descargar PDF">
+            <i class="bi bi-file-earmark-pdf-fill"></i>
+          </a>
           <form method="post" action="{% url 'eliminar_plan' p.id %}">
             {% csrf_token %}
             <button type="submit" class="btn-dieta-del" onclick="return confirm('¿Eliminar este plan?')"><i class="bi bi-trash3"></i></button>

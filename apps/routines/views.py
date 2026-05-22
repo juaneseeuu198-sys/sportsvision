@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import json
 
 from .models import Rutina, EjercicioRutina, Entrenamiento, SerieEntrenamiento, PlanDia
@@ -858,3 +858,97 @@ def eliminar_rutina(request, rutina_id):
             return JsonResponse({'ok': True})
         messages.success(request, 'Rutina eliminada correctamente.')
     return redirect('mis_rutinas')
+
+
+@login_required
+def descargar_rutina_pdf(request, rutina_id):
+    from io import BytesIO
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+
+    rutina = get_object_or_404(Rutina, id=rutina_id, usuario=request.user)
+    ejercicios = rutina.ejercicios_rutina.select_related(
+        'ejercicio', 'ejercicio__grupo_muscular'
+    ).order_by('orden')
+
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4,
+                            leftMargin=2*cm, rightMargin=2*cm,
+                            topMargin=2*cm, bottomMargin=2*cm)
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Title'],
+                                 fontSize=22, textColor=colors.HexColor('#00d4aa'),
+                                 spaceAfter=6)
+    sub_style = ParagraphStyle('Sub', parent=styles['Normal'],
+                               fontSize=10, textColor=colors.HexColor('#6b7280'),
+                               spaceAfter=4)
+    label_style = ParagraphStyle('Label', parent=styles['Normal'],
+                                 fontSize=9, textColor=colors.HexColor('#9ca3af'))
+
+    story = []
+
+    # Encabezado
+    story.append(Paragraph('SPORTSVISION', ParagraphStyle('Brand', parent=styles['Normal'],
+                 fontSize=11, textColor=colors.HexColor('#6b7280'), spaceAfter=2)))
+    story.append(Paragraph(rutina.nombre, title_style))
+    story.append(Paragraph(
+        f'Nivel: {rutina.get_nivel_display()}  ·  {ejercicios.count()} ejercicios  ·  '
+        f'Creada: {rutina.creada_en.strftime("%d/%m/%Y")}',
+        sub_style))
+    if rutina.descripcion:
+        story.append(Paragraph(rutina.descripcion, label_style))
+    story.append(Spacer(1, 0.4*cm))
+    story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#1e293b')))
+    story.append(Spacer(1, 0.4*cm))
+
+    # Tabla de ejercicios
+    header = ['#', 'Ejercicio', 'Grupo muscular', 'Series', 'Reps']
+    data = [header]
+    for er in ejercicios:
+        grupo = er.ejercicio.grupo_muscular.nombre if er.ejercicio.grupo_muscular else '—'
+        data.append([
+            str(er.orden),
+            er.ejercicio.nombre,
+            grupo,
+            str(er.series_sugeridas),
+            str(er.repeticiones_sugeridas) if not er.ejercicio.duracion_minutos
+            else f'{er.ejercicio.duracion_minutos} min',
+        ])
+
+    col_widths = [1*cm, 7*cm, 4*cm, 2*cm, 2*cm]
+    tbl = Table(data, colWidths=col_widths, repeatRows=1)
+    tbl.setStyle(TableStyle([
+        ('BACKGROUND',   (0, 0), (-1, 0),  colors.HexColor('#0d1b2a')),
+        ('TEXTCOLOR',    (0, 0), (-1, 0),  colors.HexColor('#00d4aa')),
+        ('FONTNAME',     (0, 0), (-1, 0),  'Helvetica-Bold'),
+        ('FONTSIZE',     (0, 0), (-1, 0),  9),
+        ('ALIGN',        (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN',        (1, 0), (1, -1),  'LEFT'),
+        ('ALIGN',        (2, 0), (2, -1),  'LEFT'),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#111827'), colors.HexColor('#1a2035')]),
+        ('TEXTCOLOR',    (0, 1), (-1, -1), colors.HexColor('#e2e8f0')),
+        ('FONTSIZE',     (0, 1), (-1, -1), 9),
+        ('GRID',         (0, 0), (-1, -1), 0.25, colors.HexColor('#374151')),
+        ('TOPPADDING',   (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), 6),
+        ('LEFTPADDING',  (0, 0), (-1, -1), 6),
+    ]))
+    story.append(tbl)
+
+    story.append(Spacer(1, 0.6*cm))
+    story.append(Paragraph(
+        f'Generado por SportsVision · {timezone.now().strftime("%d/%m/%Y %H:%M")}',
+        ParagraphStyle('Footer', parent=styles['Normal'],
+                       fontSize=7, textColor=colors.HexColor('#4b5563'), alignment=TA_CENTER)))
+
+    doc.build(story)
+    buf.seek(0)
+    filename = rutina.nombre.replace(' ', '_').lower()
+    response = HttpResponse(buf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="rutina_{filename}.pdf"'
+    return response

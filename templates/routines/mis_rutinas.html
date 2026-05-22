@@ -175,6 +175,11 @@
             <a href="{% url 'iniciar_entrenamiento' rutina.id %}" class="btn-iniciar">
               <i class="bi bi-play-fill"></i> Iniciar
             </a>
+            <a href="{% url 'descargar_rutina_pdf' rutina.id %}"
+               style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(0,212,170,.12);border:1.5px solid rgba(0,212,170,.3);color:#00d4aa;text-decoration:none;transition:background .2s;"
+               title="Descargar PDF">
+              <i class="bi bi-file-earmark-pdf-fill"></i>
+            </a>
             <button type="button" class="btn-eliminar" title="Eliminar"
                     onclick="confirmarEliminar('{{ rutina.id }}', '{{ rutina.nombre|escapejs }}', this)">
               <i class="bi bi-trash3"></i>
