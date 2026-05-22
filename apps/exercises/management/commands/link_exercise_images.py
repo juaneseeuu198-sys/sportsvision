@@ -70,12 +70,8 @@ class Command(BaseCommand):
                 ej.imagen_static = f'images/{folder}/{slug}.jpg'
                 changed = True
 
-            if gif_src.exists() and (overwrite or not ej.gif_static):
-                ej.gif_static = f'images/{folder}/gif/{slug}.gif'
-                changed = True
-
             if changed:
-                ej.save(update_fields=['imagen_static', 'gif_static'])
+                ej.save(update_fields=['imagen_static'])
                 updated += 1
             elif not img_src.exists() and not gif_src.exists():
                 not_found += 1
