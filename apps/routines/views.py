@@ -863,17 +863,22 @@ def eliminar_rutina(request, rutina_id):
 @login_required
 def descargar_rutina_pdf(request, rutina_id):
     from io import BytesIO
+    from pathlib import Path
     from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
     from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+        HRFlowable, Image as RLImage,
+    )
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.enums import TA_CENTER
+    from django.conf import settings
 
     rutina = get_object_or_404(Rutina, id=rutina_id, usuario=request.user)
-    ejercicios = rutina.ejercicios_rutina.select_related(
+    ejercicios = list(rutina.ejercicios_rutina.select_related(
         'ejercicio', 'ejercicio__grupo_muscular'
-    ).order_by('orden')
+    ).order_by('orden'))
 
     buf = BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4,
@@ -881,64 +886,81 @@ def descargar_rutina_pdf(request, rutina_id):
                             topMargin=2*cm, bottomMargin=2*cm)
 
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('Title', parent=styles['Title'],
-                                 fontSize=22, textColor=colors.HexColor('#00d4aa'),
-                                 spaceAfter=6)
-    sub_style = ParagraphStyle('Sub', parent=styles['Normal'],
-                               fontSize=10, textColor=colors.HexColor('#6b7280'),
-                               spaceAfter=4)
-    label_style = ParagraphStyle('Label', parent=styles['Normal'],
-                                 fontSize=9, textColor=colors.HexColor('#9ca3af'))
+    C = colors.HexColor
+
+    def mk(name, **kw):
+        return ParagraphStyle(name, parent=styles['Normal'], **kw)
 
     story = []
 
-    # Encabezado
-    story.append(Paragraph('SPORTSVISION', ParagraphStyle('Brand', parent=styles['Normal'],
-                 fontSize=11, textColor=colors.HexColor('#6b7280'), spaceAfter=2)))
-    story.append(Paragraph(rutina.nombre, title_style))
+    # ── Encabezado ──────────────────────────────────────
+    story.append(Paragraph('SPORTSVISION', mk('brand', fontSize=11, textColor=C('#6b7280'), spaceAfter=2)))
+    story.append(Paragraph(rutina.nombre,  mk('tit',   fontSize=22, textColor=C('#00d4aa'), spaceAfter=6)))
     story.append(Paragraph(
-        f'Nivel: {rutina.get_nivel_display()}  ·  {ejercicios.count()} ejercicios  ·  '
+        f'Nivel: {rutina.get_nivel_display()}  ·  {len(ejercicios)} ejercicios  ·  '
         f'Creada: {rutina.creada_en.strftime("%d/%m/%Y")}',
-        sub_style))
+        mk('sub', fontSize=10, textColor=C('#6b7280'), spaceAfter=4)))
     if rutina.descripcion:
-        story.append(Paragraph(rutina.descripcion, label_style))
-    story.append(Spacer(1, 0.4*cm))
-    story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#1e293b')))
+        story.append(Paragraph(rutina.descripcion, mk('desc', fontSize=9, textColor=C('#9ca3af'))))
+    story.append(Spacer(1, 0.3*cm))
+    story.append(HRFlowable(width='100%', thickness=1, color=C('#1e293b')))
     story.append(Spacer(1, 0.4*cm))
 
-    # Tabla de ejercicios
-    header = ['#', 'Ejercicio', 'Grupo muscular', 'Series', 'Reps']
-    data = [header]
+    # ── Ejercicios con imagen ────────────────────────────
+    IMG_SIZE = 2.8 * cm
+    static_base = settings.BASE_DIR / 'static'
+
+    name_style  = mk('ename',  fontSize=11, fontName='Helvetica-Bold', textColor=C('#f1f5f9'), spaceAfter=3)
+    meta_style  = mk('emeta',  fontSize=8,  textColor=C('#6b7280'))
+    instr_style = mk('einstr', fontSize=8,  textColor=C('#94a3b8'), leading=12)
+
     for er in ejercicios:
-        grupo = er.ejercicio.grupo_muscular.nombre if er.ejercicio.grupo_muscular else '—'
-        data.append([
-            str(er.orden),
-            er.ejercicio.nombre,
-            grupo,
-            str(er.series_sugeridas),
-            str(er.repeticiones_sugeridas) if not er.ejercicio.duracion_minutos
-            else f'{er.ejercicio.duracion_minutos} min',
-        ])
+        ej = er.ejercicio
+        grupo = ej.grupo_muscular.nombre if ej.grupo_muscular else '—'
+        reps  = (f'{er.ejercicio.duracion_minutos} min'
+                 if ej.duracion_minutos else
+                 f'{er.series_sugeridas} series × {er.repeticiones_sugeridas} reps')
 
-    col_widths = [1*cm, 7*cm, 4*cm, 2*cm, 2*cm]
-    tbl = Table(data, colWidths=col_widths, repeatRows=1)
-    tbl.setStyle(TableStyle([
-        ('BACKGROUND',   (0, 0), (-1, 0),  colors.HexColor('#0d1b2a')),
-        ('TEXTCOLOR',    (0, 0), (-1, 0),  colors.HexColor('#00d4aa')),
-        ('FONTNAME',     (0, 0), (-1, 0),  'Helvetica-Bold'),
-        ('FONTSIZE',     (0, 0), (-1, 0),  9),
-        ('ALIGN',        (0, 0), (-1, -1), 'CENTER'),
-        ('ALIGN',        (1, 0), (1, -1),  'LEFT'),
-        ('ALIGN',        (2, 0), (2, -1),  'LEFT'),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#111827'), colors.HexColor('#1a2035')]),
-        ('TEXTCOLOR',    (0, 1), (-1, -1), colors.HexColor('#e2e8f0')),
-        ('FONTSIZE',     (0, 1), (-1, -1), 9),
-        ('GRID',         (0, 0), (-1, -1), 0.25, colors.HexColor('#374151')),
-        ('TOPPADDING',   (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING',(0, 0), (-1, -1), 6),
-        ('LEFTPADDING',  (0, 0), (-1, -1), 6),
-    ]))
-    story.append(tbl)
+        # Intentar cargar la imagen del ejercicio
+        img_cell = ''
+        if ej.imagen_static:
+            img_path = static_base / ej.imagen_static
+            if img_path.exists():
+                try:
+                    img_cell = RLImage(str(img_path), width=IMG_SIZE, height=IMG_SIZE)
+                    img_cell.hAlign = 'CENTER'
+                except Exception:
+                    img_cell = ''
+
+        # Instrucciones (máx. 3 líneas)
+        instrucciones = ''
+        if ej.instrucciones:
+            lineas = [l.strip() for l in ej.instrucciones.split('\n') if l.strip()][:3]
+            instrucciones = '\n'.join(f'• {l}' for l in lineas)
+
+        info_cell = [
+            Paragraph(f'{er.orden}. {ej.nombre}', name_style),
+            Paragraph(f'{grupo}  ·  {reps}', meta_style),
+        ]
+        if instrucciones:
+            info_cell.append(Spacer(1, 2))
+            info_cell.append(Paragraph(instrucciones, instr_style))
+
+        row = [[img_cell, info_cell]]
+        tbl = Table(row, colWidths=[IMG_SIZE + 0.4*cm, None])
+        tbl.setStyle(TableStyle([
+            ('BACKGROUND',   (0, 0), (-1, -1), C('#111827')),
+            ('BOX',          (0, 0), (-1, -1), 0.5, C('#1e293b')),
+            ('VALIGN',       (0, 0), (-1, -1), 'TOP'),
+            ('TOPPADDING',   (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING',(0, 0), (-1, -1), 8),
+            ('LEFTPADDING',  (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+            ('ALIGN',        (0, 0), (0, -1),  'CENTER'),
+            ('VALIGN',       (0, 0), (0, -1),  'MIDDLE'),
+        ]))
+        story.append(tbl)
+        story.append(Spacer(1, 0.25*cm))
 
     story.append(Spacer(1, 0.6*cm))
     story.append(Paragraph(
