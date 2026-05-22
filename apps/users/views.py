@@ -1183,16 +1183,31 @@ def google_callback(request):
         if created:
             request.session['google_picture_url'] = picture
             request.session.save()
-        html = f"""<!DOCTYPE html><html><head><meta charset="utf-8">
-        <meta http-equiv="refresh" content="2;url=sportsvision://auth?token={mobile_token.token}">
-        </head><body style="background:#0b0c18;color:#fff;font-family:sans-serif;
+        token = mobile_token.token
+        # intent:// le dice a Chrome que lance el Intent de Android directamente,
+        # evitando el problema de custom schemes en Chrome Custom Tabs
+        intent_url = (
+            f"intent://auth?token={token}"
+            f"#Intent;scheme=sportsvision;package=com.sportsvision.app;"
+            f"S.browser_fallback_url=https%3A%2F%2Fweb-production-f0f4b.up.railway.app;end"
+        )
+        html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"></head>
+        <body style="background:#0b0c18;color:#fff;font-family:sans-serif;
         display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;">
         <div>
-          <div style="font-size:48px;margin-bottom:16px;">✅</div>
-          <h2 style="color:#00d4aa;">¡Autenticado!</h2>
+          <div style="font-size:48px;margin-bottom:16px;">&#x2705;</div>
+          <h2 style="color:#00d4aa;">Autenticado</h2>
           <p style="color:#aaa;">Volviendo a SportsVision...</p>
-          <script>window.location='sportsvision://auth?token={mobile_token.token}';</script>
-        </div></body></html>"""
+        </div>
+        <script>
+          // intent:// funciona en Chrome para lanzar apps Android desde Custom Tabs
+          window.location = "{intent_url}";
+          // Fallback: sportsvision:// directo (funciona en algunos navegadores)
+          setTimeout(function() {{
+            window.location = "sportsvision://auth?token={token}";
+          }}, 1500);
+        </script>
+        </body></html>"""
         from django.http import HttpResponse
         return HttpResponse(html)
 
