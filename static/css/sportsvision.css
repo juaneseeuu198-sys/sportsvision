@@ -197,10 +197,10 @@ body.sv-body {
 body.page-home {
   background-color: #07081a;
   background-image:
-    linear-gradient(180deg, rgba(7,8,26,.55) 0%, rgba(7,8,26,.42) 40%, rgba(7,8,26,.62) 100%),
-    url('/static/images/gym_bg.jpg');
+    linear-gradient(180deg, rgba(7,8,26,.72) 0%, rgba(7,8,26,.60) 40%, rgba(7,8,26,.78) 100%),
+    url('/static/images/fondo.jpg');
   background-size: cover;
-  background-position: center top;
+  background-position: center center;
   background-attachment: fixed;
 }
 body.page-perfil,
