@@ -50,6 +50,9 @@ class Command(BaseCommand):
 
         updated = skipped = not_found = 0
 
+        # Limpiar gif_static (GIFs no están en el repo — evita imágenes rotas)
+        Ejercicio.objects.exclude(gif_static='').update(gif_static='')
+
         for ej in Ejercicio.objects.select_related('grupo_muscular').all():
             if not ej.grupo_muscular:
                 not_found += 1
@@ -62,7 +65,6 @@ class Command(BaseCommand):
 
             slug = _slug(ej.nombre)
             img_src = static_base / folder / f'{slug}.jpg'
-            gif_src = static_base / folder / 'gif' / f'{slug}.gif'
 
             changed = False
 
