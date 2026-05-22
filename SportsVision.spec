@@ -5,7 +5,7 @@ a = Analysis(
     ['launcher.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates'), ('static', 'static'), ('staticfiles', 'staticfiles'), ('apps', 'apps'), ('sportsvision', 'sportsvision'), ('db.sqlite3', '.')],
+    datas=[('templates', 'templates'), ('static', 'static'), ('staticfiles', 'staticfiles'), ('apps', 'apps'), ('sportsvision', 'sportsvision'), ('db.sqlite3', '.'), ('.env', '.')],
     hiddenimports=[
         'django.contrib.admin',
         'django.contrib.auth',
