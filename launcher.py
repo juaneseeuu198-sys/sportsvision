@@ -98,6 +98,8 @@ def main():
         sys.exit(1)
 
     os.environ['DATABASE_URL'] = db_url
+    # En el exe siempre corre en localhost
+    os.environ['FRONTEND_URL'] = 'http://127.0.0.1:8000'
     os.chdir(meipass())
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sportsvision.settings')
 
