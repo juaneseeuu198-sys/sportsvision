@@ -71,7 +71,9 @@
       {% for ex in ejercicios %}
         <a class="sv-ex-card" href="{% url 'ejercicio_detalle' ex.id %}">
           <div class="sv-ex-media">
-            {% if ex.imagen %}
+            {% if ex.imagen_static %}
+              <img src="{% static ex.imagen_static %}" alt="{{ ex.nombre }}">
+            {% elif ex.imagen %}
               <img src="{{ ex.imagen.url }}" alt="{{ ex.nombre }}">
             {% elif ex.grupo_muscular %}
               <img src="{% static 'img/muscles/' %}{{ ex.grupo_muscular.slug }}.svg"

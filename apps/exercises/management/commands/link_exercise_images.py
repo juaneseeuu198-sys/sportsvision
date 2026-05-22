@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import shutil
 import unicodedata
 from pathlib import Path
 
@@ -39,19 +38,15 @@ def _slug(name: str) -> str:
 
 
 class Command(BaseCommand):
-    help = 'Copia imágenes de static/images/ a media/ y las asigna a cada ejercicio.'
+    help = 'Asigna imagen_static/gif_static a cada ejercicio usando rutas de /static/images/.'
 
     def add_arguments(self, parser):
         parser.add_argument('--overwrite', action='store_true',
-                            help='Sobreescribe imágenes ya asignadas.')
+                            help='Sobreescribe rutas ya asignadas.')
 
     def handle(self, *args, **options):
         overwrite = options['overwrite']
         static_base: Path = settings.BASE_DIR / 'static' / 'images'
-        media_img: Path = settings.MEDIA_ROOT / 'ejercicios'
-        media_gif: Path = settings.MEDIA_ROOT / 'ejercicios' / 'gifs'
-        media_img.mkdir(parents=True, exist_ok=True)
-        media_gif.mkdir(parents=True, exist_ok=True)
 
         updated = skipped = not_found = 0
 
@@ -71,27 +66,22 @@ class Command(BaseCommand):
 
             changed = False
 
-            if img_src.exists() and (overwrite or not ej.imagen):
-                dest = media_img / f'{slug}.jpg'
-                shutil.copy2(img_src, dest)
-                ej.imagen = f'ejercicios/{slug}.jpg'
+            if img_src.exists() and (overwrite or not ej.imagen_static):
+                ej.imagen_static = f'images/{folder}/{slug}.jpg'
                 changed = True
 
-            if gif_src.exists() and (overwrite or not ej.gif):
-                dest = media_gif / f'{slug}.gif'
-                shutil.copy2(gif_src, dest)
-                ej.gif = f'ejercicios/gifs/{slug}.gif'
+            if gif_src.exists() and (overwrite or not ej.gif_static):
+                ej.gif_static = f'images/{folder}/gif/{slug}.gif'
                 changed = True
 
             if changed:
-                ej.save(update_fields=['imagen', 'gif'])
+                ej.save(update_fields=['imagen_static', 'gif_static'])
                 updated += 1
-                self.stdout.write(f'  OK {ej.nombre}')
             elif not img_src.exists() and not gif_src.exists():
                 not_found += 1
             else:
                 skipped += 1
 
         self.stdout.write(self.style.SUCCESS(
-            f'\nListo. Actualizados: {updated} | Ya tenían imagen: {skipped} | Sin archivo: {not_found}'
+            f'Listo. Actualizados: {updated} | Ya tenian imagen: {skipped} | Sin archivo: {not_found}'
         ))

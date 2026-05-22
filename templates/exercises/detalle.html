@@ -150,10 +150,16 @@
 
   <!-- Hero -->
   <div class="ex-hero">
-    {% if ejercicio.gif %}
+    {% if ejercicio.gif_static %}
+      <video autoplay loop muted playsinline preload="auto">
+        <source src="{% static ejercicio.gif_static %}">
+      </video>
+    {% elif ejercicio.gif %}
       <video autoplay loop muted playsinline preload="auto">
         <source src="{{ ejercicio.gif.url }}">
       </video>
+    {% elif ejercicio.imagen_static %}
+      <img src="{% static ejercicio.imagen_static %}" alt="{{ ejercicio.nombre }}">
     {% elif ejercicio.imagen %}
       <img src="{{ ejercicio.imagen.url }}" alt="{{ ejercicio.nombre }}">
     {% else %}

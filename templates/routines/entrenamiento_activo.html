@@ -537,8 +537,12 @@ body.sv-body { background: #000 !important; }
       linear-gradient(160deg, #080808 0%, #0a0a0a 100%)
     {% endif %}
   ;"></div>
-  {% if ejercicio_actual.ejercicio.gif %}
+  {% if ejercicio_actual.ejercicio.gif_static %}
+    <img class="wk-bg-img" src="{% static ejercicio_actual.ejercicio.gif_static %}" alt="">
+  {% elif ejercicio_actual.ejercicio.gif %}
     <img class="wk-bg-img" src="{{ ejercicio_actual.ejercicio.gif.url }}" alt="">
+  {% elif ejercicio_actual.ejercicio.imagen_static %}
+    <img class="wk-bg-img" src="{% static ejercicio_actual.ejercicio.imagen_static %}" alt="">
   {% elif ejercicio_actual.ejercicio.imagen %}
     <img class="wk-bg-img" src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="">
   {% else %}
@@ -584,8 +588,12 @@ body.sv-body { background: #000 !important; }
       <input type="hidden" name="idx" value="{{ i }}">
       <button type="submit" class="ex-carousel-item {% if i < ejercicio_idx %}done{% elif i == ejercicio_idx %}current{% endif %}" style="background:none;border:none;padding:0;cursor:pointer;">
         <div class="ex-carousel-circle">
-          {% if ej.ejercicio.gif %}
+          {% if ej.ejercicio.gif_static %}
+            <img src="{% static ej.ejercicio.gif_static %}" alt="">
+          {% elif ej.ejercicio.gif %}
             <img src="{{ ej.ejercicio.gif.url }}" alt="">
+          {% elif ej.ejercicio.imagen_static %}
+            <img src="{% static ej.ejercicio.imagen_static %}" alt="">
           {% elif ej.ejercicio.imagen %}
             <img src="{{ ej.ejercicio.imagen.url }}" alt="">
           {% else %}
@@ -604,11 +612,18 @@ body.sv-body { background: #000 !important; }
 
   <!-- EXERCISE IMAGE (flotante, encima del card) -->
   <div class="ex-image-wrap" style="margin:8px 0 -12px;">
-    {% if ejercicio_actual.ejercicio.gif %}
+    {% if ejercicio_actual.ejercicio.gif_static %}
+      <video autoplay loop muted playsinline preload="auto"
+             style="width:100%;max-height:240px;object-fit:contain;filter:drop-shadow(0 8px 32px rgba(0,0,0,.6));">
+        <source src="{% static ejercicio_actual.ejercicio.gif_static %}">
+      </video>
+    {% elif ejercicio_actual.ejercicio.gif %}
       <video autoplay loop muted playsinline preload="auto"
              style="width:100%;max-height:240px;object-fit:contain;filter:drop-shadow(0 8px 32px rgba(0,0,0,.6));">
         <source src="{{ ejercicio_actual.ejercicio.gif.url }}">
       </video>
+    {% elif ejercicio_actual.ejercicio.imagen_static %}
+      <img src="{% static ejercicio_actual.ejercicio.imagen_static %}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
     {% elif ejercicio_actual.ejercicio.imagen %}
       <img src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
     {% else %}

@@ -49,6 +49,8 @@ class Ejercicio(models.Model):
     equipos = models.ManyToManyField(Equipo, blank=True, related_name='ejercicios')
     imagen = models.ImageField(upload_to='ejercicios/', null=True, blank=True)
     gif = models.FileField(upload_to='ejercicios/gifs/', null=True, blank=True)
+    imagen_static = models.CharField(max_length=200, blank=True, default='')
+    gif_static = models.CharField(max_length=200, blank=True, default='')
     nivel = models.CharField(
         max_length=20,
         choices=[('principiante', 'Principiante'), ('intermedio', 'Intermedio'), ('avanzado', 'Avanzado')],
