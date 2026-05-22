@@ -5,8 +5,16 @@
 {% block extra_css %}
 <style>
 /* ── Reset de página ─────────────────────────────── */
-body.sv-body { background: #000 !important; }
-.sv-main { background: #000 !important; }
+body.sv-body {
+  background-color: #07081a !important;
+  background-image:
+    linear-gradient(180deg, rgba(7,8,26,.72) 0%, rgba(7,8,26,.60) 40%, rgba(7,8,26,.78) 100%),
+    url('/static/images/fondo.jpg') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-attachment: fixed !important;
+}
+.sv-main { background: transparent !important; }
 .sv-main::before { display: none; }
 
 /* ── Top bar ─────────────────────────────────────── */
