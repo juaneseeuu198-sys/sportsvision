@@ -748,14 +748,24 @@
   }
 
   function toggleSidebar() {
-    sidebar.classList.contains('open') || !sidebar.classList.contains('collapsed')
-      ? closeSidebar() : openSidebar();
+    if (isMobile()) {
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    } else {
+      sidebar.classList.contains('collapsed') ? openSidebar() : closeSidebar();
+    }
   }
 
   // Botones
   document.getElementById('btnToggleSidebar')?.addEventListener('click', toggleSidebar);
   document.getElementById('btnToggleMobile')?.addEventListener('click', toggleSidebar);
   btnOpen?.addEventListener('click', openSidebar);
+
+  // Cerrar sidebar al hacer clic en cualquier enlace del menú (móvil)
+  sidebar.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (isMobile()) closeSidebar();
+    });
+  });
 
   // Tap en el overlay → cerrar
   if (overlay) overlay.addEventListener('click', closeSidebar);
