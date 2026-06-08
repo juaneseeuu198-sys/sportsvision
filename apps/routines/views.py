@@ -459,18 +459,32 @@ def iniciar_entrenamiento(request, rutina_id):
         action = request.POST.get('action')
 
         if action == 'guardar_serie':
-            form = SerieForm(request.POST)
-            if form.is_valid():
-                serie = form.save(commit=False)
-                serie.entrenamiento = entrenamiento
-                serie.ejercicio = ejercicio_actual.ejercicio
-                serie.numero_serie = series.count() + 1
-                serie.completada = True
-                serie.save()
-                # Si es el último ejercicio, redirigir con flag para mostrar overlay
-                if ejercicio_idx == len(ejercicios_list) - 1:
-                    return redirect(f"{request.path}?ejercicio={ejercicio_idx}&listo=1")
-                return redirect(f"{request.path}?ejercicio={ejercicio_idx}&descanso=1")
+            peso_raw = request.POST.get('peso', '').strip()
+            reps_raw = request.POST.get('repeticiones', '').strip()
+            numero_siguiente = series.count() + 1
+
+            # Reusar la serie autoguardada si existe, si no crear una nueva
+            serie, _ = SerieEntrenamiento.objects.get_or_create(
+                entrenamiento=entrenamiento,
+                ejercicio=ejercicio_actual.ejercicio,
+                numero_serie=numero_siguiente,
+                defaults={'completada': False}
+            )
+            try:
+                serie.peso = float(peso_raw) if peso_raw else None
+            except ValueError:
+                serie.peso = None
+            try:
+                serie.repeticiones = int(reps_raw) if reps_raw else None
+            except ValueError:
+                serie.repeticiones = None
+            serie.completada = True
+            serie.save()
+
+            # Si es el último ejercicio, redirigir con flag para mostrar overlay
+            if ejercicio_idx == len(ejercicios_list) - 1:
+                return redirect(f"{request.path}?ejercicio={ejercicio_idx}&listo=1")
+            return redirect(f"{request.path}?ejercicio={ejercicio_idx}&descanso=1")
 
         elif action == 'actualizar_serie':
             serie_id = request.POST.get('serie_id')
@@ -504,6 +518,15 @@ def iniciar_entrenamiento(request, rutina_id):
 
     form = SerieForm()
 
+    # Serie en progreso (autoguardada pero no confirmada aún)
+    numero_siguiente = series.count() + 1
+    serie_en_progreso = SerieEntrenamiento.objects.filter(
+        entrenamiento=entrenamiento,
+        ejercicio=ejercicio_actual.ejercicio,
+        numero_serie=numero_siguiente,
+        completada=False,
+    ).first()
+
     # Calcular progreso
     total = len(ejercicios_list)
     completados = ejercicio_idx
@@ -528,6 +551,7 @@ def iniciar_entrenamiento(request, rutina_id):
         'es_ultimo': ejercicio_idx == len(ejercicios_list) - 1,
         'mostrar_overlay': request.GET.get('listo') == '1' and ejercicio_idx == len(ejercicios_list) - 1,
         'mostrar_descanso': request.GET.get('descanso') == '1',
+        'serie_en_progreso': serie_en_progreso,
     }
     return render(request, 'routines/entrenamiento_activo.html', context)
 
@@ -974,3 +998,60 @@ def descargar_rutina_pdf(request, rutina_id):
     response = HttpResponse(buf, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="rutina_{filename}.pdf"'
     return response
+
+
+@login_required
+def autoguardar_serie(request, entrenamiento_id):
+    """
+    Endpoint AJAX para guardar o actualizar la serie en progreso
+    sin que el usuario tenga que presionar ningún botón.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, Exception):
+        return JsonResponse({'ok': False, 'error': 'JSON inválido'}, status=400)
+
+    entrenamiento = get_object_or_404(Entrenamiento, id=entrenamiento_id, usuario=request.user)
+    ejercicio_id  = data.get('ejercicio_id')
+    numero_serie  = data.get('numero_serie', 1)
+    peso          = data.get('peso')
+    repeticiones  = data.get('repeticiones')
+
+    if not ejercicio_id:
+        return JsonResponse({'ok': False, 'error': 'Falta ejercicio_id'}, status=400)
+
+    ejercicio = get_object_or_404(Ejercicio, id=ejercicio_id)
+
+    # Buscar si ya existe esta serie (mismo entrenamiento + ejercicio + número)
+    serie, created = SerieEntrenamiento.objects.get_or_create(
+        entrenamiento=entrenamiento,
+        ejercicio=ejercicio,
+        numero_serie=numero_serie,
+        defaults={'completada': False}
+    )
+
+    # Actualizar valores solo si vienen en el payload
+    if peso is not None:
+        try:
+            serie.peso = float(peso) if str(peso).strip() != '' else None
+        except (ValueError, TypeError):
+            serie.peso = None
+
+    if repeticiones is not None:
+        try:
+            serie.repeticiones = int(repeticiones) if str(repeticiones).strip() != '' else None
+        except (ValueError, TypeError):
+            serie.repeticiones = None
+
+    serie.save(update_fields=['peso', 'repeticiones'])
+
+    return JsonResponse({
+        'ok': True,
+        'created': created,
+        'serie_id': serie.id,
+        'peso': serie.peso,
+        'repeticiones': serie.repeticiones,
+    })
