@@ -130,10 +130,16 @@ def anotar_dia(request):
         return JsonResponse({'error': 'method'}, status=405)
 
     import json
-    data  = json.loads(request.body)
-    year  = int(data.get('year'))
-    month = int(data.get('month'))
-    day   = int(data.get('day'))
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'invalid json'}, status=400)
+    try:
+        year  = int(data.get('year'))
+        month = int(data.get('month'))
+        day   = int(data.get('day'))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'invalid date'}, status=400)
     tipo  = data.get('tipo', '')  # 'descanso' | 'planeado' | '' (borrar)
 
     fecha = date(year, month, day)

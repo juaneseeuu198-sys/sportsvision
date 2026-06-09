@@ -431,12 +431,20 @@ def iniciar_entrenamiento(request, rutina_id):
     ejercicios_rutina = rutina.ejercicios_rutina.select_related('ejercicio').all()
 
     # Obtener o crear entrenamiento activo
-    entrenamiento, created = Entrenamiento.objects.get_or_create(
-        usuario=request.user,
-        rutina=rutina,
-        completado=False,
-        defaults={'nombre': rutina.nombre}
-    )
+    try:
+        entrenamiento, created = Entrenamiento.objects.get_or_create(
+            usuario=request.user,
+            rutina=rutina,
+            completado=False,
+            defaults={'nombre': rutina.nombre}
+        )
+    except Entrenamiento.MultipleObjectsReturned:
+        entrenamiento = (
+            Entrenamiento.objects.filter(
+                usuario=request.user, rutina=rutina, completado=False
+            ).latest('iniciado_en')
+        )
+        created = False
 
     try:
         ejercicio_idx = int(request.GET.get('ejercicio', 0))
@@ -449,10 +457,11 @@ def iniciar_entrenamiento(request, rutina_id):
 
     ejercicio_actual = ejercicios_list[ejercicio_idx]
 
-    # Series existentes de este ejercicio en este entrenamiento
+    # Series confirmadas de este ejercicio en este entrenamiento
     series = SerieEntrenamiento.objects.filter(
         entrenamiento=entrenamiento,
-        ejercicio=ejercicio_actual.ejercicio
+        ejercicio=ejercicio_actual.ejercicio,
+        completada=True,
     )
 
     if request.method == 'POST':
@@ -484,6 +493,25 @@ def iniciar_entrenamiento(request, rutina_id):
             # Si es el último ejercicio, redirigir con flag para mostrar overlay
             if ejercicio_idx == len(ejercicios_list) - 1:
                 return redirect(f"{request.path}?ejercicio={ejercicio_idx}&listo=1")
+            return redirect(f"{request.path}?ejercicio={ejercicio_idx}")
+
+        elif action == 'eliminar_serie':
+            serie_id = request.POST.get('serie_id')
+            try:
+                serie = SerieEntrenamiento.objects.get(id=serie_id, entrenamiento=entrenamiento)
+                serie.delete()
+                # Renumerar las series restantes
+                series_restantes = SerieEntrenamiento.objects.filter(
+                    entrenamiento=entrenamiento,
+                    ejercicio=ejercicio_actual.ejercicio,
+                    completada=True,
+                ).order_by('numero_serie')
+                for i, s in enumerate(series_restantes, start=1):
+                    if s.numero_serie != i:
+                        s.numero_serie = i
+                        s.save(update_fields=['numero_serie'])
+            except SerieEntrenamiento.DoesNotExist:
+                pass
             return redirect(f"{request.path}?ejercicio={ejercicio_idx}")
 
         elif action == 'actualizar_serie':
@@ -527,6 +555,13 @@ def iniciar_entrenamiento(request, rutina_id):
         completada=False,
     ).first()
 
+    # Última serie completada para pre-rellenar el peso de la nueva fila
+    ultima_serie_completada = SerieEntrenamiento.objects.filter(
+        entrenamiento=entrenamiento,
+        ejercicio=ejercicio_actual.ejercicio,
+        completada=True,
+    ).order_by('numero_serie').last()
+
     # Calcular progreso
     total = len(ejercicios_list)
     completados = ejercicio_idx
@@ -552,6 +587,7 @@ def iniciar_entrenamiento(request, rutina_id):
         'mostrar_overlay': request.GET.get('listo') == '1' and ejercicio_idx == len(ejercicios_list) - 1,
         'mostrar_descanso': request.GET.get('descanso') == '1',
         'serie_en_progreso': serie_en_progreso,
+        'ultima_serie_completada': ultima_serie_completada,
     }
     return render(request, 'routines/entrenamiento_activo.html', context)
 
@@ -563,11 +599,13 @@ def finalizar_entrenamiento(request, entrenamiento_id):
     entrenamiento.terminado_en = timezone.now()
     entrenamiento.save()
 
-    series = SerieEntrenamiento.objects.filter(
-        entrenamiento=entrenamiento
-    ).select_related('ejercicio__grupo_muscular')
+    series = list(
+        SerieEntrenamiento.objects.filter(
+            entrenamiento=entrenamiento
+        ).select_related('ejercicio__grupo_muscular')
+    )
     total_reps = sum(s.repeticiones or 0 for s in series)
-    ejercicios_count = series.values('ejercicio').distinct().count()
+    ejercicios_count = len({s.ejercicio_id for s in series})
 
     muscle_slugs = ','.join(dict.fromkeys(
         s.ejercicio.grupo_muscular.slug
