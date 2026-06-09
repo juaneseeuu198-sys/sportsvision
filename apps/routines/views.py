@@ -1055,12 +1055,28 @@ def autoguardar_serie(request, entrenamiento_id):
     ejercicio = get_object_or_404(Ejercicio, id=ejercicio_id)
 
     # Buscar si ya existe esta serie (mismo entrenamiento + ejercicio + número)
-    serie, created = SerieEntrenamiento.objects.get_or_create(
-        entrenamiento=entrenamiento,
-        ejercicio=ejercicio,
-        numero_serie=numero_serie,
-        defaults={'completada': False}
-    )
+    try:
+        serie, created = SerieEntrenamiento.objects.get_or_create(
+            entrenamiento=entrenamiento,
+            ejercicio=ejercicio,
+            numero_serie=numero_serie,
+            defaults={'completada': False}
+        )
+    except SerieEntrenamiento.MultipleObjectsReturned:
+        serie = (
+            SerieEntrenamiento.objects.filter(
+                entrenamiento=entrenamiento,
+                ejercicio=ejercicio,
+                numero_serie=numero_serie,
+                completada=False,
+            ).order_by('-creada_en').first()
+            or SerieEntrenamiento.objects.filter(
+                entrenamiento=entrenamiento,
+                ejercicio=ejercicio,
+                numero_serie=numero_serie,
+            ).order_by('-creada_en').first()
+        )
+        created = False
 
     # Actualizar valores solo si vienen en el payload
     if peso is not None:
