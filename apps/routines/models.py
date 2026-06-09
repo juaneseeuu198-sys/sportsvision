@@ -125,6 +125,7 @@ class SerieEntrenamiento(models.Model):
 
     class Meta:
         ordering = ['ejercicio', 'numero_serie']
+        unique_together = [('entrenamiento', 'ejercicio', 'numero_serie')]
         verbose_name = "Serie"
         verbose_name_plural = "Series"
 
