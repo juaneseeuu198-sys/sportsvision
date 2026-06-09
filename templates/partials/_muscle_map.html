@@ -1,8 +1,8 @@
-{#
+{% comment %}
   Uso: {% include 'partials/_muscle_map.html' with map_slugs="pecho,espalda,hombros" %}
   Opcional: map_label=True para mostrar las etiquetas debajo (default False)
   Requiere: activateMuscleMap() en sportsvision.js
-#}
+{% endcomment %}
 <div class="muscle-map-mini" data-muscles="{{ map_slugs }}">
   <div class="mmap-panels">
 
