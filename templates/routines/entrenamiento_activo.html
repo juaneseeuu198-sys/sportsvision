@@ -226,7 +226,7 @@ body.sv-body {
 }
 .sets-header {
   display: grid;
-  grid-template-columns: 36px 1fr 80px 80px 40px;
+  grid-template-columns: 36px 1fr 80px 80px 40px 32px;
   gap: 8px; padding: 10px 16px 8px;
   border-bottom: 1px solid rgba(255,255,255,.07);
 }
@@ -239,7 +239,7 @@ body.sv-body {
 /* Row de serie completada */
 .set-row {
   display: grid;
-  grid-template-columns: 36px 1fr 80px 80px 40px;
+  grid-template-columns: 36px 1fr 80px 80px 40px 32px;
   gap: 8px; align-items: center;
   padding: 8px 16px;
   border-bottom: 1px solid rgba(255,255,255,.05);
@@ -276,7 +276,7 @@ body.sv-body {
 /* Row de nueva serie (inputs) */
 .set-row-new {
   display: grid;
-  grid-template-columns: 36px 1fr 80px 80px 40px;
+  grid-template-columns: 36px 1fr 80px 80px 40px 32px;
   gap: 8px; align-items: center;
   padding: 10px 0;
 }
@@ -304,6 +304,17 @@ body.sv-body {
   transition: background .2s, color .2s;
 }
 .btn-set-confirm:hover { background: #0a84ff; color: #fff; }
+
+/* ── Delete serie button ─────────────────────────── */
+.btn-del-serie {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: transparent; border: none;
+  color: rgba(255,255,255,.25); font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; margin: 0 auto;
+  transition: background .2s, color .2s;
+}
+.btn-del-serie:hover { background: rgba(255,59,48,.15); color: #ff3b30; }
 
 /* ── Add set button ──────────────────────────────── */
 .btn-add-set {
@@ -672,24 +683,36 @@ body.sv-body {
         <span>KG</span>
         <span>REPS</span>
         <span></span>
+        <span></span>
       </div>
 
       <!-- Series completadas (editables) -->
       {% for serie in series %}
-      <form method="post" class="set-row">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="actualizar_serie">
-        <input type="hidden" name="serie_id" value="{{ serie.id }}">
-        <div class="set-num" style="background:rgba(10,132,255,.15);color:#0a84ff;">{{ serie.numero_serie }}</div>
-        <div class="set-prev">—</div>
-        <input type="number" name="peso" value="{{ serie.peso|default:'' }}"
-               class="set-input" placeholder="—" min="0" step="0.5">
-        <input type="number" name="repeticiones" value="{{ serie.repeticiones|default:'' }}"
-               class="set-input" placeholder="—" min="0" step="1">
-        <button type="submit" class="set-check done" style="border:none;cursor:pointer;">
-          <i class="bi bi-check-lg"></i>
-        </button>
-      </form>
+      <div class="set-row">
+        <form method="post" style="display:contents;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="actualizar_serie">
+          <input type="hidden" name="serie_id" value="{{ serie.id }}">
+          <div class="set-num" style="background:rgba(10,132,255,.15);color:#0a84ff;">{{ serie.numero_serie }}</div>
+          <div class="set-prev">—</div>
+          <input type="number" name="peso" value="{{ serie.peso|default:'' }}"
+                 class="set-input" placeholder="—" min="0" step="0.5">
+          <input type="number" name="repeticiones" value="{{ serie.repeticiones|default:'' }}"
+                 class="set-input" placeholder="—" min="0" step="1">
+          <button type="submit" class="set-check done" style="border:none;cursor:pointer;">
+            <i class="bi bi-check-lg"></i>
+          </button>
+        </form>
+        <form method="post" style="display:contents;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="eliminar_serie">
+          <input type="hidden" name="serie_id" value="{{ serie.id }}">
+          <button type="submit" class="btn-del-serie" title="Eliminar serie"
+                  onclick="return confirm('¿Eliminar la serie {{ serie.numero_serie }}?')">
+            <i class="bi bi-trash3"></i>
+          </button>
+        </form>
+      </div>
       {% endfor %}
 
       <!-- Nueva serie -->
@@ -702,12 +725,12 @@ body.sv-body {
           <div>
             <input type="number" name="peso" class="set-input"
                    placeholder="—" min="0" step="0.5"
-                   value="{{ serie_en_progreso.peso|default:'' }}">
+                   value="{% if serie_en_progreso.peso is not None %}{{ serie_en_progreso.peso }}{% elif ultima_serie_completada.peso is not None %}{{ ultima_serie_completada.peso }}{% endif %}">
           </div>
           <div>
             <input type="number" name="repeticiones" class="set-input"
                    placeholder="—" min="0" step="1"
-                   value="{{ serie_en_progreso.repeticiones|default:'' }}">
+                   value="{% if serie_en_progreso.repeticiones is not None %}{{ serie_en_progreso.repeticiones }}{% elif ultima_serie_completada.repeticiones is not None %}{{ ultima_serie_completada.repeticiones }}{% endif %}">
           </div>
           <button type="submit" class="btn-set-confirm" title="Confirmar serie">
             <i class="bi bi-check-lg"></i>

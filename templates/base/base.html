@@ -790,10 +790,13 @@
   // Tap en el overlay → cerrar (móvil y desktop)
   if (overlay) overlay.addEventListener('click', closeSidebar);
 
-  // Click fuera del sidebar en desktop → cerrar
+  // Click fuera del sidebar → cerrar (móvil y desktop)
   document.addEventListener('click', function(e) {
-    if (!isMobile()) return;
-    if (!sidebar.classList.contains('open')) return;
+    if (isMobile()) {
+      if (!sidebar.classList.contains('open')) return;
+    } else {
+      if (sidebar.classList.contains('collapsed')) return;
+    }
     if (sidebar.contains(e.target)) return;
     if (btnOpen && btnOpen.contains(e.target)) return;
     closeSidebar();
