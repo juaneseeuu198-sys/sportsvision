@@ -603,15 +603,16 @@ def iniciar_entrenamiento(request, rutina_id):
 def finalizar_entrenamiento(request, entrenamiento_id):
     entrenamiento = get_object_or_404(Entrenamiento, id=entrenamiento_id, usuario=request.user)
 
-    # Auto-confirmar series que el usuario autoguardó pero no marcó con ✓
-    SerieEntrenamiento.objects.filter(
-        entrenamiento=entrenamiento,
-        completada=False,
-    ).update(completada=True)
+    if not entrenamiento.completado:
+        # Auto-confirmar series que el usuario autoguardó pero no marcó con ✓
+        SerieEntrenamiento.objects.filter(
+            entrenamiento=entrenamiento,
+            completada=False,
+        ).update(completada=True)
 
-    entrenamiento.completado = True
-    entrenamiento.terminado_en = timezone.now()
-    entrenamiento.save()
+        entrenamiento.completado = True
+        entrenamiento.terminado_en = timezone.now()
+        entrenamiento.save()
 
     series = list(
         SerieEntrenamiento.objects.filter(
