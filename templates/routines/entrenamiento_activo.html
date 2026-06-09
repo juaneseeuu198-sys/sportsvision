@@ -696,7 +696,7 @@ body.sv-body {
           <div class="set-num" style="background:rgba(10,132,255,.15);color:#0a84ff;">{{ serie.numero_serie }}</div>
           <div class="set-prev">—</div>
           <input type="number" name="peso" value="{{ serie.peso|default:'' }}"
-                 class="set-input" placeholder="—" min="0" step="0.5">
+                 class="set-input" placeholder="—" min="0" step="any">
           <input type="number" name="repeticiones" value="{{ serie.repeticiones|default:'' }}"
                  class="set-input" placeholder="—" min="0" step="1">
           <button type="submit" class="set-check done" style="border:none;cursor:pointer;">
