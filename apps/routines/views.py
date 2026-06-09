@@ -530,6 +530,13 @@ def iniciar_entrenamiento(request, rutina_id):
             return redirect(f"{request.path}?ejercicio={idx}")
 
         elif action == 'terminar_entrenamiento':
+            ent_id_form = request.POST.get('entrenamiento_id')
+            if ent_id_form:
+                try:
+                    target = Entrenamiento.objects.get(id=int(ent_id_form), usuario=request.user)
+                    return redirect('finalizar_entrenamiento', entrenamiento_id=target.id)
+                except (Entrenamiento.DoesNotExist, ValueError, TypeError):
+                    pass
             return redirect('finalizar_entrenamiento', entrenamiento_id=entrenamiento.id)
 
         return redirect(f"{request.path}?ejercicio={ejercicio_idx}")
