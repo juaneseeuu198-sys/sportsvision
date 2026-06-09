@@ -585,6 +585,13 @@ def iniciar_entrenamiento(request, rutina_id):
 @login_required
 def finalizar_entrenamiento(request, entrenamiento_id):
     entrenamiento = get_object_or_404(Entrenamiento, id=entrenamiento_id, usuario=request.user)
+
+    # Auto-confirmar series que el usuario autoguardó pero no marcó con ✓
+    SerieEntrenamiento.objects.filter(
+        entrenamiento=entrenamiento,
+        completada=False,
+    ).update(completada=True)
+
     entrenamiento.completado = True
     entrenamiento.terminado_en = timezone.now()
     entrenamiento.save()
