@@ -468,9 +468,6 @@ def iniciar_entrenamiento(request, rutina_id):
             serie.completada = True
             serie.save()
 
-            # Si es el último ejercicio, redirigir con flag para mostrar overlay
-            if ejercicio_idx == len(ejercicios_list) - 1:
-                return redirect(f"{request.path}?ejercicio={ejercicio_idx}&listo=1")
             return redirect(f"{request.path}?ejercicio={ejercicio_idx}")
 
         elif action == 'eliminar_serie':
