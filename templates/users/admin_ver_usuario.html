@@ -201,6 +201,22 @@
           {% endif %}
         {% endif %}
       {% endif %}
+      {% if profile.rol == 'profesional' %}
+        <form method="post" action="{% url 'revocar_profesional_admin' cliente.id %}" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="btn-ban sancionar"
+                  onclick="return confirm('¿Quitar acceso profesional a {{ cliente.username }}?')">
+            <i class="bi bi-person-dash-fill me-1"></i> Quitar Pro
+          </button>
+        </form>
+      {% endif %}
+      {% if cliente != request.user %}
+        <button type="button" class="btn-ban banear"
+                style="background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.6);"
+                onclick="abrirModalEliminar()">
+          <i class="bi bi-trash3-fill me-1"></i> Eliminar cuenta
+        </button>
+      {% endif %}
       <a href="{% url 'admin_crear_rutina' cliente.id %}"
          style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:12px;
                 background:linear-gradient(135deg,#4361ee,#6b7280);color:#fff;font-weight:700;
