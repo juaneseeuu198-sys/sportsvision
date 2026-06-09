@@ -545,12 +545,21 @@ def iniciar_entrenamiento(request, rutina_id):
         completada=False,
     ).first()
 
-    # Última serie completada para pre-rellenar el peso de la nueva fila
+    # Última serie completada en esta sesión (para pre-rellenar reps)
     ultima_serie_completada = SerieEntrenamiento.objects.filter(
         entrenamiento=entrenamiento,
         ejercicio=ejercicio_actual.ejercicio,
         completada=True,
     ).order_by('numero_serie').last()
+
+    # Última serie completada en una sesión ANTERIOR (para pre-rellenar KG)
+    ultima_sesion_anterior = SerieEntrenamiento.objects.filter(
+        entrenamiento__usuario=request.user,
+        entrenamiento__completado=True,
+        entrenamiento__id__lt=entrenamiento.id,
+        ejercicio=ejercicio_actual.ejercicio,
+        completada=True,
+    ).order_by('-entrenamiento__iniciado_en', '-numero_serie').first()
 
     # Calcular progreso
     total = len(ejercicios_list)
