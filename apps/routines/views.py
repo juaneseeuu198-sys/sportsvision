@@ -451,12 +451,27 @@ def iniciar_entrenamiento(request, rutina_id):
             numero_siguiente = series.count() + 1
 
             # Reusar la serie autoguardada si existe, si no crear una nueva
-            serie, _ = SerieEntrenamiento.objects.get_or_create(
-                entrenamiento=entrenamiento,
-                ejercicio=ejercicio_actual.ejercicio,
-                numero_serie=numero_siguiente,
-                defaults={'completada': False}
-            )
+            try:
+                serie, _ = SerieEntrenamiento.objects.get_or_create(
+                    entrenamiento=entrenamiento,
+                    ejercicio=ejercicio_actual.ejercicio,
+                    numero_serie=numero_siguiente,
+                    defaults={'completada': False}
+                )
+            except SerieEntrenamiento.MultipleObjectsReturned:
+                serie = (
+                    SerieEntrenamiento.objects.filter(
+                        entrenamiento=entrenamiento,
+                        ejercicio=ejercicio_actual.ejercicio,
+                        numero_serie=numero_siguiente,
+                        completada=False,
+                    ).order_by('-creada_en').first()
+                    or SerieEntrenamiento.objects.filter(
+                        entrenamiento=entrenamiento,
+                        ejercicio=ejercicio_actual.ejercicio,
+                        numero_serie=numero_siguiente,
+                    ).order_by('-creada_en').first()
+                )
             try:
                 serie.peso = float(peso_raw) if peso_raw else None
             except ValueError:
