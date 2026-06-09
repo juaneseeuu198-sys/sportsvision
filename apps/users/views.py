@@ -776,6 +776,26 @@ def sancionar_usuario(request, user_id):
 
 
 @login_required
+def eliminar_cuenta_admin(request, user_id):
+    """Admin Pro elimina permanentemente una cuenta de usuario."""
+    if not _es_admin_pro(request.user):
+        return redirect('dashboard')
+    if request.method == 'POST':
+        usuario = get_object_or_404(User, id=user_id)
+        if usuario == request.user:
+            messages.error(request, 'No puedes eliminar tu propia cuenta.')
+            return redirect('admin_ver_usuario', user_id=user_id)
+        if usuario.is_superuser:
+            messages.error(request, 'No puedes eliminar una cuenta superadmin.')
+            return redirect('admin_ver_usuario', user_id=user_id)
+        nombre = usuario.username
+        usuario.delete()
+        messages.success(request, f'Cuenta de {nombre} eliminada permanentemente.')
+        return redirect('admin_pro_dashboard')
+    return redirect('admin_ver_usuario', user_id=user_id)
+
+
+@login_required
 def verificar_password_admin(request):
     """Verifica la contraseña del admin y devuelve datos sensibles."""
     if not _es_admin_pro(request.user):
