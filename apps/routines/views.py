@@ -292,29 +292,7 @@ def set_filtros(request):
     return HttpResponse('ok')
 
 
-# ---- PASO 1: Selección de equipo ----
-@login_required
-def paso1_equipo(request):
-    equipos = Equipo.objects.all()
-    if request.method == 'POST':
-        seleccionados = request.POST.getlist('equipos')
-        request.session['equipos_seleccionados'] = seleccionados
-        return redirect('paso2_musculos')
-    return render(request, 'routines/paso1_equipo.html', {'equipos': equipos})
-
-
-# ---- PASO 2: Selección de músculos ----
-@login_required
-def paso2_musculos(request):
-    grupos = GrupoMuscular.objects.all()
-    if request.method == 'POST':
-        seleccionados = request.POST.getlist('grupos')
-        request.session['grupos_seleccionados'] = seleccionados
-        return redirect('paso3_ejercicios')
-    return render(request, 'routines/paso2_musculos.html', {'grupos': grupos})
-
-
-# ---- PASO 3: Selección/personalización de ejercicios ----
+# ---- Selección/personalización de ejercicios ----
 @login_required
 def paso3_ejercicios(request):
     # Cargar todos los ejercicios con equipos y grupo muscular prefetchados
