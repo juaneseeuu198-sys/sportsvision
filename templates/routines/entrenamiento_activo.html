@@ -688,7 +688,7 @@ body.sv-body {
           <input type="hidden" name="serie_id" value="{{ serie.id }}">
           <div class="set-num" style="background:rgba(10,132,255,.15);color:#0a84ff;">{{ serie.numero_serie }}</div>
           <div class="set-prev">—</div>
-          <input type="number" name="peso" value="{{ serie.peso|default:'' }}"
+          <input type="number" name="peso" value="{{ serie.peso|unlocalize|default:'' }}"
                  class="set-input" placeholder="—" min="0" step="any">
           <input type="number" name="repeticiones" value="{{ serie.repeticiones|default:'' }}"
                  class="set-input" placeholder="—" min="0" step="1">
