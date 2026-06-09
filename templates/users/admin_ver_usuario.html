@@ -769,7 +769,10 @@ function abrirModalBan() {
 function abrirModalSancion() {
   document.getElementById('modalSancion').classList.add('open');
 }
-['modalBan','modalSancion','pwdModal'].forEach(function(id) {
+function abrirModalEliminar() {
+  document.getElementById('modalEliminar').classList.add('open');
+}
+['modalBan','modalSancion','modalEliminar','pwdModal'].forEach(function(id) {
   var el = document.getElementById(id);
   if (el) el.addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
 });
