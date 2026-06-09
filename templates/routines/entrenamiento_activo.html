@@ -749,6 +749,7 @@ body.sv-body {
   <form method="post" style="margin:0;padding:12px 12px 20px;">
     {% csrf_token %}
     <input type="hidden" name="action" value="terminar_entrenamiento">
+    <input type="hidden" name="entrenamiento_id" value="{{ entrenamiento.id }}">
     <button type="submit" class="btn-next finish">
       <i class="bi bi-trophy-fill me-2"></i> Finalizar entrenamiento
     </button>
