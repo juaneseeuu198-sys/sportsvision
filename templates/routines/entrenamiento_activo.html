@@ -714,7 +714,9 @@ body.sv-body {
         <input type="hidden" name="action" value="guardar_serie">
         <div class="set-row-new" style="padding:10px 14px;background:rgba(10,132,255,.05);">
           <div class="set-num" style="background:#2c2c2e;color:#0a84ff;font-weight:900;">{{ series|length|add:1 }}</div>
-          <div class="set-prev" style="color:#4b5563;">—</div>
+          <div class="set-prev" style="color:#4b5563;font-size:11px;">
+            {% if ultima_sesion_anterior.peso is not None %}{{ ultima_sesion_anterior.peso }}kg{% elif ultima_sesion_anterior.repeticiones is not None %}{{ ultima_sesion_anterior.repeticiones }}rep{% else %}—{% endif %}
+          </div>
           <div>
             <input type="number" name="peso" class="set-input"
                    placeholder="—" min="0" step="any"
