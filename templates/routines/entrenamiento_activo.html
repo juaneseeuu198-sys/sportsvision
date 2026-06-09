@@ -715,17 +715,17 @@ body.sv-body {
         <div class="set-row-new" style="padding:10px 14px;background:rgba(10,132,255,.05);">
           <div class="set-num" style="background:#2c2c2e;color:#0a84ff;font-weight:900;">{{ series|length|add:1 }}</div>
           <div class="set-prev" style="color:#4b5563;font-size:11px;">
-            {% if ultima_sesion_anterior.peso is not None %}{{ ultima_sesion_anterior.peso }}kg{% elif ultima_sesion_anterior.repeticiones is not None %}{{ ultima_sesion_anterior.repeticiones }}rep{% else %}—{% endif %}
+            {% if ultima_sesion_anterior and ultima_sesion_anterior.peso is not None %}{{ ultima_sesion_anterior.peso|unlocalize }}kg{% elif ultima_sesion_anterior and ultima_sesion_anterior.repeticiones is not None %}{{ ultima_sesion_anterior.repeticiones }}rep{% else %}—{% endif %}
           </div>
           <div>
             <input type="number" name="peso" class="set-input"
                    placeholder="—" min="0" step="any"
-                   value="{% if serie_en_progreso.peso is not None %}{{ serie_en_progreso.peso }}{% elif ultima_serie_completada.peso is not None %}{{ ultima_serie_completada.peso }}{% elif ultima_sesion_anterior.peso is not None %}{{ ultima_sesion_anterior.peso }}{% endif %}">
+                   value="{% if serie_en_progreso and serie_en_progreso.peso is not None %}{{ serie_en_progreso.peso|unlocalize }}{% elif ultima_serie_completada and ultima_serie_completada.peso is not None %}{{ ultima_serie_completada.peso|unlocalize }}{% elif ultima_sesion_anterior and ultima_sesion_anterior.peso is not None %}{{ ultima_sesion_anterior.peso|unlocalize }}{% endif %}">
           </div>
           <div>
             <input type="number" name="repeticiones" class="set-input"
                    placeholder="—" min="0" step="1"
-                   value="{% if serie_en_progreso.repeticiones is not None %}{{ serie_en_progreso.repeticiones }}{% elif ultima_serie_completada.repeticiones is not None %}{{ ultima_serie_completada.repeticiones }}{% elif ultima_sesion_anterior.repeticiones is not None %}{{ ultima_sesion_anterior.repeticiones }}{% endif %}">
+                   value="{% if serie_en_progreso and serie_en_progreso.repeticiones is not None %}{{ serie_en_progreso.repeticiones }}{% elif ultima_serie_completada and ultima_serie_completada.repeticiones is not None %}{{ ultima_serie_completada.repeticiones }}{% elif ultima_sesion_anterior and ultima_sesion_anterior.repeticiones is not None %}{{ ultima_sesion_anterior.repeticiones }}{% endif %}">
           </div>
           <button type="submit" class="btn-set-confirm" title="Confirmar serie">
             <i class="bi bi-check-lg"></i>
