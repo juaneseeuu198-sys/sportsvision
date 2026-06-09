@@ -587,6 +587,7 @@ def iniciar_entrenamiento(request, rutina_id):
         'mostrar_descanso': request.GET.get('descanso') == '1',
         'serie_en_progreso': serie_en_progreso,
         'ultima_serie_completada': ultima_serie_completada,
+        'ultima_sesion_anterior': ultima_sesion_anterior,
     }
     return render(request, 'routines/entrenamiento_activo.html', context)
 
