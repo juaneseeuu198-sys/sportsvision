@@ -73,8 +73,14 @@ class Entrenamiento(models.Model):
     def duracion(self):
         if self.terminado_en:
             delta = self.terminado_en - self.iniciado_en
-            minutos = int(delta.total_seconds() // 60)
-            return f"{minutos} min"
+            total = int(delta.total_seconds())
+            minutos = total // 60
+            segundos = total % 60
+            if minutos == 0:
+                return f"{segundos} seg"
+            if segundos == 0:
+                return f"{minutos} min"
+            return f"{minutos} min {segundos} seg"
         return "En progreso"
 
 
