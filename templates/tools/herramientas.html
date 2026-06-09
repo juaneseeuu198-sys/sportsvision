@@ -1,0 +1,31 @@
+{% extends 'base/base.html' %}
+{% block title %}Herramientas Fitness — SportsVision{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+  <h1 class="sv-page-title">Herramientas Fitness</h1>
+  <div class="row g-4 mt-2">
+    <div class="col-md-6">
+      <a href="{% url 'calculadora_calorias' %}" class="tool-card">
+        <div class="tool-icon-badge badge-gold"><i class="bi bi-fire"></i></div>
+        <h3>Calculadora de Calorías</h3>
+        <p>Calcula tus necesidades calóricas basado en tu actividad diaria, objetivos, edad y peso.</p>
+      </a>
+    </div>
+    <div class="col-md-6">
+      <a href="{% url 'calculadora_imc' %}" class="tool-card">
+        <div class="tool-icon-badge badge-red"><i class="bi bi-heart-fill"></i></div>
+        <h3>Calculadora de IMC</h3>
+        <p>Calcula tu índice de masa corporal y aprende sobre tu categoría de peso.</p>
+      </a>
+    </div>
+    <div class="col-md-6">
+      <a href="{% url 'plan_nutricional' %}" class="tool-card">
+        <div class="tool-icon-badge badge-purple"><i class="bi bi-egg-fried"></i></div>
+        <h3>Plan Nutricional</h3>
+        <p>Genera un plan de alimentación personalizado con distribución de macros y comidas según tu objetivo y restricciones dietéticas.</p>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,786 @@
+﻿{% extends 'base/base.html' %}
+{% load plan_tags %}
+{% block title %}Usuario: {{ cliente.username }} — Admin Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+.user-header {
+  background: linear-gradient(135deg,rgba(67,97,238,.15),rgba(107,114,128,.1));
+  border:1.5px solid rgba(67,97,238,.3); border-radius:20px;
+  padding:24px 28px; display:flex; align-items:center; gap:20px;
+  margin-bottom:24px; flex-wrap:wrap;
+}
+.u-avatar {
+  width:72px; height:72px; border-radius:50%;
+  border:3px solid rgba(67,97,238,.5); background:rgba(67,97,238,.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; color:#7b9ffb; overflow:hidden; flex-shrink:0;
+}
+.u-avatar img { width:100%; height:100%; object-fit:cover; }
+.u-nombre { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--sv-text); line-height:1; }
+.u-meta   { font-size:13px; color:var(--sv-muted); margin-top:4px; }
+
+.info-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+.info-box  { background:rgba(255,255,255,.04); border:1.5px solid var(--sv-border); border-radius:12px; padding:14px; text-align:center; }
+.info-val  { font-family:'Bebas Neue',sans-serif; font-size:26px; color:#4361ee; line-height:1; }
+.info-lbl  { font-size:10px; font-weight:700; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+
+.data-section { background:var(--sv-bg-card); border:1.5px solid var(--sv-border); border-radius:16px; padding:20px; margin-bottom:16px; }
+.data-title { font-family:'Bebas Neue',sans-serif; font-size:17px; color:#4361ee; margin-bottom:14px; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(67,97,238,.2); padding-bottom:8px; }
+
+/* Botones de moderación */
+.btn-ban   { padding:10px 20px; border-radius:12px; border:none; font-size:13px; font-weight:800; cursor:pointer; transition:opacity .2s; }
+.btn-ban.banear   { background:rgba(239,68,68,.15); border:1.5px solid rgba(239,68,68,.4); color:#f87171; }
+.btn-ban.desbanear{ background:rgba(0,212,170,.15); border:1.5px solid rgba(0,212,170,.4); color:#00d4aa; }
+.btn-ban.sancionar{ background:rgba(245,158,11,.15); border:1.5px solid rgba(245,158,11,.4); color:#f59e0b; }
+.btn-ban.levantar { background:rgba(107,114,128,.15); border:1.5px solid rgba(107,114,128,.3); color:#9ca3af; }
+.btn-ban:hover { opacity:.8; }
+
+/* Ojo de privacidad */
+.priv-field { position:relative; }
+.priv-masked { filter:blur(5px); user-select:none; transition:filter .3s; }
+.priv-revealed { filter:none; }
+.btn-eye { background:none; border:none; cursor:pointer; color:var(--sv-muted); font-size:16px; padding:0 6px; transition:color .2s; }
+.btn-eye:hover { color:#4361ee; }
+
+/* Modal contraseña */
+.pwd-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+.pwd-modal-overlay.open { display:flex; }
+.pwd-modal { background:#111827; border:1.5px solid rgba(67,97,238,.4); border-radius:20px; padding:28px 24px; max-width:360px; width:90%; text-align:center; }
+.pwd-modal h3 { font-family:'Bebas Neue',sans-serif; font-size:22px; color:#fff; margin-bottom:8px; }
+.pwd-modal p  { font-size:13px; color:#6b7280; margin-bottom:18px; }
+.pwd-input { width:100%; padding:10px 14px; border-radius:10px; border:1.5px solid rgba(67,97,238,.3); background:rgba(255,255,255,.06); color:#fff; font-size:14px; margin-bottom:14px; outline:none; }
+.pwd-input:focus { border-color:#4361ee; }
+.pwd-error { color:#f87171; font-size:12px; margin-bottom:10px; display:none; }
+.pwd-btn-confirm { width:100%; padding:11px; border-radius:10px; border:none; background:#4361ee; color:#fff; font-size:14px; font-weight:800; cursor:pointer; transition:opacity .2s; }
+.pwd-btn-confirm:hover { opacity:.85; }
+.pwd-btn-cancel { background:none; border:none; color:#6b7280; font-size:13px; cursor:pointer; margin-top:10px; text-decoration:underline; }
+
+/* Entrenamientos expandibles */
+.entreno-row {
+  display:flex; align-items:center; gap:12px; padding:10px 0;
+  border-bottom:1px solid var(--sv-border); cursor:pointer;
+  transition:background .15s; border-radius:8px; padding:10px 8px;
+}
+.entreno-row:last-of-type { border-bottom:none; }
+.entreno-row:hover { background:rgba(255,255,255,.04); }
+.entreno-toggle { color:var(--sv-muted); font-size:12px; transition:transform .2s; flex-shrink:0; }
+.entreno-toggle.open { transform:rotate(90deg); }
+
+.series-detail {
+  display:none; background:rgba(0,0,0,.15); border-radius:10px;
+  margin:4px 8px 8px; padding:12px 14px;
+  border-left:3px solid rgba(67,97,238,.4);
+}
+.series-detail.open { display:block; }
+.series-table { width:100%; border-collapse:collapse; font-size:12px; }
+.series-table th { font-size:10px; font-weight:700; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; padding:4px 8px; text-align:left; border-bottom:1px solid var(--sv-border); }
+.series-table td { padding:5px 8px; border-bottom:1px solid rgba(255,255,255,.04); color:var(--sv-text); }
+.series-table tr:last-child td { border-bottom:none; }
+.ej-name-cell { font-weight:700; color:#7b9ffb; }
+
+.cond-badge { display:inline-block; margin:2px; padding:3px 10px; border-radius:10px; background:rgba(249,115,22,.15); border:1px solid rgba(249,115,22,.3); font-size:11px; font-weight:700; color:#f97316; }
+
+/* Plan semanal */
+.week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+@media(max-width:640px){ .week-grid{grid-template-columns:repeat(2,1fr);} }
+.day-cell {
+  border-radius:12px; padding:12px 8px; text-align:center; min-height:80px;
+  border:1.5px solid var(--sv-border); background:rgba(255,255,255,.03);
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+}
+.day-cell.tiene-rutina { border-color:rgba(67,97,238,.4); background:rgba(67,97,238,.07); }
+.day-cell.descanso     { border-color:rgba(52,211,153,.3); background:rgba(52,211,153,.06); }
+.day-name { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--sv-muted); }
+.day-cell.tiene-rutina .day-name { color:#7b9ffb; }
+.day-cell.descanso     .day-name { color:#34d399; }
+.day-rutina-name { font-size:11px; font-weight:700; color:var(--sv-text); line-height:1.3; margin-top:2px; }
+.day-empty { font-size:18px; opacity:.2; margin-top:6px; }
+
+/* Rutinas completas */
+.rutina-card { border:1.5px solid var(--sv-border); border-radius:14px; margin-bottom:12px; overflow:hidden; }
+.rutina-head { display:flex; align-items:center; gap:10px; padding:13px 16px; cursor:pointer; transition:background .15s; }
+.rutina-head:hover { background:rgba(255,255,255,.03); }
+.rutina-chevron { color:var(--sv-muted); font-size:12px; transition:transform .2s; flex-shrink:0; }
+.rutina-chevron.open { transform:rotate(90deg); }
+.rutina-body { display:none; border-top:1px solid var(--sv-border); }
+.rutina-body.open { display:block; }
+.ej-row { display:flex; align-items:center; gap:10px; padding:9px 16px; border-bottom:1px solid rgba(255,255,255,.04); }
+.ej-row:last-child { border-bottom:none; }
+.ej-orden { font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--sv-muted); min-width:22px; text-align:center; }
+.ej-info  { flex:1; }
+.ej-info-name { font-size:13px; font-weight:700; color:var(--sv-text); }
+.ej-info-sub  { font-size:11px; color:var(--sv-muted); margin-top:1px; }
+.ej-series-pill { font-size:11px; font-weight:700; background:rgba(67,97,238,.15); border:1px solid rgba(67,97,238,.3); border-radius:8px; padding:3px 9px; color:#7b9ffb; white-space:nowrap; }
+.ej-cardio-pill { font-size:11px; font-weight:700; background:rgba(96,165,250,.12); border:1px solid rgba(96,165,250,.3); border-radius:8px; padding:3px 9px; color:#60a5fa; white-space:nowrap; }
+
+/* Progreso peso */
+.peso-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--sv-border); }
+.peso-row:last-child { border-bottom:none; }
+.peso-bar-bg { flex:1; height:6px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden; }
+.peso-bar-fill { height:100%; background:linear-gradient(90deg,#4361ee,#6b7280); border-radius:3px; }
+
+/* Mediciones tabla */
+.med-table { width:100%; font-size:12px; border-collapse:collapse; }
+.med-table th { font-size:10px; font-weight:700; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; padding:6px 8px; border-bottom:1px solid var(--sv-border); text-align:left; }
+.med-table td { padding:8px; border-bottom:1px solid rgba(255,255,255,.04); }
+.med-table tr:last-child td { border-bottom:none; }
+
+/* Planes nutricionales */
+.plan-card { background:rgba(0,0,0,.15); border:1.5px solid var(--sv-border); border-radius:14px; margin-bottom:14px; overflow:hidden; }
+.plan-card-head { padding:14px 16px; cursor:pointer; display:flex; align-items:center; gap:12px; }
+.plan-card-head:hover { background:rgba(255,255,255,.03); }
+.plan-card-body { display:none; padding:0 16px 16px; border-top:1px solid var(--sv-border); }
+.plan-card-body.open { display:block; }
+.plan-macros-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:12px 0; }
+.pm-item { text-align:center; }
+.pm-val { font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; }
+.pm-lbl { font-size:9px; font-weight:700; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; }
+
+/* Plan comidas */
+.plan-dia-block { margin-bottom:18px; }
+.plan-dia-title {
+  font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:1px;
+  color:#00d4aa; margin:12px 0 8px; display:flex; align-items:center; gap:8px;
+}
+.plan-dia-title::after { content:''; flex:1; height:1px; background:rgba(0,212,170,.2); }
+.plan-comida-row { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+.plan-comida-row:last-child { border-bottom:none; }
+.plan-comida-time { font-size:11px; font-weight:800; color:#9ca3af; min-width:44px; padding-top:2px; }
+.plan-comida-info { flex:1; }
+.plan-comida-label { font-size:13px; font-weight:800; color:var(--sv-text); margin-bottom:3px; }
+.plan-comida-foods { font-size:12px; color:var(--sv-muted); line-height:1.6; }
+.plan-comida-kcal { font-family:'Bebas Neue',sans-serif; font-size:17px; color:#f97316; min-width:55px; text-align:right; padding-top:2px; }
+
+.activa-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(0,212,170,.15); border:1px solid rgba(0,212,170,.35); border-radius:20px; padding:2px 9px; font-size:10px; font-weight:800; color:#00d4aa; letter-spacing:.5px; text-transform:uppercase; }
+
+@media(max-width:600px){
+  .info-grid{grid-template-columns:1fr 1fr;}
+  .plan-macros-strip{grid-template-columns:repeat(2,1fr);}
+  .plan-comida-kcal{display:none;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content" style="max-width:860px;">
+
+  <div class="page-top-nav" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <a href="{% url 'admin_pro_dashboard' %}" class="page-back-btn">
+      <i class="bi bi-arrow-left"></i> Panel Admin Pro
+    </a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      {% if cliente != request.user %}
+        {% if not cliente.is_active %}
+          <!-- Desbanear -->
+          <form method="post" action="{% url 'banear_usuario' cliente.id %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-ban desbanear" onclick="return confirm('¿Desbanear a {{ cliente.username }}?')">
+              <i class="bi bi-check-circle-fill me-1"></i> Desbanear
+            </button>
+          </form>
+        {% else %}
+          <!-- Banear -->
+          <button type="button" class="btn-ban banear" onclick="abrirModalBan()">
+            <i class="bi bi-slash-circle-fill me-1"></i> Banear
+          </button>
+          <!-- Sancionar -->
+          <button type="button" class="btn-ban sancionar" onclick="abrirModalSancion()">
+            <i class="bi bi-clock-fill me-1"></i>
+            {% if profile.suspendido_hasta and profile.suspendido_hasta > now %}Editar sanción{% else %}Sancionar{% endif %}
+          </button>
+          {% if profile.suspendido_hasta and profile.suspendido_hasta > now %}
+          <form method="post" action="{% url 'sancionar_usuario' cliente.id %}" style="margin:0;">
+            {% csrf_token %}
+            <input type="hidden" name="dias" value="0">
+            <input type="hidden" name="horas" value="0">
+            <button type="submit" class="btn-ban levantar">
+              <i class="bi bi-x-lg me-1"></i> Levantar
+            </button>
+          </form>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+      <a href="{% url 'admin_crear_rutina' cliente.id %}"
+         style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:12px;
+                background:linear-gradient(135deg,#4361ee,#6b7280);color:#fff;font-weight:700;
+                font-size:13px;text-decoration:none;transition:opacity .2s;"
+         onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        <i class="bi bi-plus-circle-fill"></i> Crear Rutina
+      </a>
+    </div>
+  </div>
+
+  <!-- Header usuario -->
+  <div class="user-header">
+    <div class="u-avatar">
+      {% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="">
+      {% else %}<i class="bi bi-person-fill"></i>{% endif %}
+    </div>
+    <div style="flex:1;">
+      <div class="u-nombre">
+        {{ cliente.first_name|default:cliente.username }} {{ cliente.last_name }}
+        {% if profile.rol == 'profesional' %}
+        <span style="font-size:14px;background:rgba(0,212,170,.15);border:1px solid rgba(0,212,170,.3);border-radius:8px;padding:2px 10px;color:#00d4aa;font-family:sans-serif;">Pro</span>
+        {% elif profile.rol == 'admin_pro' %}
+        <span style="font-size:14px;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3);border-radius:8px;padding:2px 10px;color:#f97316;font-family:sans-serif;">Admin</span>
+        {% endif %}
+      </div>
+      <div class="u-meta">
+        @{{ cliente.username }}
+        {% if cliente.email %} · {{ cliente.email }}{% endif %}
+        · Miembro desde {{ profile.fecha_registro|date:"d M Y" }}
+      </div>
+      {% if profile.telefono or profile.direccion %}
+      <div style="margin-top:6px;display:flex;gap:14px;flex-wrap:wrap;">
+        {% if profile.telefono %}
+        <span style="font-size:12px;color:var(--sv-muted);">
+          <i class="bi bi-telephone-fill me-1" style="color:#00d4aa;"></i>{{ profile.telefono }}
+        </span>
+        {% endif %}
+        {% if profile.direccion %}
+        <span style="font-size:12px;color:var(--sv-muted);">
+          <i class="bi bi-geo-alt-fill me-1" style="color:#f4a261;"></i>{{ profile.direccion }}
+        </span>
+        {% endif %}
+      </div>
+      {% endif %}
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        {% if profile.objetivo %}<span style="background:rgba(107,114,128,.15);border:1px solid rgba(107,114,128,.25);border-radius:8px;padding:2px 10px;font-size:11px;font-weight:700;color:#9ca3af;">{{ profile.get_objetivo_display }}</span>{% endif %}
+        {% if profile.nivel %}<span style="background:rgba(67,97,238,.12);border:1px solid rgba(67,97,238,.25);border-radius:8px;padding:2px 10px;font-size:11px;font-weight:700;color:#7b9ffb;">{{ profile.get_nivel_display }}</span>{% endif %}
+        {% if profile.genero %}<span style="background:rgba(255,255,255,.06);border:1px solid var(--sv-border);border-radius:8px;padding:2px 10px;font-size:11px;font-weight:700;color:var(--sv-muted);">{{ profile.get_genero_display }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div class="alert mb-3" style="border-radius:12px;font-size:13px;background:rgba(0,212,170,.1);border-color:#00d4aa;color:#00d4aa;">{{ msg }}</div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Estado de moderación (solo si está baneado/suspendido) -->
+  {% if not cliente.is_active %}
+  <div style="background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.3);border-radius:14px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+    <i class="bi bi-slash-circle-fill" style="color:#f87171;font-size:20px;"></i>
+    <div>
+      <div style="font-size:13px;font-weight:800;color:#f87171;">Usuario BANEADO</div>
+      {% if profile.nota_moderacion %}<div style="font-size:12px;color:rgba(248,113,113,.7);margin-top:2px;">Razón: {{ profile.nota_moderacion }}</div>{% endif %}
+    </div>
+  </div>
+  {% elif profile.suspendido_hasta and profile.suspendido_hasta > now %}
+  <div style="background:rgba(245,158,11,.1);border:1.5px solid rgba(245,158,11,.3);border-radius:14px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+    <i class="bi bi-clock-fill" style="color:#f59e0b;font-size:20px;"></i>
+    <div>
+      <div style="font-size:13px;font-weight:800;color:#f59e0b;">Suspendido hasta {{ profile.suspendido_hasta|date:"d/m/Y H:i" }}</div>
+      {% if profile.nota_moderacion %}<div style="font-size:12px;color:rgba(245,158,11,.7);margin-top:2px;">Razón: {{ profile.nota_moderacion }}</div>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Modal Banear -->
+  <div class="pwd-modal-overlay" id="modalBan">
+    <div class="pwd-modal">
+      <h3 style="color:#f87171;"><i class="bi bi-slash-circle-fill me-2"></i>Banear usuario</h3>
+      <p>Esto bloqueará permanentemente a <strong style="color:#fff;">{{ cliente.username }}</strong>. Puedes desbanearlo después.</p>
+      <form method="post" action="{% url 'banear_usuario' cliente.id %}">
+        {% csrf_token %}
+        <textarea name="razon" class="pwd-input" placeholder="Razón del baneo (opcional)..." rows="3" style="resize:none;height:auto;"></textarea>
+        <button type="submit" class="pwd-btn-confirm" style="background:#ef4444;">
+          <i class="bi bi-slash-circle-fill me-1"></i> Confirmar baneo
+        </button>
+      </form>
+      <br><button class="pwd-btn-cancel" onclick="document.getElementById('modalBan').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal Sancionar -->
+  <div class="pwd-modal-overlay" id="modalSancion">
+    <div class="pwd-modal" style="max-width:400px;">
+      <h3 style="color:#f59e0b;"><i class="bi bi-clock-fill me-2"></i>Sancionar temporalmente</h3>
+      <p>El usuario <strong style="color:#fff;">{{ cliente.username }}</strong> no podrá iniciar sesión durante el tiempo seleccionado.</p>
+      <form method="post" action="{% url 'sancionar_usuario' cliente.id %}">
+        {% csrf_token %}
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <div style="flex:1;">
+            <label style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Días</label>
+            <input type="number" name="dias" class="pwd-input" style="margin:0;" value="0" min="0" max="365" placeholder="0">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Horas</label>
+            <input type="number" name="horas" class="pwd-input" style="margin:0;" value="0" min="0" max="23" placeholder="0">
+          </div>
+        </div>
+        <textarea name="razon" class="pwd-input" placeholder="Razón de la sanción (opcional)..." rows="3" style="resize:none;height:auto;"></textarea>
+        <button type="submit" class="pwd-btn-confirm" style="background:#f59e0b;color:#000;">
+          <i class="bi bi-clock-fill me-1"></i> Aplicar sanción
+        </button>
+      </form>
+      <br><button class="pwd-btn-cancel" onclick="document.getElementById('modalSancion').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Contacto con ojo de privacidad -->
+  {% if profile.telefono or profile.direccion %}
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-person-lines-fill"></i> Información de contacto
+      <button class="btn-eye ms-auto" onclick="abrirModalPrivacidad()" title="Ver datos privados">
+        <i class="bi bi-eye-slash-fill"></i>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      {% if profile.telefono %}
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.2);border-radius:12px;">
+        <i class="bi bi-telephone-fill" style="color:#00d4aa;font-size:18px;"></i>
+        <div style="flex:1;">
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--sv-muted);">Teléfono</div>
+          <div class="priv-masked priv-field" id="field-telefono" style="font-size:15px;font-weight:700;color:var(--sv-text);">{{ profile.telefono }}</div>
+        </div>
+      </div>
+      {% endif %}
+      {% if profile.direccion %}
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(244,162,97,.06);border:1px solid rgba(244,162,97,.2);border-radius:12px;">
+        <i class="bi bi-geo-alt-fill" style="color:#f4a261;font-size:18px;"></i>
+        <div style="flex:1;">
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--sv-muted);">Dirección</div>
+          <div class="priv-masked priv-field" id="field-direccion" style="font-size:15px;font-weight:700;color:var(--sv-text);">{{ profile.direccion }}</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <p style="font-size:11px;color:var(--sv-muted);margin-top:10px;margin-bottom:0;">
+      <i class="bi bi-lock-fill me-1"></i> Haz clic en el ojo para revelar los datos — se pedirá tu contraseña.
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- Modal de contraseña -->
+  <div class="pwd-modal-overlay" id="pwdModal">
+    <div class="pwd-modal">
+      <h3><i class="bi bi-shield-lock-fill me-2"></i>Verificar identidad</h3>
+      <p>Ingresa tu contraseña de administrador para ver los datos privados.</p>
+      <input type="password" class="pwd-input" id="pwdInput" placeholder="Tu contraseña..." autocomplete="current-password">
+      <div class="pwd-error" id="pwdError">Contraseña incorrecta. Intenta de nuevo.</div>
+      <button class="pwd-btn-confirm" onclick="confirmarPassword()">
+        <i class="bi bi-eye-fill me-1"></i> Ver datos
+      </button>
+      <br>
+      <button class="pwd-btn-cancel" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Datos físicos -->
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-person-fill"></i> Datos físicos y actividad</div>
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="info-val">{{ profile.edad|default:"—" }}</div>
+        <div class="info-lbl">Edad (años)</div>
+      </div>
+      <div class="info-box">
+        <div class="info-val">{{ profile.peso|default:"—" }}</div>
+        <div class="info-lbl">Peso (kg)</div>
+      </div>
+      <div class="info-box">
+        <div class="info-val">{{ profile.altura|default:"—" }}</div>
+        <div class="info-lbl">Altura (cm)</div>
+      </div>
+      <div class="info-box">
+        <div class="info-val" style="color:var(--sv-green);">{{ entrenamientos|length }}</div>
+        <div class="info-lbl">Entrenamientos</div>
+      </div>
+      <div class="info-box">
+        <div class="info-val" style="color:#f4a261;">{{ total_series }}</div>
+        <div class="info-lbl">Series totales</div>
+      </div>
+      <div class="info-box">
+        <div class="info-val" style="color:#9ca3af;">{{ kg_total|floatformat:0 }}</div>
+        <div class="info-lbl">kg levantados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Condiciones de salud -->
+  {% if condiciones %}
+  <div class="data-section" style="border-color:rgba(249,115,22,.3);">
+    <div class="data-title" style="color:#f97316;border-color:rgba(249,115,22,.2);">
+      <i class="bi bi-heart-pulse-fill"></i> Condiciones de salud
+      <span style="font-size:10px;background:rgba(249,115,22,.2);padding:2px 8px;border-radius:8px;">DATO SENSIBLE</span>
+    </div>
+    {% for c in condiciones %}
+      <span class="cond-badge">{{ c }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ===== PLAN SEMANAL ===== -->
+  <div class="data-section">
+    <div class="data-title" style="justify-content:space-between;">
+      <span><i class="bi bi-calendar-week-fill"></i> Plan semanal</span>
+      <a href="{% url 'admin_crear_rutina' cliente.id %}"
+         style="font-size:12px;font-weight:700;color:#4361ee;text-decoration:none;font-family:sans-serif;">
+        <i class="bi bi-plus-lg"></i> Nueva rutina
+      </a>
+    </div>
+    <div class="week-grid">
+      {% for dia, plan in plan_ordenado %}
+      <div class="day-cell {% if plan and not plan.descanso and plan.rutina %}tiene-rutina{% elif plan and plan.descanso %}descanso{% endif %}">
+        <div class="day-name">{{ dia|slice:":3"|upper }}</div>
+        {% if plan and plan.descanso %}
+          <i class="bi bi-moon-stars-fill" style="color:#34d399;font-size:16px;margin-top:4px;"></i>
+          <div style="font-size:10px;color:#34d399;font-weight:700;">Descanso</div>
+        {% elif plan and plan.rutina %}
+          <i class="bi bi-lightning-fill" style="color:#4361ee;font-size:14px;margin-top:4px;"></i>
+          <div class="day-rutina-name">{{ plan.rutina.nombre }}</div>
+          <div style="font-size:10px;color:var(--sv-muted);">{{ plan.rutina.ejercicios_rutina.count }} ej.</div>
+        {% else %}
+          <div class="day-empty"><i class="bi bi-dash-lg"></i></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ===== RUTINAS COMPLETAS ===== -->
+  <div class="data-section">
+    <div class="data-title" style="justify-content:space-between;">
+      <span><i class="bi bi-list-check"></i> Rutinas ({{ rutinas|length }})</span>
+      <a href="{% url 'admin_crear_rutina' cliente.id %}"
+         style="font-size:12px;font-weight:700;color:#4361ee;text-decoration:none;font-family:sans-serif;">
+        <i class="bi bi-plus-lg"></i> Nueva rutina
+      </a>
+    </div>
+    {% if rutinas %}
+    {% for r in rutinas %}
+    <div class="rutina-card">
+      <div class="rutina-head" onclick="toggleRutina('rb-{{ r.id }}', this)">
+        <i class="bi bi-chevron-right rutina-chevron"></i>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;color:var(--sv-text);">{{ r.nombre }}</div>
+          <div style="font-size:11px;color:var(--sv-muted);margin-top:2px;">
+            {{ r.get_nivel_display }}
+            · {{ r.ejercicios_rutina.count }} ejercicio{{ r.ejercicios_rutina.count|pluralize }}
+            · {{ r.creada_en|date:"d M Y" }}
+            {% if r.es_auto_generada %}<span style="background:rgba(107,114,128,.15);border:1px solid rgba(107,114,128,.3);border-radius:6px;padding:1px 6px;font-size:10px;color:#9ca3af;margin-left:4px;">Auto</span>{% endif %}
+          </div>
+        </div>
+        <div style="flex-shrink:0;font-size:11px;color:var(--sv-muted);">
+          {{ r|muscle_slugs_str|default:"" }}
+        </div>
+      </div>
+      <div class="rutina-body" id="rb-{{ r.id }}">
+        {% for er in r.ejercicios_rutina.all %}
+        <div class="ej-row">
+          <div class="ej-orden">{{ forloop.counter }}</div>
+          <div class="ej-info">
+            <div class="ej-info-name">{{ er.ejercicio.nombre }}</div>
+            <div class="ej-info-sub">
+              {{ er.ejercicio.grupo_muscular.nombre|default:"Sin grupo" }}
+              {% if er.ejercicio.nivel %} · {{ er.ejercicio.get_nivel_display }}{% endif %}
+            </div>
+          </div>
+          {% if er.ejercicio.duracion_minutos %}
+          <span class="ej-cardio-pill"><i class="bi bi-clock me-1"></i>{{ er.ejercicio.duracion_minutos }} min</span>
+          {% else %}
+          <span class="ej-series-pill">{{ er.series_sugeridas }} × {{ er.repeticiones_sugeridas }}</span>
+          {% endif %}
+        </div>
+        {% empty %}
+        <div style="padding:14px;color:var(--sv-muted);font-size:13px;text-align:center;">Sin ejercicios.</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;padding:20px;color:var(--sv-muted);font-size:13px;">
+      Este usuario no tiene rutinas. <a href="{% url 'admin_crear_rutina' cliente.id %}" style="color:#4361ee;">Crear una →</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ===== ENTRENAMIENTOS ===== -->
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-trophy-fill"></i> Entrenamientos recientes (últimos 20)</div>
+    {% if entrenamientos %}
+    {% for e in entrenamientos %}
+    {% with e_id=e.id %}
+    <div class="entreno-row" onclick="toggleEntreno('entreno-{{ e_id }}', this)">
+      <i class="bi bi-chevron-right entreno-toggle" id="toggle-{{ e_id }}"></i>
+      <div style="font-size:11px;font-weight:700;color:var(--sv-muted);min-width:65px;">{{ e.iniciado_en|date:"d M Y" }}</div>
+      <div style="flex:1;font-size:13px;font-weight:800;color:var(--sv-text);">{{ e.nombre }}</div>
+      <div style="font-size:12px;color:var(--sv-muted);">{{ e.duracion }}</div>
+      <div style="font-size:12px;color:var(--sv-green);font-weight:700;">{{ e.peso_total }} kg</div>
+    </div>
+    <div class="series-detail" id="entreno-{{ e_id }}">
+      {% with series_list=e.series.all %}
+      {% if series_list %}
+      <table class="series-table">
+        <thead>
+          <tr>
+            <th>Ejercicio</th>
+            <th style="text-align:center;">Serie</th>
+            <th style="text-align:center;">Reps</th>
+            <th style="text-align:center;">Peso (kg)</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for s in series_list %}
+        <tr>
+          <td class="ej-name-cell">{{ s.ejercicio.nombre }}</td>
+          <td style="text-align:center;color:var(--sv-muted);">{{ s.numero_serie }}</td>
+          <td style="text-align:center;">{{ s.repeticiones|default:"—" }}</td>
+          <td style="text-align:center;color:#f4a261;font-weight:700;">
+            {% if s.peso %}{{ s.peso }}{% elif s.tiempo_minutos %}{{ s.tiempo_minutos }}min{% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="color:var(--sv-muted);font-size:12px;text-align:center;padding:8px;">Sin series registradas.</div>
+      {% endif %}
+      {% endwith %}
+    </div>
+    {% endwith %}
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;padding:16px;color:var(--sv-muted);font-size:13px;">Sin entrenamientos registrados.</div>
+    {% endif %}
+  </div>
+
+  <!-- ===== PROGRESO: PESO ===== -->
+  {% if pesos %}
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-graph-up-arrow"></i> Historial de peso</div>
+    {% with max_peso=pesos.0.peso %}
+    {% for p in pesos %}
+    <div class="peso-row">
+      <div style="font-size:11px;color:var(--sv-muted);min-width:72px;">{{ p.fecha|date:"d M Y" }}</div>
+      <div class="peso-bar-bg">
+        <div class="peso-bar-fill" style="width:{% widthratio p.peso max_peso 100 %}%;"></div>
+      </div>
+      <div style="font-size:13px;font-weight:800;color:#4361ee;min-width:58px;text-align:right;">{{ p.peso }} kg</div>
+      {% if p.notas %}<div style="font-size:11px;color:var(--sv-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.notas }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    {% endwith %}
+  </div>
+  {% endif %}
+
+  <!-- ===== PROGRESO: MEDICIONES CORPORALES ===== -->
+  {% if mediciones %}
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-rulers"></i> Mediciones corporales</div>
+    <div style="overflow-x:auto;">
+    <table class="med-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Peso</th>
+          <th>Cintura</th>
+          <th>Cadera</th>
+          <th>Pecho</th>
+          <th>Brazo</th>
+          <th>Muslo</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for m in mediciones %}
+      <tr>
+        <td style="color:var(--sv-muted);">{{ m.fecha|date:"d M Y" }}</td>
+        <td style="color:#4361ee;font-weight:700;">{{ m.peso|default:"—" }} {% if m.peso %}kg{% endif %}</td>
+        <td>{{ m.cintura|default:"—" }} {% if m.cintura %}cm{% endif %}</td>
+        <td>{{ m.cadera|default:"—" }} {% if m.cadera %}cm{% endif %}</td>
+        <td>{{ m.pecho|default:"—" }} {% if m.pecho %}cm{% endif %}</td>
+        <td>{{ m.brazo|default:"—" }} {% if m.brazo %}cm{% endif %}</td>
+        <td>{{ m.muslo|default:"—" }} {% if m.muslo %}cm{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% for m in mediciones %}
+    {% if m.notas %}
+    <div style="margin-top:6px;font-size:11px;color:var(--sv-muted);"><i class="bi bi-chat-left-text me-1"></i>{{ m.fecha|date:"d M" }}: {{ m.notas }}</div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ===== PLANES NUTRICIONALES ===== -->
+  {% if planes_nutri %}
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-journal-medical"></i> Planes Nutricionales ({{ planes_nutri|length }})</div>
+    {% for p in planes_nutri %}
+    <div class="plan-card" style="{% if p.activa %}border-color:rgba(0,212,170,.4);{% endif %}">
+      <div class="plan-card-head" onclick="togglePlan('plan-body-{{ p.id }}', this)">
+        <i class="bi bi-chevron-right" style="color:var(--sv-muted);font-size:12px;transition:transform .2s;" class="plan-toggle"></i>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;color:var(--sv-text);">{{ p.nombre|default:"Plan sin nombre" }}
+            {% if p.activa %}&nbsp;<span class="activa-badge"><i class="bi bi-check-circle-fill"></i> Activo</span>{% endif %}
+          </div>
+          <div style="font-size:11px;color:var(--sv-muted);margin-top:3px;">
+            {{ p.creado_en|date:"d M Y" }} · {{ p.get_objetivo_display }} · {{ p.comidas_dia }} comidas/día · {{ p.get_restriccion_display }}
+          </div>
+        </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#f97316;">{{ p.calorias_dia|floatformat:0 }} kcal</div>
+      </div>
+      <div class="plan-card-body" id="plan-body-{{ p.id }}">
+        <!-- Macros -->
+        <div class="plan-macros-strip">
+          <div class="pm-item"><div class="pm-val" style="color:#f97316;">{{ p.calorias_dia|floatformat:0 }}</div><div class="pm-lbl">kcal/día</div></div>
+          <div class="pm-item"><div class="pm-val" style="color:#60a5fa;">{{ p.proteinas_g|floatformat:0 }}g</div><div class="pm-lbl">Proteína</div></div>
+          <div class="pm-item"><div class="pm-val" style="color:#f59e0b;">{{ p.carbos_g|floatformat:0 }}g</div><div class="pm-lbl">Carbos</div></div>
+          <div class="pm-item"><div class="pm-val" style="color:#34d399;">{{ p.grasas_g|floatformat:0 }}g</div><div class="pm-lbl">Grasas</div></div>
+        </div>
+        <!-- Comidas por día -->
+        {% if p.plan_json %}
+        {% for dia_obj in p.plan_json %}
+        <div class="plan-dia-block">
+          <div class="plan-dia-title"><i class="bi bi-calendar-week"></i> {{ dia_obj.dia }}</div>
+          {% for meal in dia_obj.meals %}
+          <div class="plan-comida-row">
+            <div class="plan-comida-time">{{ meal.time }}</div>
+            <div class="plan-comida-info">
+              <div class="plan-comida-label">{{ meal.label }} — {{ meal.n }}</div>
+              <div class="plan-comida-foods">{{ meal.d }}</div>
+            </div>
+            {% if meal.k %}<div class="plan-comida-kcal">{{ meal.k }}<span style="font-size:9px;font-family:sans-serif;"> kcal</span></div>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="text-align:center;padding:12px;color:var(--sv-muted);font-size:13px;">Sin detalle de comidas.</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ===== CÁLCULOS DE CALORÍAS ===== -->
+  {% if calculos_cal %}
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-calculator"></i> Cálculos de calorías ({{ calculos_cal|length }})</div>
+    <div style="overflow-x:auto;">
+    <table class="med-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Nombre</th>
+          <th style="text-align:center;">kcal</th>
+          <th style="text-align:center;">Proteína</th>
+          <th style="text-align:center;">Carbos</th>
+          <th style="text-align:center;">Grasas</th>
+          <th>Objetivo</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in calculos_cal %}
+      <tr>
+        <td style="color:var(--sv-muted);">{{ c.calculado_en|date:"d M Y" }}</td>
+        <td style="font-weight:700;">{{ c.nombre|default:"—" }}{% if c.activa %} <span style="font-size:9px;background:rgba(0,212,170,.15);border:1px solid rgba(0,212,170,.3);padding:1px 6px;border-radius:8px;color:#00d4aa;">activa</span>{% endif %}</td>
+        <td style="text-align:center;color:#f97316;font-weight:700;">{{ c.getd|floatformat:0 }}</td>
+        <td style="text-align:center;color:#60a5fa;">{{ c.proteinas_g|floatformat:0 }}g</td>
+        <td style="text-align:center;color:#f59e0b;">{{ c.carbos_g|floatformat:0 }}g</td>
+        <td style="text-align:center;color:#34d399;">{{ c.grasas_g|floatformat:0 }}g</td>
+        <td style="color:var(--sv-muted);font-size:11px;">{{ c.get_objetivo_display }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not planes_nutri and not calculos_cal %}
+  <div class="data-section">
+    <div class="data-title"><i class="bi bi-journal-medical"></i> Nutrición</div>
+    <div style="text-align:center;padding:16px;color:var(--sv-muted);font-size:13px;">Sin planes nutricionales registrados.</div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleEntreno(id, row) {
+  const detail = document.getElementById(id);
+  const toggle = row.querySelector('.entreno-toggle');
+  const open = detail.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+}
+function toggleRutina(id, head) {
+  const body = document.getElementById(id);
+  const chevron = head.querySelector('.rutina-chevron');
+  const open = body.classList.toggle('open');
+  chevron.classList.toggle('open', open);
+}
+function togglePlan(id, head) {
+  const body = document.getElementById(id);
+  const icon = head.querySelector('.bi-chevron-right, .bi-chevron-down');
+  const open = body.classList.toggle('open');
+  if (icon) {
+    icon.style.transform = open ? 'rotate(90deg)' : '';
+  }
+}
+
+// ── Moderación ─────────────────────────────────────────
+function abrirModalBan() {
+  document.getElementById('modalBan').classList.add('open');
+}
+function abrirModalSancion() {
+  document.getElementById('modalSancion').classList.add('open');
+}
+['modalBan','modalSancion','pwdModal'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
+});
+
+// ── Privacidad ──────────────────────────────────────────
+function abrirModalPrivacidad() {
+  document.getElementById('pwdModal').classList.add('open');
+  document.getElementById('pwdInput').value = '';
+  document.getElementById('pwdError').style.display = 'none';
+  setTimeout(function(){ document.getElementById('pwdInput').focus(); }, 100);
+}
+function cerrarModal() {
+  document.getElementById('pwdModal').classList.remove('open');
+}
+function confirmarPassword() {
+  var pwd = document.getElementById('pwdInput').value;
+  if (!pwd) return;
+  var formData = new FormData();
+  formData.append('password', pwd);
+  formData.append('user_id', '{{ cliente.id }}');
+  formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+  fetch('{% url "verificar_password_admin" %}', { method: 'POST', body: formData })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (data.ok) {
+        cerrarModal();
+        // Revelar campos
+        var tel = document.getElementById('field-telefono');
+        var dir = document.getElementById('field-direccion');
+        if (tel) { tel.classList.remove('priv-masked'); tel.classList.add('priv-revealed'); }
+        if (dir) { dir.classList.remove('priv-masked'); dir.classList.add('priv-revealed'); }
+        // Actualizar botón ojo
+        var eyeBtn = document.querySelector('.btn-eye i');
+        if (eyeBtn) eyeBtn.className = 'bi bi-eye-fill';
+      } else {
+        document.getElementById('pwdError').style.display = 'block';
+        document.getElementById('pwdInput').value = '';
+        document.getElementById('pwdInput').focus();
+      }
+    });
+}
+document.getElementById('pwdInput').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') confirmarPassword();
+});
+document.getElementById('pwdModal').addEventListener('click', function(e){
+  if (e.target === this) cerrarModal();
+});
+</script>
+{% endblock %}

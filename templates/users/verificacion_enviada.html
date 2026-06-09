@@ -1,0 +1,70 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Verifica tu correo — SportsVision{% endblock %}
+
+{% block public_content %}
+<div class="auth-form-page">
+
+  <img src="{% static 'images/registro_bg.jpg' %}" alt=""
+       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0.35;">
+
+  <div class="auth-form-box" style="max-width:480px;position:relative;z-index:2;
+       padding:44px 36px;background:rgba(8,10,22,0.92);backdrop-filter:blur(14px);
+       border-radius:24px;border:1.5px solid rgba(0,212,170,0.3);
+       box-shadow:0 24px 60px rgba(0,0,0,0.7);text-align:center;">
+
+    <!-- Ícono animado -->
+    <div style="width:88px;height:88px;border-radius:50%;
+                background:rgba(0,212,170,0.12);border:2px solid rgba(0,212,170,0.5);
+                display:flex;align-items:center;justify-content:center;
+                font-size:40px;margin:0 auto 28px;
+                animation:pulse 2s infinite;">
+      ✉️
+    </div>
+
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:38px;color:#fff;
+               margin-bottom:10px;letter-spacing:1px;">
+      ¡Revisa tu correo!
+    </h1>
+
+    <p style="color:rgba(255,255,255,.55);font-size:15px;line-height:1.75;margin-bottom:28px;">
+      Te enviamos un enlace de verificación.<br>
+      Haz clic en él para activar tu cuenta y comenzar.
+    </p>
+
+    <!-- Info box -->
+    <div style="background:rgba(0,212,170,0.07);border:1.5px solid rgba(0,212,170,0.22);
+                border-radius:16px;padding:18px 22px;margin-bottom:28px;text-align:left;">
+      <div style="font-size:12px;font-weight:800;color:#00d4aa;margin-bottom:10px;
+                  text-transform:uppercase;letter-spacing:.5px;">
+        <i class="bi bi-info-circle me-1"></i> ¿Qué sigue?
+      </div>
+      <ul style="color:rgba(255,255,255,.55);font-size:13px;margin:0;padding-left:18px;line-height:2;">
+        <li>Busca el correo de <strong style="color:#fff;">SportsVision</strong></li>
+        <li>Revisa también tu carpeta de <strong style="color:#fff;">spam</strong></li>
+        <li>El enlace expira en <strong style="color:#00d4aa;">24 horas</strong></li>
+        <li>Una vez verificado, accedes directamente a tu plan</li>
+      </ul>
+    </div>
+
+    <a href="{% url 'login' %}" class="btn-sv-outline w-100 py-3"
+       style="display:block;text-align:center;font-size:14px;font-weight:800;text-decoration:none;">
+      <i class="bi bi-box-arrow-in-right me-2"></i> Ya verifiqué, iniciar sesión
+    </a>
+
+    <div style="margin-top:16px;">
+      <a href="{% url 'iniciar_registro' %}" style="color:rgba(255,255,255,.28);font-size:12px;">
+        ¿No recibiste el correo? Regístrate de nuevo
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<style>
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,212,170,0.4); }
+  50%      { box-shadow: 0 0 0 12px rgba(0,212,170,0); }
+}
+</style>
+{% endblock %}

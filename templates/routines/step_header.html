@@ -1,0 +1,23 @@
+{% comment %}
+  Uso: {% include 'routines/step_header.html' with paso_actual=1 %}
+  paso_actual: 1, 2 o 3
+{% endcomment %}
+<div class="step-header">
+  <div class="step-item {% if paso_actual >= 1 %}{% if paso_actual > 1 %}done{% else %}active{% endif %}{% endif %}">
+    <div class="step-circle">{% if paso_actual > 1 %}<i class="bi bi-check-lg"></i>{% else %}1{% endif %}</div>
+    <div class="step-label">Equipment</div>
+    <div class="step-sublabel">Selecciona tu equipo</div>
+  </div>
+  <div class="step-line {% if paso_actual > 1 %}done{% endif %}"></div>
+  <div class="step-item {% if paso_actual >= 2 %}{% if paso_actual > 2 %}done{% else %}active{% endif %}{% endif %}">
+    <div class="step-circle">{% if paso_actual > 2 %}<i class="bi bi-check-lg"></i>{% else %}2{% endif %}</div>
+    <div class="step-label">Músculos</div>
+    <div class="step-sublabel">Elige tu entrenamiento</div>
+  </div>
+  <div class="step-line {% if paso_actual > 2 %}done{% endif %}"></div>
+  <div class="step-item {% if paso_actual >= 3 %}active{% endif %}">
+    <div class="step-circle">3</div>
+    <div class="step-label">Ejercicios</div>
+    <div class="step-sublabel">Personaliza tu sesion</div>
+  </div>
+</div>

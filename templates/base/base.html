@@ -1,0 +1,865 @@
+﻿{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{% block title %}SportsVision{% endblock %}</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#6b7280">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SportsVision">
+  <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
+  <meta name="application-name" content="SportsVision">
+  <meta name="msapplication-TileColor" content="#6b7280">
+  <meta name="msapplication-TileImage" content="{% static 'images/logo.png' %}">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/sportsvision.css' %}">
+  <script src="{% static 'js/i18n.js' %}"></script>
+
+  <style>
+    .btn-sidebar-open {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 12px;
+      z-index: 1100;
+      background: var(--sv-sidebar-bg, #1e1e2e);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 22px;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-sidebar-open:hover { background: rgba(107,114,128,0.3); }
+
+    /* Botón flecha dentro del sidebar */
+    .btn-sidebar-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.3s;
+      flex-shrink: 0;
+    }
+    .btn-sidebar-arrow:hover { background: rgba(255,255,255,0.15); }
+    .sv-sidebar.collapsed .btn-sidebar-arrow { transform: rotate(180deg); }
+    @media (max-width: 768px) { .btn-sidebar-arrow { display: none; } }
+
+    .sv-main { transition: margin-left 0.3s ease; }
+    .sv-layout.sidebar-collapsed .sv-main { margin-left: 0 !important; }
+
+    /* ── Muscle Map Mini — estilos globales ─────────────── */
+    .muscle-map-mini { display: inline-flex; }
+    .mmap-panels { display: flex; gap: 4px; align-items: flex-start; }
+    .mmap-svg { display: block; width: 62px; height: auto; overflow: visible; }
+    .mmap-sil { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.09); stroke-width: 1.5; }
+    .mmap-path { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.09); stroke-width: 1; transition: fill .2s, stroke .2s; }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+{% with p=request.resolver_match.url_name %}
+<body class="sv-body {% if p == 'dashboard' %}page-home{% elif p == 'perfil' or p == 'editar_perfil' or p == 'solicitar_profesional' or p == 'privacidad' %}page-perfil{% elif p == 'mis_rutinas' or p == 'paso1_equipo' or p == 'paso2_musculos' or p == 'paso3_ejercicios' or p == 'iniciar_entrenamiento' or p == 'finalizar_entrenamiento' or p == 'eliminar_rutina' or p == 'auto_generador' %}page-rutinas{% elif p == 'plan_semanal' %}page-plan{% elif p == 'calendario_progreso' %}page-progreso{% elif p == 'herramientas' or p == 'calculadora_calorias' or p == 'calculadora_imc' or p == 'plan_nutricional' or p == 'mis_dietas' or p == 'chatbot' %}page-tools{% elif p == 'ejercicios_lista' or p == 'ejercicio_detalle' %}page-ejercicios{% elif p == 'profesional_dashboard' or p == 'admin_pro_dashboard' or p == 'admin_ver_usuario' or p == 'admin_crear_rutina' or p == 'profesional_cliente' %}page-pro{% endif %}">
+{% endwith %}
+
+
+{% if user.is_authenticated %}
+<div class="sv-layout" id="svLayout">
+
+  <button class="btn-sidebar-open" id="btnOpenSidebar">
+    <i class="bi bi-list"></i>
+  </button>
+
+  <nav class="sv-sidebar" id="svSidebar">
+
+    <div style="display:flex; justify-content:flex-end; padding:12px 12px 4px;">
+      <button class="btn-sidebar-arrow" id="btnToggleSidebar" title="Cerrar menú">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+    </div>
+
+    <ul class="sidebar-nav">
+
+      <li>
+        <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          <i class="bi bi-house-fill"></i><span>Home</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'mis_rutinas' %}"
+           class="{% if request.resolver_match.url_name == 'mis_rutinas' %}active{% endif %}">
+          <i class="bi bi-collection-fill"></i><span>{% trans "Mis Rutinas" %}</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'paso3_ejercicios' %}"
+           class="{% if request.resolver_match.url_name in 'paso3_ejercicios iniciar_entrenamiento finalizar_entrenamiento eliminar_rutina' %}active{% endif %}">
+          <i class="bi bi-trophy-fill"></i><span>{% trans "Nueva Rutina" %}</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'plan_semanal' %}"
+           class="{% if '/rutinas/plan-semanal/' in request.path %}active{% endif %}">
+          <i class="bi bi-calendar-week-fill"></i><span>{% trans "Plan Semanal" %}</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'calendario_progreso' %}"
+           class="{% if '/progreso/' in request.path %}active{% endif %}">
+          <i class="bi bi-calendar-check-fill"></i><span>{% trans "Progreso" %}</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'herramientas' %}"
+           class="{% if '/herramientas/' in request.path and request.resolver_match.url_name != 'mis_dietas' %}active{% endif %}">
+          <i class="bi bi-wrench-adjustable-circle-fill"></i><span>{% trans "Herramientas" %}</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'mis_dietas' %}"
+           class="{% if request.resolver_match.url_name == 'mis_dietas' %}active{% endif %}">
+          <i class="bi bi-bookmark-heart-fill"></i><span>{% trans "Mis Dietas" %}</span>
+        </a>
+      </li>
+
+
+    </ul>
+
+    <div class="sidebar-bottom">
+      <a href="{% url 'perfil' %}"
+         class="{% if '/usuarios/perfil' in request.path and 'privacidad' not in request.path %}active{% endif %}">
+        <i class="bi bi-person-fill"></i><span>{% trans "Mi Perfil" %}</span>
+      </a>
+
+      {% if user.is_superuser or user.profile.rol == 'admin_pro' %}
+        <a href="{% url 'admin_pro_dashboard' %}"
+           class="{% if 'admin-pro' in request.path %}active{% endif %}">
+          <i class="bi bi-shield-fill-check"></i><span>Admin Pro</span>
+        </a>
+        <a href="{% url 'profesional_dashboard' %}"
+           class="{% if 'profesional/dashboard' in request.path or 'profesional/cliente' in request.path %}active{% endif %}">
+          <i class="bi bi-patch-check-fill"></i><span>{% trans "Panel Pro" %}</span>
+        </a>
+      {% elif user.profile.rol == 'profesional' %}
+        <a href="{% url 'profesional_dashboard' %}"
+           class="{% if 'profesional/dashboard' in request.path or 'profesional/cliente' in request.path %}active{% endif %}">
+          <i class="bi bi-patch-check-fill"></i><span>{% trans "Panel Pro" %}</span>
+        </a>
+        <a href="{% url 'privacidad' %}"
+           class="{% if 'privacidad' in request.path %}active{% endif %}">
+          <i class="bi bi-shield-lock-fill"></i><span>{% trans "Privacidad" %}</span>
+        </a>
+      {% else %}
+        <a href="{% url 'solicitar_profesional' %}"
+           class="{% if 'solicitar' in request.path %}active{% endif %}">
+          <i class="bi bi-patch-check"></i><span>{% trans "Ser profesional" %}</span>
+        </a>
+        <a href="{% url 'privacidad' %}"
+           class="{% if 'privacidad' in request.path %}active{% endif %}">
+          <i class="bi bi-shield-lock-fill"></i><span>{% trans "Privacidad" %}</span>
+        </a>
+      {% endif %}
+
+      <a href="{% url 'logout' %}" class="sidebar-logout">
+        <i class="bi bi-power"></i><span>{% trans "Cerrar Sesión" %}</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Overlay para cerrar sidebar en móvil al tocar fuera -->
+  <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);transition:opacity .3s;"></div>
+
+  <main class="sv-main" id="svMain">
+
+    <div class="fitness-bg-deco" aria-hidden="true">
+      <i class="bi bi-fire"></i>
+      <i class="bi bi-heart-pulse-fill"></i>
+      <i class="bi bi-trophy-fill"></i>
+      <i class="bi bi-lightning-fill"></i>
+      <i class="bi bi-bicycle"></i>
+      <i class="bi bi-egg-fried"></i>
+    </div>
+
+    <div class="sv-topbar">
+      <!-- Hamburger solo en escritorio; en móvil se usa swipe desde el borde -->
+      <button class="btn-menu d-none d-md-block" id="btnToggleMobile"><i class="bi bi-list"></i></button>
+
+      <div class="sv-topbar-spacer"></div>
+
+      <!-- Icono de perfil en la derecha -->
+      <a href="{% url 'perfil' %}" class="topbar-avatar-btn" title="{{ user.first_name|default:user.username }}">
+        {% if user.profile.avatar_data %}
+          <img src="{{ user.profile.avatar_data }}" alt="Avatar">
+        {% elif user.profile.avatar %}
+          <img src="{{ user.profile.avatar.url }}" alt="Avatar">
+        {% else %}
+          <i class="bi bi-person-fill"></i>
+        {% endif %}
+      </a>
+    </div>
+
+    <div class="sv-main-content">
+      {% block content %}{% endblock %}
+    </div>
+
+  </main>
+
+</div>
+
+<!-- Manual de usuario FAB -->
+<button class="help-fab" id="helpFabBtn" title="Manual de usuario" onclick="document.getElementById('manual-overlay').classList.add('open')"
+  style="position:fixed;bottom:92px;right:28px;width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(67,97,238,0.18);color:rgba(255,255,255,0.8);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:900;">
+  <i class="bi bi-question-lg"></i>
+</button>
+
+
+{% if user.is_authenticated %}
+<!-- FitBot FAB -->
+<button class="fitbot-fab" id="fitbotFab" title="FitBot — Asistente IA"
+  style="position:fixed;bottom:156px;right:28px;width:52px;height:52px;border-radius:50%;border:1px solid rgba(67,97,238,0.3);background:rgba(67,97,238,0.18);color:rgba(255,255,255,0.8);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:900;">
+  <i class="bi bi-robot"></i>
+</button>
+
+<!-- FitBot Overlay -->
+<div class="fitbot-overlay" id="fitbotOverlay"
+     style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:flex-end;justify-content:flex-end;padding:24px;"
+     data-url="{% url 'chatbot' %}"
+     data-csrf="{{ csrf_token }}">
+  <div class="fitbot-widget" id="fitbotWidget"
+       style="width:100%;max-width:520px;max-height:80vh;background:#16213e;border:1.5px solid rgba(67,97,238,.45);border-radius:24px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.7);">
+    <div class="fitbot-widget-header"
+         style="display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;">
+      <div class="fitbot-widget-title"
+           style="display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:700;color:#fff;letter-spacing:1px;">
+        <span style="width:9px;height:9px;border-radius:50%;background:#00d4aa;box-shadow:0 0 6px #00d4aa;display:inline-block;"></span>
+        <i class="bi bi-robot"></i> FITBOT
+      </div>
+      <button class="fitbot-widget-close" id="fitbotClose" title="Cerrar"
+              style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:#8892b0;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="fitbot-widget-messages" id="fitbotMessages"
+         style="flex:1;overflow-y:auto;padding:16px 20px 10px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;"></div>
+    <div class="fitbot-widget-input"
+         style="display:flex;gap:10px;align-items:center;padding:12px 20px 16px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;">
+      <input type="text" id="fitbotInput" placeholder="Escríbeme algo…" maxlength="400" autocomplete="off"
+             style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;color:#fff;font-size:.9rem;outline:none;">
+      <button id="fitbotSend"
+              style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4361ee,#7b2ff7);border:none;color:#fff;font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var fab      = document.getElementById('fitbotFab');
+  var overlay  = document.getElementById('fitbotOverlay');
+  var closeBtn = document.getElementById('fitbotClose');
+  var input    = document.getElementById('fitbotInput');
+  var sendBtn  = document.getElementById('fitbotSend');
+  var msgs     = document.getElementById('fitbotMessages');
+  var opened   = false;
+  var busy     = false;
+  var URL_CHAT = overlay.dataset.url;
+  var CSRF     = overlay.dataset.csrf;
+
+  function scrollBot() { msgs.scrollTop = msgs.scrollHeight; }
+
+  function addMsg(role, text) {
+    var d = document.createElement('div');
+    d.className = 'fmsg ' + role;
+    d.style.cssText = 'display:flex;max-width:85%;' + (role==='user' ? 'align-self:flex-end;justify-content:flex-end;' : 'align-self:flex-start;');
+    var b = document.createElement('div');
+    b.className = 'fmsg-bubble';
+    b.style.cssText = 'padding:10px 15px;border-radius:18px;font-size:.9rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;' +
+      (role==='user'
+        ? 'background:linear-gradient(135deg,rgba(67,97,238,.8),rgba(123,47,247,.6));border-bottom-right-radius:4px;color:#fff;'
+        : 'background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-bottom-left-radius:4px;color:#fff;');
+    b.textContent = text;
+    d.appendChild(b);
+    msgs.appendChild(d);
+    scrollBot();
+    return b;
+  }
+
+  function showTyping() {
+    var d = document.createElement('div');
+    d.className = 'fmsg bot'; d.id = 'fbTyping';
+    d.style.cssText = 'display:flex;align-self:flex-start;';
+    d.innerHTML = '<div style="padding:12px 15px;border-radius:18px;border-bottom-left-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);display:flex;gap:5px;align-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:#00d4aa;display:inline-block;animation:fbDot .9s infinite;"></span><span style="width:7px;height:7px;border-radius:50%;background:#00d4aa;display:inline-block;animation:fbDot .9s .2s infinite;"></span><span style="width:7px;height:7px;border-radius:50%;background:#00d4aa;display:inline-block;animation:fbDot .9s .4s infinite;"></span></div>';
+    msgs.appendChild(d); scrollBot();
+  }
+  function hideTyping() { var t=document.getElementById('fbTyping'); if(t) t.remove(); }
+
+  var CHIPS = [
+    '¿Cómo va mi progreso de peso?',
+    '¿Estoy cumpliendo mis calorías?',
+    '¿Qué debo comer para ganar músculo?',
+    '¿Cuánta proteína necesito al día?',
+    'Dame un consejo para perder grasa',
+    '¿Qué ejercicios hacer hoy?'
+  ];
+
+  function addChips() {
+    var wrap = document.createElement('div');
+    wrap.id = 'fitbotChips';
+    wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 6px;';
+    CHIPS.forEach(function(c) {
+      var btn = document.createElement('button');
+      btn.textContent = c;
+      btn.style.cssText = 'background:rgba(67,97,238,.15);border:1px solid rgba(67,97,238,.4);border-radius:20px;padding:6px 13px;font-size:.78rem;color:#a0aec0;cursor:pointer;transition:background .2s;';
+      btn.onmouseover = function(){ this.style.background='rgba(67,97,238,.35)'; this.style.color='#fff'; };
+      btn.onmouseout  = function(){ this.style.background='rgba(67,97,238,.15)'; this.style.color='#a0aec0'; };
+      btn.addEventListener('click', function() {
+        var chips = document.getElementById('fitbotChips');
+        if (chips) chips.remove();
+        send(c);
+      });
+      wrap.appendChild(btn);
+    });
+    msgs.appendChild(wrap);
+    scrollBot();
+  }
+
+  function open() {
+    overlay.style.display = 'flex';
+    fab.classList.add('active');
+    opened = true;
+    if (!msgs.children.length) {
+      addMsg('bot', '¡Hola, {{ user.first_name|default:user.username }}! 👋 Soy FitBot. Puedo analizar tu progreso de peso y calorías, o responder cualquier pregunta de fitness. ¿En qué te ayudo?');
+      addChips();
+    }
+    setTimeout(function(){ input.focus(); }, 250);
+  }
+
+  function close() {
+    overlay.style.display = 'none';
+    fab.classList.remove('active');
+    opened = false;
+  }
+
+  fab.addEventListener('click', function() { opened ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+
+  async function send() {
+    var msg = input.value.trim();
+    if (!msg || busy) return;
+    busy = true;
+    input.value = '';
+    sendBtn.disabled = true;
+    addMsg('user', msg);
+    showTyping();
+    try {
+      var r = await fetch(URL_CHAT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ message: msg })
+      });
+      var data = await r.json();
+      hideTyping();
+      addMsg('bot', data.response || 'Error al responder.');
+    } catch(e) {
+      hideTyping();
+      addMsg('bot', 'Sin conexión. Intenta de nuevo.');
+    }
+    busy = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  sendBtn.addEventListener('click', send);
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); send(); }
+  });
+})();
+</script>
+{% endif %}
+
+<!-- ══ Modal Manual de Usuario ══ -->
+<div class="manual-overlay" id="manual-overlay"
+     onclick="if(event.target===this) this.classList.remove('open')">
+  <div class="manual-modal">
+
+    <div class="manual-head">
+      <div>
+        <div class="manual-head-title"><i class="bi bi-book-fill me-2"></i>Manual de Usuario</div>
+        <div class="manual-head-sub">SportsVision — Guía completa de todas las funciones</div>
+      </div>
+      <button class="manual-close" onclick="document.getElementById('manual-overlay').classList.remove('open')">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Buscador rápido -->
+    <div class="manual-search-wrap">
+      <i class="bi bi-search manual-search-icon"></i>
+      <input type="text" id="manual-search" class="manual-search" placeholder="Buscar en el manual...">
+    </div>
+
+    <div class="manual-body" id="manual-body">
+
+      <!-- ── SECCIÓN 1: Navegación ── -->
+      <div class="manual-section" data-tags="navegacion sidebar menu swipe deslizar movil">
+        <div class="manual-section-title"><i class="bi bi-layout-sidebar"></i> Navegación</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-hand-index-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Abrir menú en móvil</div>
+              <div class="manual-item-desc">Desliza el dedo desde el <strong>borde izquierdo</strong> de la pantalla hacia la derecha para abrir el menú. Para cerrarlo desliza hacia la izquierda o toca fuera.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-person-circle"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Icono de perfil</div>
+              <div class="manual-item-desc">Toca el avatar circular en la esquina superior derecha para ir directamente a tu perfil desde cualquier pantalla.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(67,97,238,.2);color:#7b9ffb;"><i class="bi bi-translate"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Idioma automático</div>
+              <div class="manual-item-desc">La app detecta el idioma de tu sistema operativo y se traduce automáticamente. Compatible con <strong>Español, Inglés, Portugués y Francés</strong>.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-phone-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Acceso multiplataforma</div>
+              <div class="manual-item-desc">Usa SportsVision desde <strong>Android APK</strong>, <strong>iPhone</strong> (añade a inicio en Safari), <strong>navegador web</strong> o <strong>app de escritorio</strong>. Todo sincronizado en la misma cuenta.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 2: Mi Perfil ── -->
+      <div class="manual-section" data-tags="perfil avatar foto usuario datos editar">
+        <div class="manual-section-title"><i class="bi bi-person-fill"></i> Mi Perfil</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-camera-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Cambiar foto de perfil</div>
+              <div class="manual-item-desc">Ve a <em>Editar perfil</em> → toca la foto. Selecciona una imagen de tu galería. En escritorio se abre un editor de recorte. La foto se guarda en la base de datos y aparece en todos tus dispositivos.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(67,97,238,.2);color:#7b9ffb;"><i class="bi bi-pencil-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Editar datos personales</div>
+              <div class="manual-item-desc">Botón <em>Editar perfil</em>: cambia nombre, edad, peso, altura, teléfono y dirección. El peso y altura se usan para calcular tu IMC y personalizar los planes.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-shield-fill-check"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Datos sincronizados</div>
+              <div class="manual-item-desc">Todo lo que guardes (foto, datos, rutinas, progreso) queda en la nube. Puedes acceder desde el celular, el computador o cualquier dispositivo con tu usuario y contraseña.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 3: Catálogo de Ejercicios ── -->
+      <div class="manual-section" data-tags="ejercicios catalogo imagenes musculos errores variantes guia instrucciones">
+        <div class="manual-section-title"><i class="bi bi-collection-play-fill"></i> Catálogo de Ejercicios</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-image-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Imágenes por ejercicio</div>
+              <div class="manual-item-desc">Cada ejercicio tiene una imagen ilustrativa. En el entrenamiento activo las ves en el carrusel superior y como imagen principal encima del card.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(67,97,238,.2);color:#7b9ffb;"><i class="bi bi-diagram-3-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Músculos involucrados</div>
+              <div class="manual-item-desc">En el detalle de cada ejercicio verás el <strong>músculo principal</strong>, los <strong>secundarios</strong> y los <strong>antagonistas</strong> que trabajan.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(248,113,113,.15);color:#f87171;"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Errores comunes</div>
+              <div class="manual-item-desc">Cada ejercicio lista los errores más frecuentes de técnica para que los evites y entrenes de forma segura.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-lightbulb-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Consejo del entrenador y variantes</div>
+              <div class="manual-item-desc">Cada ejercicio incluye un consejo profesional y una lista de variantes para que adaptes el entrenamiento a tu nivel y equipo disponible.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 4: Nueva Rutina ── -->
+      <div class="manual-section" data-tags="rutina ejercicio entrenamiento crear equipo musculo filtro buscar">
+        <div class="manual-section-title"><i class="bi bi-trophy-fill"></i> Nueva Rutina</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-search"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Buscar ejercicios</div>
+              <div class="manual-item-desc">Escribe el nombre del ejercicio o el músculo en la barra de búsqueda. Los resultados se filtran en tiempo real.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-funnel-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Filtrar por músculo y equipo</div>
+              <div class="manual-item-desc">Toca <em>Músculos</em> o <em>Equipo</em> para abrir un panel desde abajo. Puedes seleccionar varios a la vez — los ejercicios se filtran al instante. Toca el chip (etiqueta) para quitar el filtro.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(244,162,97,.15);color:#f4a261;"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Seleccionar y guardar</div>
+              <div class="manual-item-desc">Toca un ejercicio para seleccionarlo (círculo verde). Escribe el nombre de la rutina abajo y pulsa <em>Guardar rutina</em>. Puedes programarla para un día de la semana.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-clock-history"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Ejercicios recientes</div>
+              <div class="manual-item-desc">Los ejercicios que usaste en tus últimas rutinas aparecen al inicio de la lista con su imagen para acceder más rápido.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Descargar rutina en PDF</div>
+              <div class="manual-item-desc">En <em>Mis Rutinas</em> cada tarjeta tiene un botón verde <i class="bi bi-file-earmark-pdf-fill"></i>. Descarga un PDF con la imagen, nombre, grupo muscular, series, repeticiones e instrucciones de cada ejercicio.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 5: Entrenamiento Activo ── -->
+      <div class="manual-section" data-tags="entrenamiento activo serie cardio temporizador timer descanso carousel">
+        <div class="manual-section-title"><i class="bi bi-play-circle-fill"></i> Entrenamiento Activo</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-collection-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Carrusel de ejercicios</div>
+              <div class="manual-item-desc">En la parte superior aparecen los círculos de todos los ejercicios. Toca cualquiera para saltar directamente a él — útil si cometiste un error o quieres reordenar.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Registrar series</div>
+              <div class="manual-item-desc">Ingresa el peso (KG) y las repeticiones (REPS) de cada serie y toca el botón ✓. Puedes agregar tantas series como necesites con <em>Agregar serie</em>.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(244,162,97,.15);color:#f4a261;"><i class="bi bi-hourglass-split"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Temporizador de descanso</div>
+              <div class="manual-item-desc">Al confirmar una serie aparece automáticamente un temporizador de <strong>1 minuto 30 segundos</strong>. Puedes agregar <em>+10 segundos</em> o saltar el descanso con <em>Continuar</em>.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(230,57,70,.15);color:#f87171;"><i class="bi bi-heart-pulse-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Ejercicios de cardio</div>
+              <div class="manual-item-desc">Muestran un <strong>temporizador con anillo visual</strong>. Pulsa Iniciar, pausa cuando quieras y ajusta la intensidad (½, 1× o 1.5× el tiempo estimado).</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-trophy-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Finalizar entrenamiento</div>
+              <div class="manual-item-desc">Al terminar el último ejercicio aparece un resumen con series, repeticiones y kg totales levantados. Queda guardado en tu historial de progreso.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 5: Plan Semanal ── -->
+      <div class="manual-section" data-tags="plan semanal semana dias rutina programar">
+        <div class="manual-section-title"><i class="bi bi-calendar-week-fill"></i> Plan Semanal</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-magic"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Generar plan automático</div>
+              <div class="manual-item-desc">Elige nivel, días de entrenamiento y equipo disponible. El sistema crea el split semanal y lo adapta a tus condiciones de salud automáticamente.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-star-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Plan recomendado</div>
+              <div class="manual-item-desc">Aplica el plan óptimo según tu nivel: principiante 3 días, intermedio 4 días, avanzado 5 días. Incluye splits Push/Pull/Legs adaptados.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(244,162,97,.15);color:#f4a261;"><i class="bi bi-calendar-check"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Asignación manual</div>
+              <div class="manual-item-desc">Usa los selectores de cada día para asignar cualquier rutina creada o marcar el día como descanso.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 6: Progreso ── -->
+      <div class="manual-section" data-tags="progreso calendario medicion peso cuerpo anotacion historial">
+        <div class="manual-section-title"><i class="bi bi-calendar-check-fill"></i> Progreso</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-calendar3"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Calendario de entrenamientos</div>
+              <div class="manual-item-desc">Visualiza qué días entrenaste con puntos de color. Toca un día para ver el detalle de series, repeticiones y notas de ese entrenamiento.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-rulers"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Mediciones corporales</div>
+              <div class="manual-item-desc">Registra peso, porcentaje de grasa y medidas (pecho, cintura, cadera, brazos, piernas) para hacer seguimiento visual de tu evolución física.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 7: Herramientas ── -->
+      <div class="manual-section" data-tags="herramientas calculadora calorias imc plan nutricional dieta pdf descargar">
+        <div class="manual-section-title"><i class="bi bi-wrench-adjustable-circle-fill"></i> Herramientas</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(244,162,97,.15);color:#f4a261;"><i class="bi bi-calculator-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Calculadora de Calorías</div>
+              <div class="manual-item-desc">Calcula tu gasto energético diario (GET) y distribución de macros (proteínas, carbohidratos, grasas) según tu objetivo: bajar peso, mantener o ganar músculo.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(67,97,238,.2);color:#7b9ffb;"><i class="bi bi-activity"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Calculadora de IMC</div>
+              <div class="manual-item-desc">Calcula tu Índice de Masa Corporal. Muestra la categoría (bajo peso, normal, sobrepeso, obesidad) y el rango de peso ideal para tu altura.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-journal-medical"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Plan Nutricional con IA</div>
+              <div class="manual-item-desc">Genera un plan semanal de alimentación personalizado con IA. Elige objetivo, restricciones (vegano, sin gluten, etc.) y número de comidas. Se pre-rellena con tus datos del perfil.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(107,114,128,.2);color:#9ca3af;"><i class="bi bi-bookmark-heart-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Mis Dietas</div>
+              <div class="manual-item-desc">Guarda y gestiona múltiples planes nutricionales. Activa el que estés siguiendo y consulta el detalle de cada comida por día.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Descargar dieta en PDF</div>
+              <div class="manual-item-desc">En <em>Mis Dietas</em> cada plan tiene un botón verde <i class="bi bi-file-earmark-pdf-fill"></i> para descargar el plan completo en PDF. Incluye todas las comidas del día con calorías, proteínas, carbos y grasas.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 8: Cuenta y Registro ── -->
+      <div class="manual-section" data-tags="registro cuenta crear email verificacion contrasena salud limitaciones">
+        <div class="manual-section-title"><i class="bi bi-person-fill-add"></i> Cuenta y Registro</div>
+        <div class="manual-items">
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(249,115,22,.15);color:#f97316;"><i class="bi bi-envelope-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Registro en 3 pasos</div>
+              <div class="manual-item-desc"><strong>Paso 1</strong> Ingresa tu correo y recibe un código de verificación de 6 dígitos · <strong>Paso 2</strong> Verifica el código · <strong>Paso 3</strong> Completa tus datos y objetivo de entrenamiento.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(249,115,22,.15);color:#f97316;"><i class="bi bi-heart-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Adaptación por salud</div>
+              <div class="manual-item-desc">Si tienes una condición de salud (lesión, asma, diabetes, embarazo, etc.), el sistema excluye ejercicios de riesgo y ajusta los planes nutricionales automáticamente.</div>
+            </div>
+          </div>
+          <div class="manual-item">
+            <div class="manual-item-icon" style="background:rgba(0,212,170,.15);color:#00d4aa;"><i class="bi bi-phone-fill"></i></div>
+            <div class="manual-item-info">
+              <div class="manual-item-name">Acceso desde cualquier dispositivo</div>
+              <div class="manual-item-desc">Usa la app desde <strong>Android APK</strong>, <strong>iPhone</strong> (añade a pantalla de inicio en Safari), <strong>navegador web</strong> o la app de escritorio. Todo sincronizado en la misma cuenta.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /manual-body -->
+  </div>
+</div>
+
+{% else %}
+  {% block public_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/sportsvision.js' %}"></script>
+
+
+<script>
+(function () {
+  var layout  = document.getElementById('svLayout');
+  var sidebar = document.getElementById('svSidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  var btnOpen = document.getElementById('btnOpenSidebar');
+
+  function isMobile() { return window.innerWidth <= 768; }
+
+  function openSidebar() {
+    if (isMobile()) {
+      sidebar.classList.add('open');
+      if (overlay) { overlay.style.display = 'block'; }
+    } else {
+      sidebar.classList.remove('collapsed');
+      layout.classList.remove('sidebar-collapsed');
+      if (btnOpen) btnOpen.style.display = 'none';
+    }
+  }
+
+  function closeSidebar() {
+    if (isMobile()) {
+      sidebar.classList.remove('open');
+      if (overlay) { overlay.style.display = 'none'; }
+    } else {
+      sidebar.classList.add('collapsed');
+      layout.classList.add('sidebar-collapsed');
+      if (btnOpen) btnOpen.style.display = 'flex';
+    }
+  }
+
+  function toggleSidebar() {
+    if (isMobile()) {
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    } else {
+      sidebar.classList.contains('collapsed') ? openSidebar() : closeSidebar();
+    }
+  }
+
+  // Botones
+  document.getElementById('btnToggleSidebar')?.addEventListener('click', toggleSidebar);
+  document.getElementById('btnToggleMobile')?.addEventListener('click', toggleSidebar);
+  btnOpen?.addEventListener('click', openSidebar);
+
+  // Cerrar sidebar al hacer clic en cualquier enlace del menú (móvil)
+  sidebar.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (isMobile()) closeSidebar();
+    });
+  });
+
+  // Tap en el overlay → cerrar
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+
+  // ── Swipe gestures ────────────────────────────────────────────────
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var SWIPE_THRESHOLD   = 40;   // px mínimos para contar como swipe
+  var EDGE_ZONE         = 60;   // px desde el borde izquierdo para abrir
+
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    var deltaX = e.changedTouches[0].clientX - touchStartX;
+    var deltaY = e.changedTouches[0].clientY - touchStartY;
+
+    // Solo reconocer si el movimiento horizontal supera al vertical
+    if (Math.abs(deltaX) < Math.abs(deltaY)) return;
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
+
+    if (deltaX > 0 && touchStartX < EDGE_ZONE) {
+      // Deslizar derecha desde el borde → abrir
+      openSidebar();
+    } else if (deltaX < 0 && sidebar.classList.contains('open')) {
+      // Deslizar izquierda con sidebar abierto → cerrar
+      closeSidebar();
+    }
+  }, { passive: true });
+  // ─────────────────────────────────────────────────────────────────
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+
+<script>
+// Manual — buscador
+(function() {
+  var input = document.getElementById('manual-search');
+  if (!input) return;
+  input.addEventListener('input', function() {
+    var q = this.value.toLowerCase().trim();
+    document.querySelectorAll('.manual-section').forEach(function(sec) {
+      if (!q) { sec.classList.remove('hidden'); return; }
+      var tags  = (sec.dataset.tags || '').toLowerCase();
+      var text  = sec.textContent.toLowerCase();
+      sec.classList.toggle('hidden', !tags.includes(q) && !text.includes(q));
+    });
+  });
+  // Cerrar con Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.getElementById('manual-overlay')?.classList.remove('open');
+  });
+})();
+</script>
+
+<!-- PWA Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(function(reg) { console.log('[SW] Registrado:', reg.scope); })
+      .catch(function(err) { console.warn('[SW] Error:', err); });
+  });
+}
+</script>
+
+</body>
+</html>

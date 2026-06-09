@@ -1,0 +1,450 @@
+﻿{% extends 'base/base.html' %}
+{% block title %}Editar Perfil — SportsVision{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<style>
+  .avatar-preview-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .avatar-preview {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 3px solid var(--sv-purple);
+    background: rgba(107,114,128,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 46px; color: var(--sv-purple-light);
+    overflow: hidden;
+  }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  .avatar-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1.5px solid rgba(107,114,128,0.4);
+    border-radius: 20px;
+    background: rgba(107,114,128,0.1);
+    color: var(--sv-purple-light);
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .avatar-upload-btn:hover { background: rgba(107,114,128,0.25); color: #fff; }
+  #id_avatar { display: none; }
+
+  .form-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 1px;
+    color: var(--sv-purple-light);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--sv-border);
+    padding-bottom: 10px;
+  }
+  .sv-input { width: 100%; }
+
+  input[type=radio]:checked + label {
+    border-color: var(--sv-purple) !important;
+    background: rgba(107,114,128,.18) !important;
+    box-shadow: 0 0 0 3px rgba(107,114,128,.15);
+  }
+  .lim-edit-label:hover { border-color: rgba(251,146,60,.4) !important; color: rgba(255,255,255,.8) !important; }
+  input[type=checkbox]:checked + .lim-edit-label {
+    border-color: #f97316 !important;
+    background: rgba(249,115,22,.15) !important;
+    color: #fdba74 !important;
+    box-shadow: 0 0 0 2px rgba(249,115,22,.2);
+  }
+
+  /* ── Modal de recorte ───────────────────────────────── */
+  .crop-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .crop-overlay.open { display: flex; }
+  .crop-modal {
+    background: var(--sv-bg-card);
+    border: 1.5px solid rgba(107,114,128,.35);
+    border-radius: 24px;
+    width: 100%; max-width: 480px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.7);
+  }
+  .crop-modal-head {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--sv-border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .crop-modal-head h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: .5px; margin: 0;
+    color: var(--sv-text);
+  }
+  .crop-close {
+    background: rgba(255,255,255,.08); border: none;
+    border-radius: 50%; width: 32px; height: 32px;
+    color: var(--sv-muted); font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .crop-close:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+  .crop-canvas-wrap {
+    height: 300px;
+    background: #111;
+    position: relative;
+  }
+  .crop-canvas-wrap img { display: block; max-width: 100%; }
+
+  .crop-controls {
+    padding: 16px 22px 20px;
+  }
+  .crop-zoom-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .crop-zoom-row i { color: var(--sv-muted); font-size: 14px; flex-shrink: 0; }
+  .crop-zoom-row input[type=range] {
+    flex: 1; height: 4px;
+    accent-color: var(--sv-purple);
+    cursor: pointer;
+  }
+  .crop-zoom-val {
+    font-size: 12px; font-weight: 800;
+    color: var(--sv-purple-light); min-width: 38px; text-align: right;
+  }
+  .crop-hint {
+    font-size: 11px; color: var(--sv-muted);
+    text-align: center; margin-bottom: 14px;
+  }
+  .crop-btn-row { display: flex; gap: 10px; }
+  .btn-crop-cancel {
+    flex: 1; padding: 12px; border-radius: 12px;
+    background: rgba(255,255,255,.06);
+    border: 1.5px solid var(--sv-border);
+    color: var(--sv-muted); font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-crop-cancel:hover { background: rgba(255,255,255,.12); color: #fff; }
+  .btn-crop-apply {
+    flex: 2; padding: 12px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, var(--sv-purple), var(--sv-purple-light));
+    color: #fff; font-size: 13px; font-weight: 800;
+    cursor: pointer; transition: opacity .2s;
+    box-shadow: 0 4px 16px rgba(107,114,128,.4);
+  }
+  .btn-crop-apply:hover { opacity: .88; }
+
+  /* Vista previa circular pequeña */
+  .crop-preview-label {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--sv-muted); margin-bottom: 6px;
+  }
+  .crop-preview-circle {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--sv-purple);
+    flex-shrink: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+
+  <div class="page-top-nav">
+    <a href="{% url 'perfil' %}" class="page-back-btn">
+      <i class="bi bi-arrow-left"></i> Mi Perfil
+    </a>
+    <div class="page-breadcrumb">
+      <a href="{% url 'perfil' %}"><i class="bi bi-person-circle"></i> Perfil</a>
+      <span class="sep"><i class="bi bi-chevron-right"></i></span>
+      <span class="current">Editar</span>
+    </div>
+  </div>
+
+  <h1 class="sv-page-title">Editar Perfil</h1>
+
+  <form method="post" enctype="multipart/form-data" id="main-form">
+    {% csrf_token %}
+
+    <!-- Avatar -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-person-circle"></i> Foto de perfil</div>
+      <div class="avatar-preview-wrap">
+        <div class="avatar-preview" id="avatar-preview">
+          {% if profile.avatar_data %}
+            <img src="{{ profile.avatar_data }}" id="avatar-img" alt="Avatar">
+          {% elif profile.avatar %}
+            <img src="{{ profile.avatar.url }}" id="avatar-img" alt="Avatar">
+          {% else %}
+            <i class="bi bi-person-fill" id="avatar-icon"></i>
+          {% endif %}
+        </div>
+        <button type="button" class="avatar-upload-btn"
+                onclick="document.getElementById('id_avatar').click()">
+          <i class="bi bi-camera-fill"></i> Elegir foto / GIF
+        </button>
+        <input type="file" name="avatar" id="id_avatar" accept="image/*"
+               style="visibility:hidden;position:absolute;width:0;height:0;">
+        <input type="hidden" name="avatar_cropped" id="avatar_cropped">
+        <!-- Botón confirmar visible en móvil tras seleccionar foto -->
+        <button type="submit" id="btn-confirmar-foto"
+                style="display:none;align-items:center;gap:8px;margin-top:12px;
+                       background:linear-gradient(135deg,#00d4aa,#00b896);
+                       color:#0b0c18;font-size:14px;font-weight:900;
+                       border:none;border-radius:12px;padding:12px 28px;cursor:pointer;">
+          <i class="bi bi-check-circle-fill"></i> Guardar esta foto
+        </button>
+      </div>
+    </div>
+
+    <!-- Datos de cuenta -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-shield-lock-fill"></i> Datos de cuenta</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="sv-label">Nombre</label>
+          {{ user_form.first_name }}
+        </div>
+        <div class="col-md-6">
+          <label class="sv-label">Apellido</label>
+          {{ user_form.last_name }}
+        </div>
+        <div class="col-12">
+          <label class="sv-label">Email</label>
+          {{ user_form.email }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Datos físicos -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-person-fill"></i> Datos físicos</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="sv-label">Edad</label>
+          <div class="input-unit-wrap">
+            {{ profile_form.edad }}
+            <span class="input-unit-badge">años</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="sv-label">Peso</label>
+          <div class="input-unit-wrap">
+            {{ profile_form.peso }}
+            <span class="input-unit-badge">kg</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="sv-label">Altura</label>
+          <div class="input-unit-wrap">
+            {{ profile_form.altura }}
+            <span class="input-unit-badge">cm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Objetivo -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-bullseye"></i> Mi objetivo</div>
+      <div class="objetivo-group" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+        {% for val, label in profile_form.objetivo.field.choices %}{% if val %}
+        <div>
+          <input type="radio" name="objetivo" value="{{ val }}" id="obj_{{ val }}"
+                 style="display:none;" {% if profile_form.objetivo.value == val %}checked{% endif %}>
+          <label for="obj_{{ val }}"
+                 style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;
+                        border-radius:14px;border:1.5px solid rgba(255,255,255,.1);
+                        background:rgba(255,255,255,.04);cursor:pointer;transition:all .2s;text-align:center;">
+            <span style="font-size:11px;font-weight:800;color:rgba(255,255,255,.85);">
+              {% if val == 'bajar_peso' %}🔥{% elif val == 'mantener_peso' %}⚖️{% elif val == 'ganar_musculo' %}💪{% elif val == 'mejorar_resistencia' %}🏃{% elif val == 'mejorar_flexibilidad' %}🧘{% elif val == 'rendimiento' %}🏆{% endif %}
+              {{ label }}
+            </span>
+          </label>
+        </div>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+
+    <!-- Limitaciones / Salud -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-heart-pulse-fill"></i> Condiciones de salud</div>
+      <p style="color:rgba(255,255,255,.4);font-size:13px;margin-bottom:16px;">
+        Selecciona las condiciones que aplican. Esta información nos ayuda a personalizar tu plan.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        {% for val, label in profile_form.limitaciones.field.choices %}
+        <div>
+          <input type="checkbox" name="limitaciones" value="{{ val }}" id="lim_e_{{ val }}"
+                 style="display:none;"
+                 {% if val in profile_form.limitaciones.value %}checked{% endif %}>
+          <label for="lim_e_{{ val }}"
+                 style="display:flex;align-items:center;gap:8px;padding:10px 12px;
+                        border-radius:12px;border:1.5px solid rgba(255,255,255,.1);
+                        background:rgba(255,255,255,.04);font-size:12px;font-weight:700;
+                        color:rgba(255,255,255,.5);cursor:pointer;transition:all .2s;"
+                 class="lim-edit-label">
+            {{ label }}
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Contacto y seguridad -->
+    <div class="sv-panel mb-4">
+      <div class="form-section-title"><i class="bi bi-shield-lock-fill"></i> Contacto y seguridad</div>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="sv-label">
+            Número de teléfono
+          </label>
+          {{ profile_form.telefono }}
+        </div>
+        <div class="col-12">
+          <label class="sv-label">Dirección</label>
+          {{ profile_form.direccion }}
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-calcular w-100">
+      <i class="bi bi-check-circle-fill me-2"></i> Guardar cambios
+    </button>
+  </form>
+
+</div>
+
+<!-- ══ Modal recorte de avatar ══ -->
+<div class="crop-overlay" id="crop-overlay">
+  <div class="crop-modal">
+    <div class="crop-modal-head">
+      <h3><i class="bi bi-crop me-2"></i>Ajustar foto</h3>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div>
+          <div class="crop-preview-label">Vista previa</div>
+          <div class="crop-preview-circle" id="crop-preview-circle"></div>
+        </div>
+        <button type="button" class="crop-close" onclick="cerrarCrop()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="crop-canvas-wrap">
+      <img id="crop-image" src="" alt="Recortar">
+    </div>
+
+    <div class="crop-controls">
+      <div class="crop-zoom-row">
+        <i class="bi bi-zoom-out"></i>
+        <input type="range" id="zoom-slider" min="0" max="3" step="0.01" value="0">
+        <i class="bi bi-zoom-in"></i>
+        <span class="crop-zoom-val" id="zoom-val">1×</span>
+      </div>
+      <div class="crop-hint">
+        <i class="bi bi-arrows-move me-1"></i>Arrastra para reposicionar &nbsp;·&nbsp;
+        <i class="bi bi-search me-1"></i>Desliza para hacer zoom
+      </div>
+      <div class="crop-btn-row">
+        <button type="button" class="btn-crop-cancel" onclick="cerrarCrop()">Cancelar</button>
+        <button type="button" class="btn-crop-apply" onclick="aplicarCrop()">
+          <i class="bi bi-check-lg me-1"></i> Aplicar recorte
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script>
+var cropper = null;
+var esMobil = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+function procesarImagen(file) {
+  if (!file) return;
+  if (file.size > 7.5 * 1024 * 1024) { alert('La imagen no puede superar 7.5 MB.'); return; }
+
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var b64 = ev.target.result;
+
+    // En móvil O GIF → base64 directo, sin cropper
+    if (esMobil || file.type === 'image/gif') {
+      document.getElementById('avatar_cropped').value = b64;
+      document.getElementById('avatar-preview').innerHTML =
+        '<img src="' + b64 + '" style="width:100%;height:100%;object-fit:cover;" alt="preview">';
+      // Mostrar botón de confirmar
+      document.getElementById('btn-confirmar-foto').style.display = 'flex';
+      return;
+    }
+
+    // En escritorio → abrir cropper
+    var img = document.getElementById('crop-image');
+    img.src = b64;
+    document.getElementById('crop-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (cropper) { cropper.destroy(); cropper = null; }
+    cropper = new Cropper(img, {
+      aspectRatio: 1, viewMode: 1, dragMode: 'move',
+      autoCropArea: 1, cropBoxMovable: false, cropBoxResizable: false,
+      toggleDragModeOnDblclick: false, preview: '#crop-preview-circle',
+      ready: function() {
+        document.getElementById('zoom-slider').value = 0;
+        document.getElementById('zoom-val').textContent = '1×';
+      },
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('id_avatar').addEventListener('change', function(e) {
+  procesarImagen(e.target.files[0]);
+  this.value = '';
+});
+
+// Slider de zoom
+document.getElementById('zoom-slider').addEventListener('input', function() {
+  if (!cropper) return;
+  var val = parseFloat(this.value);
+  cropper.zoomTo(Math.pow(2, val));  // rango exponencial: 0→1× , 1→2× , 2→4× , 3→8×
+  var display = Math.pow(2, val).toFixed(1);
+  document.getElementById('zoom-val').textContent = display + '×';
+});
+
+function aplicarCrop() {
+  if (!cropper) return;
+  var canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+  var dataURL = canvas.toDataURL('image/jpeg', 0.92);
+
+  // Guardar base64 en el input oculto (se enviará al servidor y se guardará en BD)
+  document.getElementById('avatar_cropped').value = dataURL;
+
+  // Actualizar la vista previa
+  var preview = document.getElementById('avatar-preview');
+  preview.innerHTML = '<img src="' + dataURL + '" style="width:100%;height:100%;object-fit:cover;" alt="preview">';
+
+  cerrarCrop();
+}
+
+function cerrarCrop() {
+  document.getElementById('crop-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') cerrarCrop();
+});
+</script>
+{% endblock %}

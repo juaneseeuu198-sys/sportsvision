@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
+  <!-- hombros hint -->
+  <ellipse cx="70" cy="50" rx="32" ry="22" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.09)" stroke-width="1.2"/>
+  <ellipse cx="130" cy="50" rx="32" ry="22" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.09)" stroke-width="1.2"/>
+  <!-- brazos outline (vista posterior) -->
+  <rect x="38" y="60" width="32" height="90" rx="14" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.09)" stroke-width="1.2"/>
+  <rect x="130" y="60" width="32" height="90" rx="14" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.09)" stroke-width="1.2"/>
+  <!-- antebrazos hint -->
+  <rect x="42" y="150" width="26" height="60" rx="10" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+  <rect x="132" y="150" width="26" height="60" rx="10" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+  <!-- TRICEPS IZQUIERDO (herradura — vista posterior) -->
+  <path d="M 40,68 L 68,68 L 68,135 L 54,145 L 40,135 Z"
+        fill="rgba(230,57,70,.28)" stroke="#e63946" stroke-width="2" stroke-linejoin="round"/>
+  <!-- cabeza larga -->
+  <rect x="43" y="70" width="22" height="60" rx="10" fill="rgba(230,57,70,.22)" stroke="#e63946" stroke-width="1.2"/>
+  <!-- TRICEPS DERECHO -->
+  <path d="M 132,68 L 160,68 L 160,135 L 146,145 L 132,135 Z"
+        fill="rgba(230,57,70,.28)" stroke="#e63946" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="135" y="70" width="22" height="60" rx="10" fill="rgba(230,57,70,.22)" stroke="#e63946" stroke-width="1.2"/>
+  <!-- label -->
+  <text x="100" y="228" text-anchor="middle" font-family="Barlow,sans-serif" font-size="18" font-weight="800" fill="#e63946" opacity=".85">TRÍCEPS</text>
+</svg>

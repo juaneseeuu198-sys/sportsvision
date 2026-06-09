@@ -1,0 +1,163 @@
+﻿{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Verificar correo — SportsVision{% endblock %}
+
+{% block public_content %}
+<div class="auth-form-page">
+  <img src="{% static 'images/registro_bg.jpg' %}" alt=""
+       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0.35;">
+
+  <div class="auth-form-box" style="max-width:440px;position:relative;z-index:2;
+       padding:44px 36px;background:rgba(8,10,22,0.93);backdrop-filter:blur(14px);
+       border-radius:24px;border:1.5px solid rgba(0,212,170,0.3);
+       box-shadow:0 24px 60px rgba(0,0,0,0.7);text-align:center;">
+
+    <!-- Pasos indicadores -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:32px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:#00d4aa;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:14px;font-weight:800;color:#0b0c18;">
+        <i class="bi bi-check-lg"></i></div>
+      <div style="width:50px;height:2px;background:#00d4aa;"></div>
+      <div style="width:32px;height:32px;border-radius:50%;background:#6b7280;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:13px;font-weight:800;color:#fff;
+                  box-shadow:0 0 16px rgba(107,114,128,.5);">2</div>
+      <div style="width:50px;height:2px;background:rgba(255,255,255,.1);"></div>
+      <div style="width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.2);
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:13px;font-weight:800;color:rgba(255,255,255,.3);">3</div>
+    </div>
+
+    <div style="width:68px;height:68px;border-radius:50%;
+                background:rgba(0,212,170,.12);border:2px solid rgba(0,212,170,.4);
+                display:flex;align-items:center;justify-content:center;
+                font-size:28px;margin:0 auto 20px;
+                animation:pulse-cyan 2s infinite;">📬</div>
+
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;
+               margin-bottom:8px;">Revisa tu correo</h1>
+    <p style="color:rgba(255,255,255,.45);font-size:13px;line-height:1.7;margin-bottom:6px;">
+      Enviamos un código de 6 dígitos a
+    </p>
+    <p style="color:#00d4aa;font-size:14px;font-weight:800;margin-bottom:24px;">
+      {{ email }}
+    </p>
+
+    {% if error %}
+      <div style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);
+                  border-radius:12px;padding:12px 16px;margin-bottom:20px;
+                  color:#f87171;font-size:13px;">
+        <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
+      </div>
+    {% endif %}
+
+    {% if messages %}
+      {% for msg in messages %}
+      <div style="background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);
+                  border-radius:12px;padding:12px 16px;margin-bottom:20px;
+                  color:#34d399;font-size:13px;">
+        <i class="bi bi-check-circle me-2"></i>{{ msg }}
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Formulario OTP -->
+    <form method="post" id="otp-form">
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="verificar">
+      <input type="hidden" name="codigo" id="codigo-hidden">
+
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:24px;" id="otp-row">
+        <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code">
+        <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      </div>
+
+      <button type="button" id="btn-verificar" disabled
+              class="btn-calcular w-100" style="font-size:15px;margin-bottom:16px;"
+              onclick="submitOtp(this)">
+        <i class="bi bi-check-circle-fill me-2"></i> Verificar código
+      </button>
+    </form>
+
+    <!-- Reenviar -->
+    <form method="post" style="display:inline;">
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="reenviar">
+      <button type="button"
+              style="background:none;border:none;color:rgba(255,255,255,.35);
+                     font-size:13px;cursor:pointer;font-weight:700;"
+              onclick="this.closest('form').submit()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Reenviar código
+      </button>
+    </form>
+
+    <div style="margin-top:8px;">
+      <a href="{% url 'iniciar_registro' %}"
+         style="color:rgba(255,255,255,.25);font-size:12px;">
+        ← Cambiar correo
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.otp-digit {
+  width: 48px; height: 60px;
+  background: rgba(255,255,255,.06);
+  border: 2px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  font-size: 26px; font-weight: 900;
+  color: #fff; text-align: center;
+  transition: border-color .2s;
+  caret-color: #6b7280;
+}
+.otp-digit:focus { outline:none; border-color:#6b7280; box-shadow:0 0 0 3px rgba(107,114,128,.2); }
+@keyframes pulse-cyan {
+  0%,100% { box-shadow:0 0 0 0 rgba(0,212,170,.4); }
+  50%      { box-shadow:0 0 0 10px rgba(0,212,170,0); }
+}
+</style>
+
+<script>
+function submitOtp(btn) {
+  var code = document.getElementById('codigo-hidden').value;
+  if (code.length < 6) return;
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+  document.getElementById('otp-form').submit();
+}
+
+(function() {
+  var digits = document.querySelectorAll('.otp-digit');
+  digits.forEach(function(inp, i) {
+    inp.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g,'').slice(-1);
+      if (this.value && i < digits.length-1) digits[i+1].focus();
+      sync();
+    });
+    inp.addEventListener('keydown', function(e) {
+      if (e.key==='Backspace' && !this.value && i>0) digits[i-1].focus();
+    });
+    inp.addEventListener('paste', function(e) {
+      e.preventDefault();
+      var paste = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+      paste.split('').slice(0,6).forEach(function(ch,j){ if(digits[j]) digits[j].value=ch; });
+      digits[Math.min(paste.length,5)].focus();
+      sync();
+    });
+  });
+  function sync() {
+    var code = Array.from(digits).map(function(d){return d.value;}).join('');
+    document.getElementById('codigo-hidden').value = code;
+    document.getElementById('btn-verificar').disabled = code.length < 6;
+  }
+  digits[0].focus();
+})();
+</script>
+{% endblock %}

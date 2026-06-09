@@ -1,0 +1,359 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}{{ ejercicio.nombre }} — SportsVision{% endblock %}
+
+{% block content %}
+<style>
+.ex-page { max-width: 700px; margin: 0 auto; padding: 0 0 40px; }
+
+/* Hero media */
+.ex-hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #0d0d0d;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.ex-hero img, .ex-hero video {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.ex-hero-fallback {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: #3a3a3c; font-size: 48px; gap: 8px;
+}
+.ex-hero-fallback span { font-size: 13px; color: #3a3a3c; font-weight: 700; }
+.ex-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 50%);
+  pointer-events: none;
+}
+.ex-hero-back {
+  position: absolute; top: 14px; left: 14px; z-index: 2;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px; padding: 6px 14px;
+  color: #fff; font-size: 13px; font-weight: 700;
+  text-decoration: none; display: flex; align-items: center; gap: 6px;
+  transition: background .2s;
+}
+.ex-hero-back:hover { background: rgba(255,255,255,.15); color: #fff; }
+.ex-hero-level {
+  position: absolute; top: 14px; right: 14px; z-index: 2;
+}
+.ex-hero-title {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+  padding: 20px 20px 16px;
+}
+.ex-hero-title h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(24px, 5vw, 36px);
+  color: #fff; margin: 0 0 6px; line-height: 1.1;
+  letter-spacing: .5px;
+}
+.ex-hero-title p {
+  color: rgba(255,255,255,.6); font-size: 13px; margin: 0; line-height: 1.5;
+}
+
+/* Tags strip */
+.ex-tags {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 20px;
+}
+.ex-tag {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+}
+.ex-tag.muscle {
+  background: rgba(0,212,170,.12);
+  border: 1px solid rgba(0,212,170,.25);
+  color: #00d4aa;
+}
+.ex-tag.equip {
+  background: rgba(107,114,128,.12);
+  border: 1px solid rgba(107,114,128,.25);
+  color: #9ca3af;
+}
+.ex-tag.level-principiante { background:rgba(52,211,153,.12); border:1px solid rgba(52,211,153,.25); color:#34d399; }
+.ex-tag.level-intermedio    { background:rgba(251,191,36,.12);  border:1px solid rgba(251,191,36,.25);  color:#fbbf24; }
+.ex-tag.level-avanzado      { background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.25); color:#f87171; }
+
+/* Cards */
+.ex-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.ex-card-title {
+  font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  text-transform: uppercase; color: #6b7280;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.ex-card-title i { font-size: 14px; }
+
+/* Instructions */
+.ex-instructions {
+  color: rgba(255,255,255,.8);
+  font-size: 14px; line-height: 1.8;
+  white-space: pre-wrap;
+}
+.ex-steps { list-style: none; padding: 0; margin: 0; }
+.ex-step {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.ex-step:last-child { border-bottom: none; }
+.ex-step-num {
+  min-width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(0,212,170,.15);
+  border: 1px solid rgba(0,212,170,.3);
+  color: #00d4aa; font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.ex-step-text { color: rgba(255,255,255,.8); font-size: 14px; line-height: 1.7; }
+
+/* Info row */
+.ex-info-row {
+  display: flex; gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  align-items: center;
+}
+.ex-info-row:last-child { border-bottom: none; }
+.ex-info-label { color: #6b7280; font-size: 12px; font-weight: 700; min-width: 90px; }
+.ex-info-val { color: rgba(255,255,255,.85); font-size: 13px; font-weight: 600; }
+
+/* CTA */
+.ex-cta {
+  display: flex; justify-content: center; margin-top: 20px;
+}
+.ex-cta a {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #6b7280, #00d4aa);
+  color: #fff; font-size: 14px; font-weight: 800;
+  padding: 14px 28px; border-radius: 14px;
+  text-decoration: none; transition: opacity .2s;
+}
+.ex-cta a:hover { opacity: .88; color: #fff; }
+</style>
+
+<div class="sv-page-content">
+<div class="ex-page">
+
+  <!-- Hero -->
+  <div class="ex-hero">
+    {% if ejercicio.imagen_static %}
+      <img src="{% static ejercicio.imagen_static %}" alt="{{ ejercicio.nombre }}">
+    {% elif ejercicio.imagen %}
+      <img src="{{ ejercicio.imagen.url }}" alt="{{ ejercicio.nombre }}">
+    {% else %}
+      <div class="ex-hero-fallback" style="background:rgba(0,0,0,.4);">
+        {% if ejercicio.grupo_muscular %}
+          <img src="{% static 'img/muscles/' %}{{ ejercicio.grupo_muscular.slug }}.svg"
+               alt="{{ ejercicio.grupo_muscular.nombre }}"
+               style="width:55%;max-width:200px;opacity:.55;filter:drop-shadow(0 0 32px rgba(255,255,255,.06));"
+               onerror="this.outerHTML='<span style=\'font-size:56px\'>🏋️</span>'">
+        {% else %}
+          <span style="font-size:56px;">🏋️</span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="ex-hero-overlay"></div>
+
+    <a href="javascript:history.back()" class="ex-hero-back">
+      <i class="bi bi-arrow-left"></i> Volver
+    </a>
+
+    <div class="ex-hero-level">
+      <span class="ex-tag level-{{ ejercicio.nivel }}" style="backdrop-filter:blur(8px);">
+        {{ ejercicio.get_nivel_display }}
+      </span>
+    </div>
+
+    <div class="ex-hero-title">
+      <h1>{{ ejercicio.nombre }}</h1>
+      {% if ejercicio.descripcion %}
+        <p>{{ ejercicio.descripcion }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Icono de músculo -->
+  {% if ejercicio.grupo_muscular %}
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;">
+    <img src="{% static 'img/muscles/' %}{{ ejercicio.grupo_muscular.slug }}.svg"
+         alt="{{ ejercicio.grupo_muscular.nombre }}"
+         style="width:70px;height:70px;object-fit:contain;flex-shrink:0;"
+         onerror="this.style.display='none'">
+    <div>
+      <div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:4px;">Grupo muscular</div>
+      <div style="font-size:18px;font-weight:900;color:#fff;">{{ ejercicio.grupo_muscular.nombre }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tags -->
+  <div class="ex-tags">
+    {% if ejercicio.grupo_muscular %}
+      <span class="ex-tag muscle">
+        <i class="bi bi-bullseye"></i> {{ ejercicio.grupo_muscular.nombre }}
+      </span>
+    {% endif %}
+    {% for e in ejercicio.equipos.all %}
+      <span class="ex-tag equip">
+        <i class="bi bi-tools"></i> {{ e.get_nombre_display }}
+      </span>
+    {% empty %}
+      <span class="ex-tag equip">
+        <i class="bi bi-person"></i> Peso corporal
+      </span>
+    {% endfor %}
+  </div>
+
+  <!-- Músculos involucrados -->
+  {% if ejercicio.musculos_secundarios or ejercicio.musculos_antagonistas %}
+  <div class="ex-card">
+    <div class="ex-card-title">
+      <i class="bi bi-diagram-3"></i> Músculos involucrados
+    </div>
+    {% if ejercicio.grupo_muscular %}
+    <div class="ex-info-row">
+      <span class="ex-info-label" style="min-width:130px;">Principal</span>
+      <span class="ex-info-val" style="color:#00d4aa;">{{ ejercicio.grupo_muscular.nombre }}</span>
+    </div>
+    {% endif %}
+    {% if ejercicio.musculos_secundarios %}
+    <div class="ex-info-row">
+      <span class="ex-info-label" style="min-width:130px;">Secundarios</span>
+      <span class="ex-info-val">{{ ejercicio.musculos_secundarios }}</span>
+    </div>
+    {% endif %}
+    {% if ejercicio.musculos_antagonistas %}
+    <div class="ex-info-row">
+      <span class="ex-info-label" style="min-width:130px;">Antagonistas</span>
+      <span class="ex-info-val" style="color:#9ca3af;">{{ ejercicio.musculos_antagonistas }}</span>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Instrucciones -->
+  <div class="ex-card">
+    <div class="ex-card-title">
+      <i class="bi bi-list-ol"></i> Instrucciones
+    </div>
+    {% if ejercicio.instrucciones %}
+      <div class="ex-instructions" id="instrText" style="display:none;">{{ ejercicio.instrucciones }}</div>
+      <ol class="ex-steps" id="instrSteps"></ol>
+      <script>
+      (function(){
+        var raw = document.getElementById('instrText').textContent;
+        var lines = raw.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+        var ol = document.getElementById('instrSteps');
+        if(lines.length <= 1){
+          ol.outerHTML = '<p class="ex-instructions">' + raw + '</p>';
+        } else {
+          lines.forEach(function(line, i){
+            ol.innerHTML += '<li class="ex-step"><div class="ex-step-num">'+(i+1)+'</div><div class="ex-step-text">'+line+'</div></li>';
+          });
+        }
+      })();
+      </script>
+    {% else %}
+      <p style="color:#6b7280;font-size:13px;margin:0;">Sin instrucciones todavía.</p>
+    {% endif %}
+  </div>
+
+  <!-- Errores comunes -->
+  {% if ejercicio.errores_comunes %}
+  <div class="ex-card">
+    <div class="ex-card-title">
+      <i class="bi bi-exclamation-triangle"></i> Errores comunes
+    </div>
+    <div class="ex-instructions" id="errText" style="display:none;">{{ ejercicio.errores_comunes }}</div>
+    <ul class="ex-steps" id="errList" style="list-style:none;padding:0;margin:0;"></ul>
+    <script>
+    (function(){
+      var raw = document.getElementById('errText').textContent;
+      var lines = raw.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+      var ul = document.getElementById('errList');
+      if(lines.length <= 1){
+        ul.outerHTML = '<p class="ex-instructions" style="color:rgba(248,113,113,.85);">' + raw + '</p>';
+      } else {
+        lines.forEach(function(line){
+          ul.innerHTML += '<li class="ex-step"><div class="ex-step-num" style="background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.3);color:#f87171;min-width:22px;height:22px;font-size:14px;">✕</div><div class="ex-step-text" style="color:rgba(248,113,113,.85);">'+line+'</div></li>';
+        });
+      }
+    })();
+    </script>
+  </div>
+  {% endif %}
+
+  <!-- Comentarios del entrenador -->
+  {% if ejercicio.comentarios %}
+  <div class="ex-card" style="border-color:rgba(0,212,170,.15);background:rgba(0,212,170,.04);">
+    <div class="ex-card-title">
+      <i class="bi bi-lightbulb"></i> Consejo del entrenador
+    </div>
+    <p style="color:rgba(255,255,255,.8);font-size:14px;line-height:1.7;margin:0;">{{ ejercicio.comentarios }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Variantes -->
+  {% if ejercicio.variantes %}
+  <div class="ex-card">
+    <div class="ex-card-title">
+      <i class="bi bi-shuffle"></i> Variantes
+    </div>
+    <p style="color:rgba(255,255,255,.75);font-size:13px;line-height:1.7;margin:0;">{{ ejercicio.variantes }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Detalles -->
+  <div class="ex-card">
+    <div class="ex-card-title">
+      <i class="bi bi-info-circle"></i> Detalles
+    </div>
+    {% if ejercicio.grupo_muscular %}
+    <div class="ex-info-row">
+      <span class="ex-info-label">Músculo</span>
+      <span class="ex-info-val">{{ ejercicio.grupo_muscular.nombre }}</span>
+    </div>
+    {% endif %}
+    <div class="ex-info-row">
+      <span class="ex-info-label">Nivel</span>
+      <span class="ex-info-val">{{ ejercicio.get_nivel_display }}</span>
+    </div>
+    {% if ejercicio.equipos.all %}
+    <div class="ex-info-row">
+      <span class="ex-info-label">Equipos</span>
+      <span class="ex-info-val">
+        {% for e in ejercicio.equipos.all %}{{ e.get_nombre_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      </span>
+    </div>
+    {% endif %}
+    <div class="ex-info-row">
+      <span class="ex-info-label">Agregado</span>
+      <span class="ex-info-val">{{ ejercicio.creado_en|date:"d/m/Y" }}</span>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="ex-cta">
+    <a href="{% url 'ejercicios_lista' %}">
+      <i class="bi bi-collection-play-fill"></i> Explorar más ejercicios
+    </a>
+  </div>
+
+</div>
+</div>
+{% endblock %}

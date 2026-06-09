@@ -1,0 +1,188 @@
+﻿{% extends 'base/base.html' %}
+{% block title %}Panel Profesional — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.pro-header {
+  background: linear-gradient(135deg, rgba(67,97,238,.18), rgba(107,114,128,.12));
+  border: 1.5px solid rgba(67,97,238,.35);
+  border-radius: 20px; padding: 24px 28px;
+  display: flex; align-items: center; gap: 20px;
+  margin-bottom: 28px; flex-wrap: wrap;
+}
+.pro-badge {
+  background: rgba(67,97,238,.2); border: 1.5px solid rgba(67,97,238,.4);
+  border-radius: 50%; width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: #7b9ffb; flex-shrink: 0;
+}
+.pro-header-info { flex: 1; }
+.pro-header-name { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--sv-text); line-height:1; }
+.pro-header-esp  { font-size:13px; color:var(--sv-muted); margin-top:4px; }
+.pro-codigo-box {
+  background: rgba(255,255,255,.06); border: 1.5px solid var(--sv-border);
+  border-radius: 12px; padding: 10px 18px; text-align: center;
+}
+.pro-codigo-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--sv-muted); }
+.pro-codigo-val   { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:4px; color:#4361ee; }
+.pro-codigo-hint  { font-size:10px; color:var(--sv-muted); margin-top:2px; }
+
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:28px; }
+.stat-mini {
+  background:var(--sv-bg-card); border:1.5px solid var(--sv-border);
+  border-radius:14px; padding:16px; text-align:center;
+}
+.stat-mini-val { font-family:'Bebas Neue',sans-serif; font-size:32px; color:#4361ee; line-height:1; }
+.stat-mini-lbl { font-size:11px; font-weight:700; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+
+.cliente-card {
+  background: var(--sv-bg-card);
+  border: 1.5px solid var(--sv-border);
+  border-radius: 16px; padding: 18px 20px;
+  display: flex; align-items: center; gap: 16px;
+  transition: border-color .2s, transform .15s;
+  text-decoration: none; color: inherit;
+  margin-bottom: 10px;
+}
+.cliente-card:hover { border-color: rgba(67,97,238,.5); transform: translateX(3px); color: inherit; }
+.cliente-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(67,97,238,.2); border: 2px solid rgba(67,97,238,.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: #7b9ffb; overflow: hidden; flex-shrink: 0;
+}
+.cliente-avatar img { width:100%; height:100%; object-fit:cover; }
+.cliente-info { flex:1; }
+.cliente-nombre { font-size:14px; font-weight:800; color:var(--sv-text); }
+.cliente-meta   { font-size:12px; color:var(--sv-muted); margin-top:2px; }
+.cliente-perms  { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+.perm-badge {
+  font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px;
+  background: rgba(67,97,238,.15); color:#7b9ffb; border:1px solid rgba(67,97,238,.25);
+}
+.perm-badge.salud { background:rgba(249,115,22,.15); color:#f97316; border-color:rgba(249,115,22,.3); }
+
+.pendiente-card {
+  background: rgba(244,162,97,.06);
+  border: 1.5px solid rgba(244,162,97,.25);
+  border-radius: 14px; padding: 16px 20px;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 10px;
+}
+.section-label {
+  font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase;
+  color:var(--sv-muted); margin-bottom:12px; display:flex; align-items:center; gap:8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content" style="max-width:800px;">
+
+  <!-- Header profesional -->
+  <div class="pro-header">
+    <div class="pro-badge"><i class="bi bi-patch-check-fill"></i></div>
+    <div class="pro-header-info">
+      <div class="pro-header-name">Panel Profesional</div>
+      <div class="pro-header-esp">
+        {{ request.user.first_name|default:request.user.username }}
+        {% if profile.especialidad %} · {{ profile.especialidad }}{% endif %}
+      </div>
+    </div>
+    <div class="pro-codigo-box">
+      <div class="pro-codigo-label">Tu código</div>
+      <div class="pro-codigo-val">{{ profile.codigo_pro }}</div>
+      <div class="pro-codigo-hint">Compártelo con tus clientes</div>
+      <form method="post" action="{% url 'regenerar_codigo' %}" style="margin-top:8px;">
+        {% csrf_token %}
+        <button type="submit" style="background:none;border:none;font-size:11px;color:var(--sv-muted);cursor:pointer;text-decoration:underline;">
+          Regenerar código
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="stats-row">
+    <div class="stat-mini">
+      <div class="stat-mini-val">{{ activas|length }}</div>
+      <div class="stat-mini-lbl">Clientes activos</div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-mini-val">{{ pendientes|length }}</div>
+      <div class="stat-mini-lbl">Solicitudes pendientes</div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-mini-val">{{ activas|length|add:pendientes|length }}</div>
+      <div class="stat-mini-lbl">Total conexiones</div>
+    </div>
+  </div>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div class="alert alert-success mb-3" style="border-radius:12px;font-size:13px;background:rgba(0,212,170,.1);border-color:#00d4aa;color:#00d4aa;">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ msg }}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Clientes activos -->
+  {% if activas %}
+  <div class="section-label"><i class="bi bi-people-fill" style="color:#4361ee;"></i> Clientes activos</div>
+  {% for rel in activas %}
+  <a href="{% url 'profesional_cliente' rel.usuario.id %}" class="cliente-card">
+    <div class="cliente-avatar">
+      {% if rel.usuario.profile.avatar %}
+        <img src="{{ rel.usuario.profile.avatar.url }}" alt="">
+      {% else %}
+        <i class="bi bi-person-fill"></i>
+      {% endif %}
+    </div>
+    <div class="cliente-info">
+      <div class="cliente-nombre">{{ rel.usuario.first_name|default:rel.usuario.username }}</div>
+      <div class="cliente-meta">
+        @{{ rel.usuario.username }}
+        {% if rel.usuario.profile.objetivo %} · {{ rel.usuario.profile.get_objetivo_display }}{% endif %}
+        {% if rel.usuario.profile.nivel %} · {{ rel.usuario.profile.get_nivel_display }}{% endif %}
+      </div>
+      <div class="cliente-perms">
+        {% if rel.ver_datos_basicos %}<span class="perm-badge">Datos básicos</span>{% endif %}
+        {% if rel.ver_entrenamientos %}<span class="perm-badge">Entrenamientos</span>{% endif %}
+        {% if rel.ver_mediciones %}<span class="perm-badge">Mediciones</span>{% endif %}
+        {% if rel.ver_nutricion %}<span class="perm-badge">Nutrición</span>{% endif %}
+        {% if rel.ver_salud %}<span class="perm-badge salud"><i class="bi bi-heart-pulse-fill me-1"></i>Salud</span>{% endif %}
+      </div>
+    </div>
+    <i class="bi bi-chevron-right" style="color:var(--sv-muted);"></i>
+  </a>
+  {% endfor %}
+  {% else %}
+  <div style="text-align:center;padding:40px;background:var(--sv-bg-card);border:1.5px dashed var(--sv-border);border-radius:16px;margin-bottom:24px;">
+    <i class="bi bi-people" style="font-size:40px;color:var(--sv-muted);opacity:.4;display:block;margin-bottom:12px;"></i>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:8px;">Aún no tienes clientes</div>
+    <div style="font-size:13px;color:var(--sv-muted);">Comparte tu código <strong style="color:#4361ee;letter-spacing:2px;">{{ profile.codigo_pro }}</strong> para que tus clientes se conecten contigo.</div>
+  </div>
+  {% endif %}
+
+  <!-- Solicitudes pendientes (para esta versión se auto-aceptan al conectarse) -->
+  {% if pendientes %}
+  <div class="section-label"><i class="bi bi-clock-fill" style="color:#f4a261;"></i> Pendientes</div>
+  {% for rel in pendientes %}
+  <div class="pendiente-card">
+    <i class="bi bi-person-circle" style="font-size:28px;color:#f4a261;"></i>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:800;color:var(--sv-text);">{{ rel.usuario.first_name|default:rel.usuario.username }}</div>
+      <div style="font-size:12px;color:var(--sv-muted);">Solicitud enviada {{ rel.fecha_solicitud|date:"d M Y" }}</div>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div style="margin-top:20px;">
+    <a href="{% url 'activar_profesional' %}" style="font-size:12px;color:var(--sv-muted);text-decoration:none;">
+      <i class="bi bi-pencil me-1"></i> Editar especialidad
+    </a>
+  </div>
+
+</div>
+{% endblock %}

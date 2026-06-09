@@ -1,0 +1,756 @@
+================================================================================
+                     SPORTSVISION — RESUMEN COMPLETO DEL PROYECTO
+================================================================================
+
+DESCRIPCION GENERAL
+-------------------
+SportsVision es una plataforma full-stack de fitness y nutricion con:
+  - Backend:  Django (Python) con templates HTML
+  - Frontend: Django templates + JavaScript (responsive, PWA)
+  - Mobile:   App Android con WebView embebido
+  - Base de datos: PostgreSQL (Railway) / SQLite en memoria (build-time)
+  - Despliegue: Railway (https://web-production-f0f4b.up.railway.app)
+
+Version actual: 1.1 (versionCode 2)
+
+================================================================================
+ESTRUCTURA DE DIRECTORIOS
+================================================================================
+
+sportsvision/
+├── apps/
+│   ├── users/         -> Usuarios, autenticacion, OAuth, roles
+│   ├── routines/      -> Rutinas, entrenamientos, plan semanal
+│   ├── exercises/     -> Catalogo de ejercicios
+│   ├── tools/         -> Calculadoras, FitBot IA
+│   └── progress/      -> Calendario, mediciones, registro de peso
+├── templates/         -> HTML (Django templates)
+├── static/            -> CSS, JS, imagenes, GIFs de ejercicios
+│   └── app/           -> SportsVision.apk (descarga desde la app)
+├── locale/            -> Traducciones i18n (es/en/pt/fr)
+├── android/           -> Proyecto Android (Kotlin + Gradle)
+│   └── app/src/main/java/com/sportsvision/app/MainActivity.kt
+├── sportsvision/      -> Configuracion global (settings.py, urls.py)
+└── manage.py
+
+================================================================================
+1. APP USERS — Gestion de Usuarios
+================================================================================
+
+MODELOS
+-------
+
+UserProfile
+  - user              (OneToOneField -> User)
+  - edad              (PositiveIntegerField, nullable)
+  - peso              (FloatField, nullable) en kg
+  - altura            (FloatField, nullable) en cm
+  - avatar            (ImageField, nullable)
+  - avatar_data       (TextField) base64 del avatar para sync mobile
+  - genero            (CharField) M / F / O
+  - objetivo          (CharField) bajar_peso | mantener_peso | ganar_musculo |
+                                  mejorar_resistencia | mejorar_flexibilidad | rendimiento
+  - nivel             (CharField) principiante | intermedio | avanzado
+  - limitaciones      (JSONField) lista de condiciones fisicas/restricciones
+  - rol               (CharField) usuario | profesional | admin_pro
+  - codigo_pro        (CharField) codigo unico de 6 chars para invitar clientes
+  - especialidad      (CharField) area del profesional ej. "Entrenador personal"
+  - telefono          (CharField) con prefijo pais ej. +573105937981
+  - telefono_verificado (BooleanField)
+  - direccion         (CharField)
+  - acepto_terminos   (BooleanField)
+  - fecha_registro    (DateTimeField auto)
+  - suspendido_hasta  (DateTimeField, nullable) baneo temporal
+  - nota_moderacion   (TextField) razon del baneo
+
+RelacionProfesional
+  - profesional       (ForeignKey -> User, related_name='mis_clientes')
+  - usuario           (ForeignKey -> User, related_name='mis_profesionales')
+  - estado            (CharField) pendiente | activa | revocada | rechazada
+  - ver_datos_basicos (BooleanField, default True)
+  - ver_entrenamientos(BooleanField, default True)
+  - ver_mediciones    (BooleanField, default False)
+  - ver_nutricion     (BooleanField, default False)
+  - ver_salud         (BooleanField, default False) dato sensible
+  - fecha_solicitud   (DateTimeField auto)
+  - fecha_respuesta   (DateTimeField, nullable)
+  * unique_together: ['profesional', 'usuario']
+
+SolicitudProfesional
+  - usuario           (OneToOneField -> User)
+  - especialidad      (CharField max 120)
+  - experiencia       (TextField)
+  - motivo            (TextField)
+  - estado            (CharField) pendiente | aprobada | rechazada
+  - nota_admin        (TextField)
+  - fecha_envio       (DateTimeField auto)
+  - fecha_respuesta   (DateTimeField, nullable)
+  - revisado_por      (ForeignKey -> User, nullable)
+
+MobileLoginToken
+  - user              (ForeignKey -> User)
+  - token             (UUIDField, unique)
+  - created_at        (DateTimeField auto)
+  - is_used           (BooleanField)
+  - is_new_user       (BooleanField)
+  - picture_url       (URLField)
+  * expira a los 120 segundos
+
+EmailPreVerification
+  - email             (EmailField)
+  - codigo            (CharField max 6) OTP
+  - created_at        (DateTimeField auto)
+  - is_used           (BooleanField)
+  * expira a los 15 minutos
+
+EmailVerificationToken
+  - user              (OneToOneField -> User)
+  - token             (UUIDField, unique)
+  - created_at        (DateTimeField auto)
+  - is_used           (BooleanField)
+  * expira a las 24 horas
+
+VISTAS / URLS (/usuarios/)
+--------------------------
+
+Publicas:
+  GET  /                          -> landing page
+  GET  /auth/                     -> seleccionar login vs registro
+  POST /registro/                 -> paso 1: ingresa email, recibe OTP via Brevo
+  POST /registro/verificar/       -> paso 2: verifica OTP de 6 digitos
+  GET/POST /registro/completar/   -> paso 3: crea cuenta completa
+  POST /login/                    -> login con usuario/email + password
+  GET  /logout/                   -> cierra sesion
+  GET  /auth/google/              -> redirige a OAuth2 Google
+  GET  /auth/google/callback/     -> maneja callback, crea/actualiza usuario
+  GET  /auth/mobile/?token=UUID   -> valida token de un solo uso (WebView)
+  GET/POST /auth/google/completar-perfil/ -> nuevo usuario Google completa datos
+  GET  /terminos/                 -> terminos y condiciones
+
+Usuario autenticado:
+  GET  /perfil/                   -> perfil con IMC, historial pesos, entrenamientos
+  GET/POST /perfil/editar/        -> edita datos personales, avatar
+  POST /perfil/eliminar-avatar/   -> borra foto de perfil
+  GET  /privacidad/               -> gestiona relaciones con profesionales
+  POST /privacidad/conectar/      -> ingresa codigo del profesional
+  POST /privacidad/permisos/<id>/ -> actualiza que datos ve el profesional
+  POST /privacidad/revocar/<id>/  -> revoca acceso del profesional
+  POST /cuenta/desactivar/        -> desactiva cuenta (reversible)
+  POST /cuenta/eliminar/          -> elimina cuenta (IRREVERSIBLE)
+
+Profesional:
+  GET/POST /profesional/solicitar/        -> solicita ser profesional
+  GET  /profesional/dashboard/            -> lista clientes vinculados
+  GET  /profesional/cliente/<user_id>/    -> vista detallada del cliente
+  POST /profesional/regenerar-codigo/     -> genera nuevo codigo de invitacion
+
+Admin Pro:
+  GET  /admin-pro/                        -> gestiona solicitudes y usuarios
+  POST /admin-pro/revisar/<id>/           -> aprueba/rechaza solicitud
+  GET  /admin-pro/usuario/<user_id>/      -> ve perfil completo del usuario
+  GET/POST /admin-pro/usuario/<id>/crear-rutina/ -> crea rutina para usuario
+  POST /admin-pro/revocar/<user_id>/      -> revoca estado de profesional
+  POST /admin-pro/banear/<user_id>/       -> activa/desactiva cuenta
+  POST /admin-pro/sancionar/<user_id>/    -> suspende por N dias/horas
+  POST /admin-pro/verificar-password/     -> JSON con datos sensibles si password OK
+
+================================================================================
+2. APP ROUTINES — Rutinas de Entrenamiento
+================================================================================
+
+MODELOS
+-------
+
+Rutina
+  - usuario           (ForeignKey -> User)
+  - nombre            (CharField max 100)
+  - descripcion       (TextField)
+  - equipos           (ManyToManyField -> Equipo)
+  - grupos_musculares (ManyToManyField -> GrupoMuscular)
+  - nivel             (CharField) principiante | intermedio | avanzado
+  - es_auto_generada  (BooleanField)
+  - creada_en         (DateTimeField auto)
+  * total_ejercicios(): cuenta ejercicios en la rutina
+
+EjercicioRutina
+  - rutina            (ForeignKey -> Rutina)
+  - ejercicio         (ForeignKey -> Ejercicio)
+  - orden             (PositiveIntegerField)
+  - series_sugeridas  (PositiveIntegerField, default 3)
+  - repeticiones_sugeridas (PositiveIntegerField, default 12)
+
+Entrenamiento
+  - usuario           (ForeignKey -> User)
+  - rutina            (ForeignKey -> Rutina, nullable)
+  - nombre            (CharField max 100)
+  - iniciado_en       (DateTimeField auto)
+  - terminado_en      (DateTimeField, nullable)
+  - completado        (BooleanField)
+  * peso_total(): suma peso x reps de todas las series
+  * duracion(): retorna "X min" o "En progreso"
+
+PlanDia
+  - usuario           (ForeignKey -> User)
+  - dia               (CharField) lunes|martes|miercoles|jueves|viernes|sabado|domingo
+  - rutina            (ForeignKey -> Rutina, nullable)
+  - descanso          (BooleanField)
+  * unique_together: ['usuario', 'dia']
+
+SerieEntrenamiento
+  - entrenamiento     (ForeignKey -> Entrenamiento)
+  - ejercicio         (ForeignKey -> Ejercicio)
+  - numero_serie      (PositiveIntegerField)
+  - repeticiones      (PositiveIntegerField, nullable)
+  - peso              (FloatField, nullable) en kg
+  - peso_corporal     (FloatField, nullable) para ejercicios con propio peso
+  - tiempo_minutos    (PositiveIntegerField, nullable) para cardio/movilidad
+  - tiempo_segundos   (PositiveIntegerField, nullable)
+  - completada        (BooleanField)
+  - creada_en         (DateTimeField auto)
+
+VISTAS / URLS (/rutinas/)
+--------------------------
+
+Crear rutina (3 pasos):
+  GET/POST /nueva/paso1/          -> selecciona equipos disponibles
+  POST     /nueva/paso2/          -> selecciona grupos musculares
+  GET/POST /nueva/paso3/          -> elige ejercicios, asigna a dia
+
+Mis rutinas:
+  GET  /mis-rutinas/              -> lista todas las rutinas del usuario
+  POST /eliminar/<id>/            -> elimina rutina
+  GET  /<id>/pdf/                 -> descarga PDF con ejercicios e imagenes
+
+Auto-generador:
+  GET/POST /auto/                 -> genera rutina segun nivel + equipos
+
+Entrenamiento activo:
+  GET/POST /entrenar/<id>/        -> interfaz principal del entrenamiento en vivo
+    POST actions: guardar_serie | actualizar_serie | siguiente_ejercicio |
+                  ir_a_ejercicio | terminar_entrenamiento
+  GET  /finalizar/<id>/           -> resumen: stats, musculos trabajados con emojis
+
+Plan semanal:
+  GET/POST /plan-semanal/         -> asigna rutinas a cada dia de la semana
+  POST     /plan-semanal/generar/ -> genera plan automatico segun nivel/dias/equipos
+  POST     /plan-semanal/recomendado/ -> aplica plan predefinido segun nivel
+
+SPLITS CONFIGURABLES
+--------------------
+  3 dias: Empuje | Jalon | Piernas
+  4 dias: Superior A | Inferior A | Superior B | Inferior B
+  5 dias: Pecho&Triceps | Espalda&Biceps | Piernas | Hombros&Core | Full Body
+  6 dias: Empuje A/B | Jalon A/B | Piernas A/B
+
+ADAPTACION POR LIMITACIONES DE SALUD
+--------------------------------------
+  - Lesion de rodilla: excluye sentadillas, agrega movilidad
+  - Embarazo:          evita abdomen, prioriza movilidad y ejercicios bajos
+  - Movilidad reducida: split adaptado con menos carga articular
+  - El generador usa _adaptar_grupos(), _get_split_adaptado() y _qs_ejercicios()
+
+================================================================================
+3. APP EXERCISES — Catalogo de Ejercicios
+================================================================================
+
+MODELOS
+-------
+
+Equipo
+  - nombre            (CharField, unique) banco | peso_corporal | disco | mancuernas |
+                                          barra | barra_dominadas | kettlebell | banda
+  - icono             (CharField) emoji representativo
+  - imagen            (ImageField, nullable)
+
+GrupoMuscular
+  - nombre            (CharField max 50)
+  - slug              (SlugField, unique) pecho | espalda | piernas | hombros |
+                       biceps | triceps | antebrazos | gluteos | abdomen | core |
+                       cardio | movilidad | pantorrillas
+
+Ejercicio
+  - nombre            (CharField max 100)
+  - descripcion       (TextField)
+  - instrucciones     (TextField) pasos para ejecutar
+  - grupo_muscular    (ForeignKey -> GrupoMuscular)
+  - equipos           (ManyToManyField -> Equipo)
+  - imagen            (ImageField, nullable)
+  - gif               (FileField, nullable) GIF animado
+  - imagen_static     (CharField) ruta en static/ para PDFs
+  - gif_static        (CharField) ruta en static/ para web
+  - nivel             (CharField) principiante | intermedio | avanzado
+  - duracion_minutos  (PositiveIntegerField, nullable) solo cardio/movilidad
+  - musculos_secundarios (TextField)
+  - musculos_antagonistas (TextField)
+  - errores_comunes   (TextField)
+  - variantes         (TextField)
+  - comentarios       (TextField)
+  - creado_en         (DateTimeField auto)
+
+VISTAS / URLS (/ejercicios/)
+-----------------------------
+  GET /               -> lista con filtros (grupo_id, equipo_id, nivel)
+  GET /<pk>/          -> detalle completo del ejercicio
+
+================================================================================
+4. APP TOOLS — Herramientas y FitBot IA
+================================================================================
+
+MODELOS
+-------
+
+CalculoCaloria
+  - usuario           (ForeignKey -> User, nullable)
+  - nombre            (CharField max 80)
+  - activa            (BooleanField) solo una activa por usuario
+  - genero            (CharField) M / F
+  - edad              (PositiveIntegerField)
+  - peso              (FloatField) kg
+  - altura            (FloatField) cm
+  - nivel_actividad   (CharField) sedentario | poca | activo | diario | atleta
+                        Factores GETD: 1.2 | 1.375 | 1.55 | 1.725 | 1.9
+  - objetivo          (CharField) perder_rapido | perder | mantener | ganar | ganar_rapido
+                        Ajuste kcal: -1000 | -500 | 0 | +500 | +1000
+  - tmb               (FloatField) Tasa Metabolica Basal (formula Mifflin-St Jeor)
+  - getd              (FloatField) Gasto Energetico Total Diario
+  - proteinas_g       (FloatField) 30% del GETD / 4
+  - carbos_g          (FloatField) 40% del GETD / 4
+  - grasas_g          (FloatField) 30% del GETD / 9
+  - calculado_en      (DateTimeField auto)
+  * calcular(): ejecuta formulas TMB, GETD y macros
+
+PlanNutricional
+  - usuario           (ForeignKey -> User)
+  - nombre            (CharField max 80)
+  - activa            (BooleanField)
+  - genero            (CharField) M / F
+  - edad, peso, altura (numericos)
+  - objetivo          (CharField) perder | mantener | ganar
+  - restriccion       (CharField) ninguna | vegetariano | vegano | sin_gluten | sin_lactosa
+  - comidas_dia       (PositiveIntegerField, default 3) de 3 a 6
+  - calorias_dia      (FloatField)
+  - proteinas_g, carbos_g, grasas_g (FloatField)
+  - plan_json         (JSONField) lista de comidas con alimentos desglosados
+  - creado_en         (DateTimeField auto)
+
+VISTAS / URLS (/herramientas/)
+-------------------------------
+  GET      /                      -> hub central de herramientas
+  GET/POST /calorias/             -> calcula GETD y macros (Mifflin-St Jeor)
+  GET/POST /imc/                  -> calcula IMC, categoria y peso ideal
+  GET/POST /plan-nutricional/     -> genera plan con comidas desglosadas
+                                     (adapta macros segun limitaciones del usuario)
+  GET  /mis-dietas/               -> lista calculos y planes guardados
+  POST /mis-dietas/guardar/       -> guarda calculo de calorias
+  POST /mis-dietas/guardar-plan/  -> guarda plan nutricional generado
+  POST /mis-dietas/activar/<id>/  -> marca calculo como activo
+  POST /mis-dietas/activar-plan/<id>/ -> marca plan como activo
+  POST /mis-dietas/eliminar/<id>/
+  POST /mis-dietas/eliminar-plan/<id>/
+  GET  /mis-dietas/<id>/pdf/      -> descarga PDF con plan desglosado
+
+FITBOT — ASISTENTE IA (/herramientas/asistente/)
+-------------------------------------------------
+  POST /asistente/                -> endpoint JSON (chatbot)
+
+  Logica:
+    1. Usa Claude Haiku (Anthropic API) si ANTHROPIC_API_KEY esta configurada
+    2. Fallback: motor local de palabras clave
+
+  Contexto enviado a la IA:
+    - Datos del usuario: peso, altura, IMC, objetivo, limitaciones
+    - Historial de pesos (ultimos registros)
+    - Entrenamientos completados en ultimos 30 dias
+    - Metas caloricas activas (GETD, macros)
+
+  Responde:
+    - En espanol, tono amigable, con emojis
+    - Maximo 3-4 parrafos por respuesta
+    - Historial en sesion (max 20 mensajes = 10 intercambios)
+
+  Palabras clave del motor local:
+    peso | calorias | proteina | ganar musculo | perder grasa |
+    descanso | hidratacion | suplementos | ejercicios
+
+================================================================================
+5. APP PROGRESS — Seguimiento de Progreso
+================================================================================
+
+MODELOS
+-------
+
+RegistroPeso
+  - usuario           (ForeignKey -> User)
+  - peso              (FloatField) kg
+  - fecha             (DateField auto)
+  - notas             (CharField max 200, opcional)
+
+MedicionCorporal
+  - usuario           (ForeignKey -> User)
+  - fecha             (DateField auto)
+  - peso              (FloatField, nullable) kg
+  - cintura           (FloatField, nullable) cm
+  - cadera            (FloatField, nullable) cm
+  - pecho             (FloatField, nullable) cm
+  - brazo             (FloatField, nullable) cm
+  - muslo             (FloatField, nullable) cm
+  - notas             (TextField)
+
+AnotacionCalendario
+  - usuario           (ForeignKey -> User)
+  - fecha             (DateField)
+  - tipo              (CharField) descanso | planeado
+  * unique_together: ['usuario', 'fecha']
+
+VISTAS / URLS (/progreso/)
+---------------------------
+  GET  /?year=YYYY&month=MM&dia=DD -> calendario mensual
+    Muestra: entrenamientos completados por dia, resumen (nombre rutina, series,
+             kg totales), plan semanal vs real, detalle del dia seleccionado
+  POST /anotar/                    -> JSON para guardar/borrar anotaciones
+
+================================================================================
+6. CONFIGURACION GLOBAL
+================================================================================
+
+SETTINGS (sportsvision/settings.py)
+-------------------------------------
+  SECRET_KEY          -> variable de entorno
+  DEBUG               -> False en produccion (variable de entorno)
+  ALLOWED_HOSTS       -> variable de entorno (default '*')
+  DATABASE_URL        -> PostgreSQL en Railway via dj_database_url
+  BREVO_API_KEY       -> envio de OTPs via email
+  GOOGLE_CLIENT_ID    -> OAuth2 Google
+  GOOGLE_CLIENT_SECRET-> OAuth2 Google
+  ANTHROPIC_API_KEY   -> Claude API para FitBot
+  FRONTEND_URL        -> URL base (usada en emails y APK URL)
+  APP_VERSION_CODE    -> 2  (sincronizado con Android build.gradle)
+  APP_VERSION_NAME    -> '1.1'
+
+  Idiomas soportados: es / en / pt / fr
+  Zona horaria: America/Bogota
+
+  Cookies:
+    CSRF_COOKIE_SAMESITE    = 'None'
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SECURE      = True
+    SESSION_COOKIE_SECURE   = True
+    (compatibilidad con Android WebView y Chrome)
+
+URLS PRINCIPALES (sportsvision/urls.py)
+-----------------------------------------
+  /                   -> landing page
+  /dashboard/         -> tablero principal
+  /usuarios/          -> users app
+  /rutinas/           -> routines app
+  /ejercicios/        -> exercises app
+  /herramientas/      -> tools app
+  /progreso/          -> progress app
+  /admin/             -> Django admin
+  /api/version/       -> JSON con version del APK
+                         { version_code, version_name, apk_url }
+  /manifest.json      -> PWA manifest
+  /sw.js              -> Service Worker
+
+MIDDLEWARE
+----------
+  SecurityMiddleware | WhiteNoiseMiddleware | SessionMiddleware |
+  LocaleMiddleware | CommonMiddleware | CsrfViewMiddleware |
+  AuthenticationMiddleware | MessageMiddleware |
+  XFrameOptionsMiddleware | SuspensionMiddleware (baneo temporal)
+
+================================================================================
+7. APP ANDROID (WebView Nativo)
+================================================================================
+
+ARCHIVO: android/app/src/main/java/com/sportsvision/app/MainActivity.kt
+
+Configuracion:
+  BASE_URL             = "https://web-production-f0f4b.up.railway.app"
+  CURRENT_VERSION_CODE = 2
+
+Funcionalidades:
+  - WebView con fondo #0b0c18 (azul oscuro), sin zoom
+  - ProgressBar morado (#7b2ff7) mientras carga
+  - Cookies: SameSite habilitado (acepta sesion Django)
+  - cacheMode = LOAD_NO_CACHE (siempre contenido fresco)
+
+  Manejo de URLs:
+    - URLs propias (railway.app) -> cargan en WebView
+    - Google OAuth -> abre Chrome Custom Tabs con flag ?from=app
+    - Links externos -> navegador del sistema
+
+  Deep links (scheme: sportsvision://):
+    - sportsvision://auth?token=UUID -> valida token OAuth mobile
+    - Maneja intent desde onNewIntent (launchMode=singleTask)
+
+  Descargas:
+    - PDFs y APKs via DownloadManager
+    - Toast de confirmacion al iniciar descarga
+
+  Selector de imagenes:
+    - Permisos: READ_MEDIA_IMAGES (API 33+) o READ_EXTERNAL_STORAGE + CAMERA
+    - onShowFileChooser -> solicitarPermisosYAbrir() -> abrirSelectorImagen()
+
+  Verificacion de actualizaciones (al iniciar):
+    - Consulta GET /api/version/ en hilo separado
+    - Si serverVersion > CURRENT_VERSION_CODE: muestra AlertDialog
+    - Descarga e instala nuevo APK via DownloadManager + FileProvider
+    - BroadcastReceiver para detectar descarga completada
+
+  Error de conexion:
+    - Muestra HTML inline con mensaje "Sin conexion" y boton "Reintentar"
+
+  Boton Back:
+    - Si WebView tiene historial: navega atras
+    - Si no: cierra actividad
+
+BUILD (android/app/build.gradle):
+  compileSdk  = 34
+  minSdk      = 21  (Android 5.0+)
+  targetSdk   = 34
+  versionCode = 2
+  versionName = "1.1"
+  Dependencias: appcompat:1.6.1 | core-ktx:1.12.0 | browser:1.7.0
+
+================================================================================
+8. FLUJOS PRINCIPALES
+================================================================================
+
+REGISTRO (3 PASOS)
+------------------
+  Paso 1: Usuario ingresa email
+          -> Sistema genera OTP de 6 digitos
+          -> Envia via Brevo API (email)
+          -> Guarda EmailPreVerification (expira 15 min)
+
+  Paso 2: Usuario ingresa OTP
+          -> Valida codigo y expiracion
+          -> Marca email como pre-verificado en sesion
+
+  Paso 3: Usuario completa datos (usuario, password, nombre, etc.)
+          -> Crea User + UserProfile
+          -> Opcionalmente genera plan inicial de rutinas
+          -> Redirige al dashboard
+
+LOGIN CON GOOGLE (OAuth2)
+--------------------------
+  1. GET /usuarios/auth/google/ -> genera state anti-CSRF, redirige a Google
+  2. Google Callback:
+     a. Valida state
+     b. Intercambia code por access_token
+     c. Obtiene datos de Google (email, nombre, foto)
+     d. Crea o actualiza usuario
+     e. Si nuevo usuario: redirige a completar_perfil_google
+     f. Si usuario existente: login directo, redirige a dashboard
+
+  Flujo Mobile (desde WebView Android):
+     1. WebView abre Custom Tabs para Google
+     2. Callback genera MobileLoginToken (UUID, expira 120s)
+     3. Retorna HTML con intent://sportsvision://auth?token=UUID
+     4. Android intercepta deep link
+     5. GET /usuarios/auth/mobile/?token=UUID -> valida token -> login
+
+CREAR RUTINA
+------------
+  Paso 1: Selecciona equipos disponibles
+  Paso 2: Selecciona grupos musculares objetivo
+  Paso 3: Elige ejercicios especificos (con sugeridos recientes)
+          Opcional: asigna a dia de la semana -> crea PlanDia
+
+ENTRENAMIENTO ACTIVO
+--------------------
+  1. Inicia desde rutina -> crea objeto Entrenamiento
+  2. Por cada ejercicio:
+     - Muestra historial de series previas
+     - Formulario para registrar: reps, peso, tiempo
+     - POST guardar_serie -> crea SerieEntrenamiento
+     - Calcula progreso (%)
+  3. Terminar -> marca Entrenamiento como completado
+  4. Resumen: peso total levantado, duracion, musculos trabajados (emojis)
+
+PLAN SEMANAL AUTOMATICO
+-----------------------
+  - Usuario define: nivel, dias disponibles, equipos
+  - Sistema selecciona split (3/4/5/6 dias)
+  - Adapta segun limitaciones (lesiones, embarazo, etc.)
+  - Genera rutinas con ejercicios filtrados por nivel y equipo
+  - Asigna a dias de la semana en PlanDia
+
+SISTEMA DE PRIVACIDAD PROFESIONAL
+----------------------------------
+  1. Usuario solicita ser profesional (Admin Pro revisa y aprueba)
+  2. Profesional obtiene codigo_pro unico
+  3. Cliente ingresa codigo -> crea RelacionProfesional (activa)
+  4. Cliente controla permisos granulares:
+       ver_datos_basicos | ver_entrenamientos | ver_mediciones |
+       ver_nutricion | ver_salud
+  5. Profesional solo accede a datos con permiso explicitamente concedido
+  6. Cliente puede revocar la relacion en cualquier momento
+
+================================================================================
+9. AUTENTICACION Y AUTORIZACION
+================================================================================
+
+BACKENDS (apps/users/backends.py)
+-----------------------------------
+  EmailOrUsernameBackend: login con usuario O email + password
+
+METODOS DE AUTENTICACION
+  1. Email + Password (backend propio)
+  2. Google OAuth2 (sin contrasena, crea usuario automatico)
+  3. Mobile Token (UUID, un solo uso, expira 2 min)
+  4. Email OTP en registro (6 digitos, expira 15 min)
+
+ROLES
+  usuario    -> acceso a su perfil, rutinas, herramientas, progreso
+  profesional-> + dashboard de clientes, ver datos segun permisos
+  admin_pro  -> + gestion de solicitudes, ver cualquier usuario,
+                  crear rutinas, banear, sancionar
+
+================================================================================
+10. SEGURIDAD
+================================================================================
+
+  - Contrasenas:    hashing Django (PBKDF2)
+  - Avatares:       base64 en BD (evita filesystem sync entre instancias)
+  - Token OAuth:    intercambia, no persiste (sesion Django)
+  - Mobile token:   UUID, un solo uso, expira 120s
+  - Email OTP:      6 digitos, expira 15 min
+  - State CSRF:     anti-replay con sufijo ':mobile' para distinguir origen
+  - Datos sensibles (telefono/direccion): requieren verificar password del admin
+  - Baneo temporal: SuspensionMiddleware revisa suspendido_hasta en cada request
+  - Cookies:        SameSite=None + Secure=True para compatibilidad WebView
+
+================================================================================
+11. INTEGRACIONES EXTERNAS
+================================================================================
+
+  Brevo API       -> Envio de emails (OTP de registro, verificacion)
+  Google OAuth2   -> Autenticacion social
+  Anthropic Claude (Haiku) -> FitBot IA (fallback: motor local de palabras clave)
+  ReportLab       -> Generacion de PDFs (rutinas, planes nutricionales)
+  WhiteNoise      -> Servir archivos estaticos en produccion sin Nginx
+  dj-database-url -> Conexion a PostgreSQL desde DATABASE_URL
+
+================================================================================
+12. USO DE PYTHON
+================================================================================
+
+VERSION Y FRAMEWORK
+--------------------
+  Python            -> detectado automaticamente por Railway (NIXPACKS)
+  Django 6.0.4      -> framework principal (ultima version estable)
+  gunicorn 23.0.0   -> servidor WSGI para produccion en Railway
+
+DEPENDENCIAS (requirements.txt)
+---------------------------------
+  Django==6.0.4          -> framework web, ORM, admin, autenticacion
+  gunicorn==23.0.0       -> servidor WSGI para produccion
+  psycopg2-binary==2.9.12-> adaptador PostgreSQL para Python
+  dj-database-url==2.3.0 -> parsea DATABASE_URL de Railway a config Django
+  whitenoise==6.9.0      -> sirve archivos estaticos desde Python sin Nginx
+  Pillow==12.2.0         -> procesamiento de imagenes (avatares, redimensionar)
+  reportlab==4.5.1       -> generacion de PDFs en Python (rutinas, dietas)
+  requests==2.32.3       -> llamadas HTTP (Brevo API, Google OAuth, Anthropic)
+  python-dotenv==1.2.2   -> carga variables de entorno desde .env en desarrollo
+  sqlparse==0.5.5        -> formateo de SQL (dependencia de Django)
+  asgiref==3.11.1        -> soporte asincrono (dependencia de Django)
+  polib==1.2.0           -> manejo de archivos .po/.mo para traducciones i18n
+  tzdata==2026.1         -> base de datos de zonas horarias para Python
+
+USO DE PYTHON EN EL CODIGO
+----------------------------
+  ORM Django:
+    - Modelos como clases Python (models.Model)
+    - Migraciones generadas automaticamente con makemigrations
+    - Queries con .filter(), .annotate(), .select_related(), .prefetch_related()
+    - JSONField nativo (Python dict/list directo en BD)
+
+  Vistas (views.py):
+    - Funciones Python decoradas con @login_required, @csrf_exempt
+    - Logica de negocio: calculos de TMB/GETD, generacion de splits, etc.
+    - Retornan HttpResponse, JsonResponse o render(request, template, context)
+
+  Modulos de la libreria estandar usados:
+    - uuid          -> tokens de un solo uso (MobileLoginToken, EmailVerification)
+    - base64        -> codificacion de avatares para almacenamiento en BD
+    - threading     -> hilo separado para verificar actualizacion del APK (Android)
+    - json          -> serializacion/deserializacion de plan_json en PlanNutricional
+    - os            -> lectura de variables de entorno en settings.py
+    - pathlib.Path  -> rutas de archivos en settings.py (BASE_DIR)
+    - datetime      -> calculos de expiracion de tokens
+
+  Management Commands (Python CLI con Django):
+    seed_exercises      -> puebla el catalogo de ejercicios en la BD
+    setup_admin         -> crea el usuario admin_pro inicial
+    compile_messages    -> compila archivos .po de traducciones a .mo
+    link_exercise_images-> vincula imagenes estaticas a ejercicios existentes
+    slice_muscle_images -> procesa imagenes de grupos musculares
+
+  Middleware personalizado (Python):
+    SuspensionMiddleware -> intercepta cada request, verifica si el usuario
+                           esta suspendido (suspendido_hasta > now()), redirige
+                           con mensaje si corresponde
+
+  Backend de autenticacion personalizado:
+    EmailOrUsernameBackend -> clase Python que extiende ModelBackend,
+                              permite login con email O nombre de usuario
+
+  Generacion de PDFs con ReportLab:
+    - Crea documentos en memoria (BytesIO)
+    - Inserta imagenes de ejercicios (Pillow para procesar)
+    - Retorna como HttpResponse con Content-Type: application/pdf
+
+  Llamadas HTTP con requests:
+    - Brevo API: POST /v3/smtp/email para enviar OTPs
+    - Google OAuth: GET /tokeninfo, GET /userinfo
+    - Anthropic API: POST /v1/messages para FitBot
+
+DESPLIEGUE EN RAILWAY (railway.toml)
+--------------------------------------
+  Builder:      NIXPACKS (detecta Python por requirements.txt)
+
+  Build command:
+    python manage.py collectstatic --noinput
+    -> Copia todos los archivos estaticos a staticfiles/ (WhiteNoise los sirve)
+
+  Start command (secuencial):
+    python manage.py migrate           -> aplica migraciones pendientes
+    python manage.py seed_exercises    -> asegura ejercicios en BD
+    python manage.py setup_admin       -> asegura usuario admin_pro
+    python manage.py compile_messages  -> compila traducciones
+    gunicorn sportsvision.wsgi --log-file -  -> inicia servidor
+
+  Health check: GET / (timeout 300s)
+  Restart policy: ON_FAILURE
+
+================================================================================
+14. VERSIONING APK
+================================================================================
+
+  Configuracion local (android/app/build.gradle):
+    versionCode = 2
+    versionName = "1.1"
+
+  Configuracion servidor (sportsvision/settings.py):
+    APP_VERSION_CODE = 2
+    APP_VERSION_NAME = '1.1'
+
+  Endpoint de version (GET /api/version/):
+    {
+      "version_code": 2,
+      "version_name": "1.1",
+      "apk_url": "https://web-production-f0f4b.up.railway.app/static/app/SportsVision.apk"
+    }
+
+  Logica de actualizacion (MainActivity.kt):
+    Al iniciar, consulta /api/version/ en un hilo separado.
+    Si serverVersion > CURRENT_VERSION_CODE:
+      -> Muestra AlertDialog "Nueva version disponible"
+      -> Descarga APK via DownloadManager
+      -> Instala automaticamente via FileProvider + ACTION_VIEW
+
+================================================================================
+FIN DEL RESUMEN
+================================================================================

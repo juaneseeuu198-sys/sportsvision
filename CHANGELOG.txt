@@ -1,0 +1,204 @@
+================================================================================
+         SPORTSVISION — REGISTRO DE CAMBIOS
+         Historial completo ordenado por semanas
+================================================================================
+
+
+════════════════════════════════════════════════════════════════════════════════
+SEMANA 1  |  29 Abr – 01 May 2026  |  LANZAMIENTO INICIAL
+════════════════════════════════════════════════════════════════════════════════
+
+01/05/2026
+  [LANZAMIENTO] SportsVision - primera versión lista para deploy
+  [FIX]  Workflow Gradle y URL HTTPS
+  [FIX]  Android SDK setup y Gradle 8.4 compatible
+  [FIX]  Gradle manual install sin wrapper
+  [FIX]  Docker alpine-android con SDK preinstalado
+  [FIX]  Agregar launcher icon y recursos faltantes
+  [FIX]  AGP 8.2.2 compatible con Gradle 8.2
+  [FIX]  Agregar gradle.properties con useAndroidX=true
+  [FIX]  Workflow limpio sin Docker, SDK Ubuntu preinstalado
+  [DEL]  Eliminar proyecto Android y workflow APK temporalmente
+
+
+════════════════════════════════════════════════════════════════════════════════
+SEMANA 2  |  06 May – 08 May 2026  |  BASE DE DATOS, EMAIL Y PWA
+════════════════════════════════════════════════════════════════════════════════
+
+06/05/2026
+  [FEAT] Nuevas funcionalidades, migraciones y workflow Linux
+  [FEAT] Agregar SportsVision.spec para build Linux en CI
+  [FEAT] Agregar launcher.py para build Linux en CI
+  [FIX]  Agregar CSRF_TRUSTED_ORIGINS para Railway
+  [FEAT] Conectar .exe y Linux a PostgreSQL de Railway
+  [FEAT] Verificación de email, calendario responsive y seed automático en Railway
+  [FEAT] Migración de datos para equipos y grupos musculares en Railway
+  [FEAT] Avatar guardado en base de datos (base64) para persistencia en Railway
+  [FEAT] Términos y condiciones, verificación por SMS y campos teléfono/dirección
+
+07/05/2026
+  [FEAT] Verificación por SMS vía correo Gmail (código OTP por email)
+  [FEAT] PWA — manifest, service worker e iconos para instalar como APK
+  [FIX]  Corregir railway.toml, .gitignore, spec y CI para todos los builds
+  [FEAT] Verificación de email al inicio del registro (OTP — 3 pasos)
+  [FEAT] Todas las plataformas conectadas a Railway PostgreSQL
+  [FIX]  Corregir Railway.toml, .gitignore y spec
+  [FEAT] Swipe para abrir/cerrar sidebar en móvil
+  [FEAT] Foto de perfil en móvil — usar base64 puro (sin DataTransfer)
+  [FEAT] .exe y Linux conectados a Railway con PostgreSQL + Gmail
+  [FEAT] Proyecto Android nativo con permisos de galería y cámara
+  [FIX]  Foto de perfil en móvil — saltar cropper, guardar base64 directo
+  [FIX]  Input file con visibility:hidden y click() directo para Android
+  [FEAT] Rediseño pantalla entrenamiento estilo Hevy
+  [FEAT] Setup_admin command — otorga admin_pro a superusuarios al desplegar
+  [FIX]  Mostrar enlace Admin Pro en sidebar para superusuarios
+  [FIX]  Usar Railway PostgreSQL en todas las plataformas (sin SQLite fallback)
+  [FIX]  APK: botón atrás, cookies CSRF y enlace de términos
+  [FIX]  Gradle.properties con useAndroidX para build APK
+  [FEAT] Agregar iconos de lanzador para todas las densidades mipmap
+  [FIX]  Loading spinner, fondo oscuro y página de error en WebView
+  [FIX]  Suprimir advertencia deprecated onReceivedError en WebView
+  [FIX]  Cookies SESSION/CSRF con proxy SSL header de Railway
+  [FIX]  Restaurar SQLite como fallback para fase de build en Railway
+  [FIX]  Usar SameSite=Lax para cookies (SameSite=None rechazado sin Secure)
+  [FEAT] Rediseño pantalla selección de ejercicios estilo Hevy
+  [FEAT] Reemplazar Rutina Auto con Plan Semanal en dashboard y sidebar
+  [FIX]  Añadir endfor faltante en sección recientes de paso3_ejercicios
+  [FEAT] Saltar paso1 y paso2 — ir directamente a selección de ejercicios
+  [FEAT] Reemplazar todos los tonos morados por gris en CSS y templates
+  [FEAT] Filtros de equipos y músculos en selección de ejercicios (client-side)
+  [FEAT] Hojas de filtro multi-selección con tema oscuro
+  [FEAT] Página de ejercicio con tarjeta transparente y backdrop blur
+  [FEAT] Navegación en carrusel, temporizador de descanso 1:30 tras cada serie
+  [FIX]  Traducir todo el texto en inglés al español en pantalla de entrenamiento
+
+08/05/2026
+  [FEAT] Django i18n — detección automática de idioma del SO (ES/EN/PT)
+  [FEAT] Verificación de teléfono vía Twilio SMS
+  [FEAT] Selector de teléfono con código de país
+  [DEL]  Eliminar verificación por teléfono (Twilio SMS)
+  [FEAT] Traducción automática completa de la app vía JS (EN/PT/FR)
+  [FIX]  type=button + JS submit para todos los formularios de auth (WebView fix)
+  [FIX]  Añadir @csrf_exempt a vistas de registro, login y OTP
+  [FEAT] Actualizar manual de usuario con navegación por gestos
+  [FIX]  Añadir EMAIL_TIMEOUT=10s para evitar timeout de gunicorn en SMTP
+  [FIX]  Cambiar envío de email a Resend API (Railway bloquea SMTP saliente)
+  [FIX]  Cambiar email a Brevo SMTP
+  [FIX]  Usar Brevo HTTP API en lugar de SMTP (bypass del bloqueo de Railway)
+  [FIX]  Mensaje de error de email duplicado actualizado
+  [FIX]  Usar función JS nombrada para botón verificar OTP (fix WebView Android)
+  [FEAT] Expandir diccionario i18n con herramientas, equipos, músculos y plan semanal
+  [FEAT] Agregar calendario, meses y abreviaturas de días al diccionario i18n
+  [FIX]  Generar código profesional automáticamente y añadir csrf_exempt
+  [FIX]  Intercambiar orden de Plan Semanal y Progreso en sidebar
+
+
+════════════════════════════════════════════════════════════════════════════════
+SEMANA 3  |  11 May – 13 May 2026  |  DISEÑO, CHATBOT Y GOOGLE OAUTH
+════════════════════════════════════════════════════════════════════════════════
+
+11/05/2026
+  [FEAT] Añadir FitBot — chatbot de IA para fitness y nutrición
+  [FEAT] Convertir FitBot a widget flotante mini-chat (FAB)
+  [FIX]  Botones FAB con estilo cristal transparente
+  [FIX]  Reposicionar widget FitBot por encima del clúster de FABs
+  [FIX]  Ocultar widget FitBot con display:none (no mostrar sin CSS)
+  [FIX]  Eliminar página standalone de FitBot, conservar solo widget
+  [FIX]  Rediseñar FitBot con estilo del panel Manual de Usuario
+  [FIX]  Añadir estilos inline a todos los FABs para posicionamiento correcto
+  [FIX]  Hacer topbar position:fixed para que siempre quede fija en el viewport
+  [FIX]  Añadir estilos inline al panel y mensajes de FitBot
+  [FIX]  Ocultar overlay FitBot con estilo inline, controlar via JS
+  [FEAT] Añadir chips de sugerencias rápidas a FitBot
+  [FEAT] Añadir motor de IA local para fitness (funciona sin API key)
+  [STYLE] Reducir altura del topbar para eliminar espacio excesivo
+  [FIX]  Consistencia de diseño y correcciones de z-index en todas las páginas
+  [FEAT] Fondos con degradado dual-orb dinámico en todas las secciones
+  [FEAT] Degradado dual-orb adaptado por grupo muscular en pantalla de entrenamiento
+  [FEAT] Diseño de tarjeta de entrenamiento con imagen de fondo y blur (estilo glass)
+  [FEAT] Gradiente dinámico por grupo muscular en pantalla de entrenamiento
+  [FIX]  Aumentar límite de foto de perfil de 5MB a 7.5MB
+  [FIX]  Reemplazar pseudo-elementos fixed con div dedicado para fondo (fix Android WebView)
+  [FEAT] Usar etiqueta video para GIFs de ejercicios, aumentar altura del área de medios
+  [FIX]  Usar imagen WebP para fondo con pseudo-elementos
+  [FIX]  Restaurar versiones estables en requirements.txt
+  [FIX]  Prevenir errores 500 de casteos int() no validados
+  [FEAT] Panel Admin Pro — banear/desbanear, sancionar con razón y campo de privacidad
+  [FEAT] SuspensionMiddleware — bloquea usuarios baneados/suspendidos en cada petición
+  [FEAT] Mostrar teléfono y dirección en panel admin y detalle de usuario
+  [FIX]  Reemplazar dropdowns de sanción por inputs numéricos (tipeo libre)
+  [FIX]  Limpiar caché del WebView al iniciar y usar LOAD_NO_CACHE
+  [FIX]  Ejecutar collectstatic explícitamente en buildCommand de Railway
+  [CHORE] Optimizar proyecto — eliminar Twilio, limpiar imports, actualizar .gitignore
+  [CHORE] Eliminar .claude del seguimiento de git
+  [FEAT] Series completadas editables en entrenamiento activo
+  [FEAT] Rediseño de página de guía de ejercicios con UI oscura moderna
+  [FIX]  Habilitar recortador de foto en móvil (Android APK y Safari iOS)
+
+12/05/2026
+  [FEAT] Login con Google OAuth — botón "Continuar con Google" en login
+
+13/05/2026
+  [FEAT] Flujo completo de registro con Google + completar_perfil_google
+         → Formulario de 3 pasos para nuevos usuarios de Google
+         → Campos: nombre, género, edad, peso, altura, objetivo, limitaciones
+  [FIX]  Usar verificación de perfil en lugar de bandera de sesión
+  [FIX]  Usar block content en lugar de public_content para completar perfil
+  [FIX]  Envolver generar_plan_inicial en try/except (evita cuelgue al registrar)
+  [FIX]  Eliminar descarga de imagen bloqueante en completar perfil Google
+  [FIX]  Guardar foto de Google en vista bienvenido, corregir cuelgue del botón
+  [FIX]  Conservar google_picture_url en sesión hasta que bienvenido la guarde
+  [FEAT] Añadir campos objetivo y limitaciones al formulario de editar perfil
+         → El usuario puede cambiar su objetivo y condiciones de salud desde el perfil
+
+
+════════════════════════════════════════════════════════════════════════════════
+SEMANA 4  |  15 May – 19 May 2026  |  APP ANDROID, ADMIN Y ESTABILIDAD
+════════════════════════════════════════════════════════════════════════════════
+
+15/05/2026
+  [FEAT] Flujo OAuth móvil con Chrome Custom Tabs y token de un solo uso
+         → La app abre Google en Chrome Custom Tabs (no en navegador externo)
+         → MobileLoginToken: UUID con TTL de 120 segundos
+         → Deep link sportsvision://auth?token=UUID devuelve sesión al WebView
+  [FEAT] Opciones de desactivar y eliminar cuenta en la página de perfil
+         → Desactivar: pausa el acceso, conserva los datos
+         → Eliminar: borra todo permanentemente (requiere confirmar "ELIMINAR")
+  [FEAT] Sistema de auto-actualización del APK desde Railway
+         → Endpoint GET /api/version/ retorna version_code, version_name, apk_url
+         → APK publicado en static/app/SportsVision.apk
+         → App verifica versión al iniciar y muestra diálogo si hay actualización
+         → DownloadManager descarga el APK, FileProvider lo instala
+  [FIX]  Correcciones en descarga auto-update, campos del token móvil,
+         permiso INTERNET duplicado en AndroidManifest
+
+19/05/2026
+  [FEAT] Mis Rutinas añadido al sidebar (antes de Nueva Rutina)
+  [FEAT] Buscador en Mis Rutinas — filtra por nombre y grupo muscular en tiempo real
+  [FEAT] Modal de confirmación para eliminar rutinas
+  [FIX]  Eliminar include de muscle map que causaba error 500 en mis_rutinas
+  [FIX]  Usar get_or_create para perfil en admin_ver_usuario (evita error 500
+         cuando un usuario no tiene perfil creado, ej: admins nuevos)
+  [FIX]  Mover imports (base64, secrets, urllib, uuid) al inicio de views.py
+  [FIX]  Corregir import de uuid dentro de función mobile_login
+  [FIX]  Corregir bloque else en revisar_solicitud (update_fields explícito)
+  [DOCS] Actualizar documentación técnica con todas las nuevas funcionalidades
+         → Secciones 11–15: Google OAuth, Admin, Android, nuevas funcionalidades,
+           base de datos actualizada
+
+
+================================================================================
+                     RESUMEN POR SEMANA
+================================================================================
+
+  Semana 1 (01 May) │ Lanzamiento inicial, CI/CD, Android nativo básico
+  Semana 2 (06–08 May) │ Base de datos Railway, email OTP, PWA, i18n, diseño ejercicios
+  Semana 3 (11–13 May) │ FitBot IA, Panel Admin Pro, Google OAuth, editar perfil
+  Semana 4 (15–19 May) │ OAuth móvil, auto-update APK, gestión de cuenta, estabilidad
+
+  Total de commits: ~100+
+  Plataformas: Web (Railway) · Android APK · .exe Windows
+
+================================================================================
+SportsVision — Changelog generado 19/05/2026
+================================================================================

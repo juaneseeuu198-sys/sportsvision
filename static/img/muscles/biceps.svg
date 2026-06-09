@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
+  <!-- hombro izquierdo hint -->
+  <ellipse cx="70" cy="50" rx="32" ry="22" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.09)" stroke-width="1.2"/>
+  <!-- hombro derecho hint -->
+  <ellipse cx="130" cy="50" rx="32" ry="22" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.09)" stroke-width="1.2"/>
+  <!-- brazo izquierdo outline -->
+  <rect x="38" y="60" width="32" height="90" rx="14" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.09)" stroke-width="1.2"/>
+  <!-- brazo derecho outline -->
+  <rect x="130" y="60" width="32" height="90" rx="14" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.09)" stroke-width="1.2"/>
+  <!-- antebrazo izquierdo hint -->
+  <rect x="42" y="150" width="26" height="60" rx="10" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+  <!-- antebrazo derecho hint -->
+  <rect x="132" y="150" width="26" height="60" rx="10" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+  <!-- BICEPS IZQUIERDO (frente del brazo) -->
+  <rect x="40" y="65" width="28" height="76" rx="12" fill="rgba(156,163,175,.28)" stroke="#9ca3af" stroke-width="2"/>
+  <!-- BICEPS DERECHO -->
+  <rect x="132" y="65" width="28" height="76" rx="12" fill="rgba(156,163,175,.28)" stroke="#9ca3af" stroke-width="2"/>
+  <!-- músculo peak -->
+  <ellipse cx="54" cy="95" rx="11" ry="16" fill="rgba(156,163,175,.35)" stroke="#9ca3af" stroke-width="1.5"/>
+  <ellipse cx="146" cy="95" rx="11" ry="16" fill="rgba(156,163,175,.35)" stroke="#9ca3af" stroke-width="1.5"/>
+  <!-- label -->
+  <text x="100" y="228" text-anchor="middle" font-family="Barlow,sans-serif" font-size="18" font-weight="800" fill="#9ca3af" opacity=".85">BÍCEPS</text>
+</svg>

@@ -1,0 +1,114 @@
+{% extends 'base/base.html' %}
+{% block title %}Entrenamiento Completado{% endblock %}
+
+{% block extra_css %}
+<style>
+.finish-muscle-section {
+  margin-bottom: 20px;
+}
+.finish-muscle-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: 12px;
+}
+.finish-muscle-wrap {
+  display: flex;
+  justify-content: center;
+}
+/* Agrandar el mapa en la pantalla de finalización */
+.finish-muscle-wrap .mmap-svg { width: 100px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content">
+<div class="finish-page">
+  <div class="finish-box">
+
+    <!-- Trophy -->
+    <div class="finish-trophy-wrap">
+      <i class="bi bi-trophy-fill"></i>
+    </div>
+
+    <div class="finish-title">¡Entrenamiento Completado!</div>
+    {% if entrenamiento.duracion %}
+    <div class="finish-subtitle"><i class="bi bi-clock me-1"></i>{{ entrenamiento.duracion }}</div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="finish-stats">
+      <div class="finish-stat-card">
+        <div class="fsc-icon">💪</div>
+        <div class="fsc-value">{{ ejercicios_count }}</div>
+        <div class="fsc-label">Ejercicios</div>
+      </div>
+      <div class="finish-stat-card">
+        <div class="fsc-icon">🔁</div>
+        <div class="fsc-value">{{ series|length }}</div>
+        <div class="fsc-label">Series</div>
+      </div>
+      <div class="finish-stat-card accent-yellow">
+        <div class="fsc-icon">⚖️</div>
+        <div class="fsc-value">{{ entrenamiento.peso_total }}</div>
+        <div class="fsc-label">kg totales</div>
+      </div>
+      <div class="finish-stat-card accent-blue">
+        <div class="fsc-icon">🔥</div>
+        <div class="fsc-value">{{ total_reps }}</div>
+        <div class="fsc-label">Reps totales</div>
+      </div>
+    </div>
+
+    <!-- Músculos trabajados -->
+    {% if muscle_slugs %}
+    <div class="finish-muscle-section">
+      <div class="finish-muscle-title">Músculos trabajados</div>
+      <div class="finish-muscle-wrap">
+        {% include 'partials/_muscle_map.html' with map_slugs=muscle_slugs %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Exercise breakdown -->
+    <div class="finish-summary-panel">
+      <h5><i class="bi bi-list-check me-2"></i>Resumen de ejercicios</h5>
+      {% regroup series by ejercicio as series_by_exercise %}
+      {% for group in series_by_exercise %}
+      <div class="finish-ex-card">
+        <div class="finish-ex-name">
+          <i class="bi bi-activity"></i>
+          {{ group.grouper.nombre }}
+        </div>
+        <div class="finish-sets-row">
+          {% for serie in group.list %}
+          <div class="finish-set-pill">
+            <span class="set-num">S{{ serie.numero_serie }}</span>
+            <span class="set-data">
+              {% if serie.repeticiones %}{{ serie.repeticiones }} reps{% endif %}{% if serie.peso %}&nbsp;· {{ serie.peso }} kg{% endif %}{% if not serie.repeticiones and not serie.peso %}—{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted text-center py-3">No hay series registradas.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Actions -->
+    <div class="finish-actions">
+      <a href="{% url 'dashboard' %}" class="btn-sv-outline">
+        <i class="bi bi-house me-1"></i> Volver al inicio
+      </a>
+      <a href="{% url 'calendario_progreso' %}" class="btn-sv-green px-4">
+        <i class="bi bi-bar-chart me-1"></i> Ver Progreso
+      </a>
+    </div>
+
+  </div>
+</div>
+</div>
+{% endblock %}

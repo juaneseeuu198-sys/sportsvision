@@ -1,0 +1,114 @@
+﻿{% extends 'base/base.html' %}
+{% block title %}Activar Perfil Profesional — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.pro-hero {
+  background: linear-gradient(135deg, rgba(67,97,238,.18), rgba(107,114,128,.12));
+  border: 1.5px solid rgba(67,97,238,.35);
+  border-radius: 24px; padding: 36px 32px;
+  text-align: center; margin-bottom: 28px;
+}
+.pro-hero-icon { font-size: 56px; margin-bottom: 16px; }
+.pro-hero-title { font-family:'Bebas Neue',sans-serif; font-size:40px; color:var(--sv-text); margin-bottom:8px; }
+.pro-hero-sub { font-size:14px; color:var(--sv-muted); max-width:520px; margin:0 auto; line-height:1.7; }
+
+.pro-perks { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:28px; }
+.pro-perk {
+  background:var(--sv-bg-card); border:1.5px solid var(--sv-border);
+  border-radius:16px; padding:18px 16px; text-align:center;
+}
+.pro-perk i { font-size:26px; color:#4361ee; display:block; margin-bottom:8px; }
+.pro-perk-title { font-size:13px; font-weight:800; color:var(--sv-text); margin-bottom:4px; }
+.pro-perk-desc  { font-size:11px; color:var(--sv-muted); line-height:1.5; }
+
+.privacy-notice {
+  background:rgba(249,115,22,.08); border:1.5px solid rgba(249,115,22,.3);
+  border-left:4px solid #f97316; border-radius:14px; padding:16px 20px;
+  font-size:12px; color:var(--sv-muted); line-height:1.7; margin-bottom:24px;
+}
+.privacy-notice strong { color:#f97316; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content" style="max-width:680px;">
+
+  <div class="page-top-nav">
+    <a href="{% url 'perfil' %}" class="page-back-btn"><i class="bi bi-arrow-left"></i> Mi Perfil</a>
+  </div>
+
+  <div class="pro-hero">
+    <div class="pro-hero-icon">🏆</div>
+    <div class="pro-hero-title">Perfil Profesional</div>
+    <div class="pro-hero-sub">
+      Activa tu perfil como entrenador o nutricionista. Tus clientes te darán acceso
+      solo a los datos que ellos elijan compartir contigo.
+    </div>
+  </div>
+
+  <div class="pro-perks">
+    <div class="pro-perk">
+      <i class="bi bi-people-fill"></i>
+      <div class="pro-perk-title">Panel de clientes</div>
+      <div class="pro-perk-desc">Visualiza el progreso de tus clientes de forma centralizada</div>
+    </div>
+    <div class="pro-perk">
+      <i class="bi bi-shield-check"></i>
+      <div class="pro-perk-title">Privacidad total</div>
+      <div class="pro-perk-desc">El cliente decide exactamente qué datos compartes contigo</div>
+    </div>
+    <div class="pro-perk">
+      <i class="bi bi-qr-code"></i>
+      <div class="pro-perk-title">Código único</div>
+      <div class="pro-perk-desc">Comparte tu código de 6 dígitos para que los clientes te encuentren</div>
+    </div>
+    <div class="pro-perk">
+      <i class="bi bi-graph-up-arrow"></i>
+      <div class="pro-perk-title">Datos de entrenamiento</div>
+      <div class="pro-perk-desc">Accede al historial, mediciones y planes con consentimiento</div>
+    </div>
+  </div>
+
+  <div class="privacy-notice">
+    <strong><i class="bi bi-shield-lock-fill me-2"></i>Política de privacidad y datos</strong><br>
+    Como profesional solo verás los datos que <strong>cada cliente autorice explícitamente</strong>.
+    Los datos de salud (condiciones médicas) requieren consentimiento separado.
+    El cliente puede revocar el acceso en cualquier momento desde su configuración de privacidad.
+    Esta plataforma cumple con los principios de minimización de datos y consentimiento informado.
+  </div>
+
+  <div class="sv-panel">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--sv-purple-light);margin-bottom:18px;">
+      <i class="bi bi-person-badge-fill me-2"></i>Configurar perfil profesional
+    </div>
+
+    {% if profile.rol == 'profesional' %}
+    <div style="background:rgba(0,212,170,.1);border:1.5px solid rgba(0,212,170,.3);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
+      <i class="bi bi-check-circle-fill" style="color:var(--sv-green);font-size:22px;display:block;margin-bottom:6px;"></i>
+      <div style="font-weight:800;color:var(--sv-green);">Ya tienes perfil profesional activo</div>
+      <div style="font-size:12px;color:var(--sv-muted);margin-top:4px;">Tu código: <strong style="color:var(--sv-text);font-size:16px;letter-spacing:2px;">{{ profile.codigo_pro }}</strong></div>
+      <a href="{% url 'profesional_dashboard' %}" class="btn-sv-green" style="display:inline-block;margin-top:12px;padding:10px 24px;border-radius:10px;font-size:13px;">
+        <i class="bi bi-grid-fill me-1"></i> Ir al panel profesional
+      </a>
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="sv-label">Especialidad <span style="color:var(--sv-muted);font-weight:400;">(opcional)</span></label>
+        <input type="text" name="especialidad" class="sv-input"
+               placeholder="Ej: Entrenador personal, Nutricionista deportivo..."
+               value="{{ profile.especialidad }}">
+        <div style="font-size:11px;color:var(--sv-muted);margin-top:4px;">Se mostrará a tus clientes en la búsqueda por código.</div>
+      </div>
+      <button type="submit" class="btn-calcular w-100">
+        <i class="bi bi-patch-check-fill me-2"></i>
+        {% if profile.rol == 'profesional' %}Actualizar especialidad{% else %}Activar perfil profesional{% endif %}
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

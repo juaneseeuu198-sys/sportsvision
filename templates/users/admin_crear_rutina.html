@@ -1,0 +1,335 @@
+﻿{% extends 'base/base.html' %}
+{% block title %}Crear Rutina para {{ cliente.username }} — Admin Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ─────────────────────────────────── */
+.cr-layout { display:grid; grid-template-columns:280px 1fr; gap:20px; align-items:start; }
+@media(max-width:768px){ .cr-layout{ grid-template-columns:1fr; } }
+
+/* ── Sidebar configuración ────────────────────── */
+.cr-sidebar {
+  background:var(--sv-bg-card); border:1.5px solid var(--sv-border);
+  border-radius:16px; padding:20px; position:sticky; top:80px;
+}
+.cr-sidebar-title {
+  font-family:'Bebas Neue',sans-serif; font-size:18px; color:#4361ee;
+  border-bottom:1px solid rgba(67,97,238,.2); padding-bottom:8px; margin-bottom:14px;
+}
+.cr-field { margin-bottom:14px; }
+.cr-label { font-size:11px; font-weight:800; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; display:block; }
+.cr-input {
+  width:100%; padding:9px 12px; border-radius:10px; font-size:13px;
+  background:rgba(255,255,255,.06); border:1.5px solid var(--sv-border);
+  color:var(--sv-text); outline:none; transition:border-color .2s;
+}
+.cr-input:focus { border-color:#4361ee; }
+
+.nivel-btns { display:flex; gap:6px; }
+.nivel-btn {
+  flex:1; padding:7px 6px; border-radius:8px; border:1.5px solid var(--sv-border);
+  background:rgba(255,255,255,.04); color:var(--sv-muted); font-size:11px; font-weight:700;
+  cursor:pointer; text-align:center; transition:all .18s;
+}
+.nivel-btn.active { background:rgba(67,97,238,.2); border-color:#4361ee; color:#7b9ffb; }
+.nivel-input { display:none; }
+
+.cr-counter {
+  background:rgba(0,212,170,.12); border:1px solid rgba(0,212,170,.3);
+  border-radius:10px; padding:10px 12px; text-align:center; margin-top:6px;
+}
+.cr-counter-num { font-family:'Bebas Neue',sans-serif; font-size:32px; color:#00d4aa; line-height:1; }
+.cr-counter-lbl { font-size:10px; font-weight:700; color:var(--sv-muted); text-transform:uppercase; letter-spacing:.5px; }
+
+.btn-crear {
+  width:100%; padding:13px; border-radius:12px; border:none;
+  background:linear-gradient(135deg,#4361ee,#6b7280); color:#fff;
+  font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px;
+  cursor:pointer; margin-top:14px; transition:opacity .2s;
+}
+.btn-crear:hover { opacity:.88; }
+.btn-crear:disabled { opacity:.4; cursor:default; }
+
+/* ── Zona ejercicios ─────────────────────────── */
+.cr-main { min-width:0; }
+.cr-search-bar { display:flex; gap:10px; margin-bottom:16px; align-items:center; }
+.cr-search {
+  flex:1; padding:9px 14px; border-radius:10px; font-size:13px;
+  background:rgba(255,255,255,.06); border:1.5px solid var(--sv-border);
+  color:var(--sv-text); outline:none;
+}
+.cr-search:focus { border-color:#4361ee; }
+
+/* Filtros de grupo */
+.grupo-filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.gf-btn {
+  padding:5px 12px; border-radius:20px; border:1.5px solid var(--sv-border);
+  background:var(--sv-bg-card); color:var(--sv-muted); font-size:11px; font-weight:700;
+  cursor:pointer; transition:all .18s;
+}
+.gf-btn.active { background:rgba(107,114,128,.2); border-color:#6b7280; color:#9ca3af; }
+.gf-btn:hover:not(.active) { border-color:rgba(107,114,128,.4); color:#9ca3af; }
+
+/* Grupo bloque */
+.ej-grupo-block { margin-bottom:20px; }
+.ej-grupo-title {
+  font-family:'Bebas Neue',sans-serif; font-size:15px; color:var(--sv-muted);
+  letter-spacing:1px; text-transform:uppercase;
+  border-bottom:1px solid var(--sv-border); padding-bottom:6px; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+
+/* Tarjeta ejercicio */
+.ej-card {
+  display:flex; align-items:center; gap:10px; padding:10px 12px;
+  border:1.5px solid var(--sv-border); border-radius:12px; margin-bottom:8px;
+  background:rgba(255,255,255,.03); cursor:pointer;
+  transition:border-color .15s, background .15s;
+}
+.ej-card:hover { background:rgba(67,97,238,.06); border-color:rgba(67,97,238,.3); }
+.ej-card.selected { background:rgba(67,97,238,.12); border-color:#4361ee; }
+.ej-check {
+  width:20px; height:20px; border-radius:6px; border:1.5px solid var(--sv-border);
+  background:rgba(255,255,255,.05); display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:all .15s;
+}
+.ej-card.selected .ej-check { background:#4361ee; border-color:#4361ee; color:#fff; font-size:12px; }
+.ej-nombre { flex:1; font-size:13px; font-weight:700; color:var(--sv-text); }
+.ej-nivel-badge {
+  font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px;
+  background:rgba(255,255,255,.06); color:var(--sv-muted);
+}
+.ej-nivel-badge.principiante { background:rgba(52,211,153,.12); color:#34d399; }
+.ej-nivel-badge.intermedio   { background:rgba(245,158,11,.12);  color:#f59e0b; }
+.ej-nivel-badge.avanzado     { background:rgba(239,68,68,.12);   color:#f87171; }
+
+/* Series/reps inline (visible solo si seleccionado) */
+.ej-config {
+  display:none; padding:8px 12px 10px 42px; margin-top:-6px; margin-bottom:8px;
+  background:rgba(67,97,238,.06); border:1.5px solid rgba(67,97,238,.25);
+  border-top:none; border-radius:0 0 12px 12px;
+}
+.ej-config.show { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.ej-cfg-lbl { font-size:11px; font-weight:700; color:var(--sv-muted); }
+.ej-cfg-num {
+  width:56px; padding:5px 8px; border-radius:8px; font-size:13px; text-align:center;
+  background:rgba(255,255,255,.08); border:1.5px solid var(--sv-border);
+  color:var(--sv-text); outline:none;
+}
+.ej-cfg-num:focus { border-color:#4361ee; }
+
+/* No results */
+.no-results { text-align:center; padding:32px; color:var(--sv-muted); font-size:13px; display:none; }
+
+/* Light mode */
+html.light-mode .cr-sidebar  { background:#fdf8f2; }
+html.light-mode .cr-input    { background:rgba(0,0,0,.04); }
+html.light-mode .cr-search   { background:rgba(0,0,0,.04); }
+html.light-mode .ej-card     { background:rgba(0,0,0,.02); }
+html.light-mode .ej-card.selected { background:rgba(67,97,238,.08); }
+html.light-mode .ej-config   { background:rgba(67,97,238,.04); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content" style="max-width:1100px;">
+
+  <div class="page-top-nav">
+    <a href="{% url 'admin_ver_usuario' cliente.id %}" class="page-back-btn">
+      <i class="bi bi-arrow-left"></i> Volver a {{ cliente.username }}
+    </a>
+  </div>
+
+  <h1 class="sv-page-title" style="text-align:left;font-size:42px;margin-bottom:6px;">
+    Crear Rutina
+  </h1>
+  <p style="color:var(--sv-muted);font-size:13px;margin-bottom:24px;">
+    Para: <strong style="color:var(--sv-text);">{{ cliente.first_name|default:cliente.username }} {{ cliente.last_name }}</strong>
+    (@{{ cliente.username }})
+  </p>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div class="alert mb-3" style="border-radius:12px;font-size:13px;
+    {% if 'error' in msg.tags %}background:rgba(239,68,68,.1);border-color:#f87171;color:#f87171;
+    {% else %}background:rgba(0,212,170,.1);border-color:#00d4aa;color:#00d4aa;{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <form method="post" id="cr-form">
+    {% csrf_token %}
+    <div class="cr-layout">
+
+      <!-- ── Sidebar ── -->
+      <div class="cr-sidebar">
+        <div class="cr-sidebar-title"><i class="bi bi-sliders me-2"></i>Configuración</div>
+
+        <div class="cr-field">
+          <label class="cr-label">Nombre de la rutina</label>
+          <input type="text" name="nombre" class="cr-input" placeholder="Ej. Fuerza Superior" required>
+        </div>
+
+        <div class="cr-field">
+          <label class="cr-label">Nivel</label>
+          <input type="hidden" name="nivel" id="nivel-val" value="principiante">
+          <div class="nivel-btns">
+            <button type="button" class="nivel-btn active" data-nivel="principiante">Básico</button>
+            <button type="button" class="nivel-btn"        data-nivel="intermedio">Medio</button>
+            <button type="button" class="nivel-btn"        data-nivel="avanzado">Avanzado</button>
+          </div>
+        </div>
+
+        <div class="cr-counter">
+          <div class="cr-counter-num" id="ej-count">0</div>
+          <div class="cr-counter-lbl">ejercicios seleccionados</div>
+        </div>
+
+        <button type="submit" class="btn-crear" id="btn-crear" disabled>
+          <i class="bi bi-plus-circle me-1"></i> CREAR RUTINA
+        </button>
+      </div>
+
+      <!-- ── Ejercicios ── -->
+      <div class="cr-main">
+        <div class="cr-search-bar">
+          <input type="text" id="ej-search" class="cr-search" placeholder="Buscar ejercicio...">
+          <button type="button" class="gf-btn active" data-grupo="todos" style="white-space:nowrap;">
+            Todos
+          </button>
+        </div>
+
+        <div class="grupo-filters">
+          {% for g in grupos %}
+          <button type="button" class="gf-btn" data-grupo="{{ g.slug }}">{{ g.nombre }}</button>
+          {% endfor %}
+        </div>
+
+        <div id="ej-lista">
+          {% regroup ejercicios by grupo_muscular as grupos_list %}
+          {% for grupo_info in grupos_list %}
+          <div class="ej-grupo-block" data-grupo="{{ grupo_info.grouper.slug|default:'sin-grupo' }}">
+            <div class="ej-grupo-title">
+              <i class="bi bi-lightning-fill" style="color:#4361ee;font-size:11px;"></i>
+              {{ grupo_info.grouper.nombre|default:"Sin grupo" }}
+              <span style="font-size:11px;font-weight:400;color:var(--sv-muted);">({{ grupo_info.list|length }})</span>
+            </div>
+            {% for ej in grupo_info.list %}
+            <div class="ej-card" data-id="{{ ej.id }}" data-nombre="{{ ej.nombre|lower }}" onclick="toggleEj(this, {{ ej.id }})">
+              <div class="ej-check"><i class="bi bi-check-lg" style="display:none;"></i></div>
+              <div class="ej-nombre">{{ ej.nombre }}</div>
+              {% if ej.duracion_minutos %}
+              <span style="font-size:10px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);padding:2px 7px;border-radius:8px;color:#60a5fa;font-weight:700;">{{ ej.duracion_minutos }}min</span>
+              {% endif %}
+              <span class="ej-nivel-badge {{ ej.nivel }}">{{ ej.get_nivel_display }}</span>
+            </div>
+            <div class="ej-config" id="cfg-{{ ej.id }}">
+              <span class="ej-cfg-lbl">Series</span>
+              <input type="number" class="ej-cfg-num" name="series_{{ ej.id }}" value="3" min="1" max="10">
+              <span class="ej-cfg-lbl" style="margin-left:4px;">Reps</span>
+              <input type="number" class="ej-cfg-num" name="reps_{{ ej.id }}" value="12" min="1" max="50">
+              <span style="font-size:11px;color:var(--sv-muted);margin-left:4px;">{% if ej.duracion_minutos %}(cardio: reps = vueltas){% endif %}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="no-results" id="no-results">
+          <i class="bi bi-search" style="font-size:32px;display:block;margin-bottom:8px;opacity:.3;"></i>
+          No se encontraron ejercicios.
+        </div>
+      </div>
+    </div>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Selección de ejercicios ──
+const selectedIds = new Set();
+
+function toggleEj(card, id) {
+  const cfg = document.getElementById('cfg-' + id);
+  const checkIcon = card.querySelector('.bi-check-lg');
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+    card.classList.remove('selected');
+    cfg.classList.remove('show');
+    checkIcon.style.display = 'none';
+    // Eliminar hidden input
+    const inp = document.getElementById('hid-' + id);
+    if (inp) inp.remove();
+  } else {
+    selectedIds.add(id);
+    card.classList.add('selected');
+    cfg.classList.add('show');
+    checkIcon.style.display = '';
+    // Agregar hidden input
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'ejercicios'; inp.value = id; inp.id = 'hid-' + id;
+    document.getElementById('cr-form').appendChild(inp);
+  }
+  updateCounter();
+}
+
+function updateCounter() {
+  const n = selectedIds.size;
+  document.getElementById('ej-count').textContent = n;
+  document.getElementById('btn-crear').disabled = n === 0;
+}
+
+// ── Nivel ──
+document.querySelectorAll('.nivel-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.nivel-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('nivel-val').value = this.dataset.nivel;
+  });
+});
+
+// ── Filtro por grupo ──
+let grupoActivo = 'todos';
+
+document.querySelectorAll('.gf-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.gf-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    grupoActivo = this.dataset.grupo;
+    applyFilters();
+  });
+});
+
+// ── Búsqueda ──
+document.getElementById('ej-search').addEventListener('input', applyFilters);
+
+function applyFilters() {
+  const q = document.getElementById('ej-search').value.toLowerCase().trim();
+  let totalVisible = 0;
+
+  document.querySelectorAll('.ej-grupo-block').forEach(block => {
+    const grupoSlug = block.dataset.grupo;
+    const grupoMatch = grupoActivo === 'todos' || grupoActivo === grupoSlug;
+    let blockHasVisible = false;
+
+    block.querySelectorAll('.ej-card').forEach(card => {
+      const nombre = card.dataset.nombre || '';
+      const matches = grupoMatch && (!q || nombre.includes(q));
+      card.style.display = matches ? '' : 'none';
+      // hide config if card hidden
+      const id = card.dataset.id;
+      const cfg = document.getElementById('cfg-' + id);
+      if (cfg) cfg.style.display = matches ? '' : 'none';
+      if (matches) { blockHasVisible = true; totalVisible++; }
+    });
+
+    block.style.display = blockHasVisible ? '' : 'none';
+  });
+
+  document.getElementById('no-results').style.display = totalVisible === 0 ? 'block' : 'none';
+}
+</script>
+{% endblock %}

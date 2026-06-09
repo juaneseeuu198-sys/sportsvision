@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
+  <!-- torso -->
+  <path d="M 60,70 L 140,70 L 148,88 L 145,175 L 125,186 L 100,188 L 75,186 L 55,175 L 52,88 Z"
+        fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.1)" stroke-width="1.5"/>
+  <!-- brazos -->
+  <rect x="18" y="86" width="22" height="80" rx="10" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <rect x="160" y="86" width="22" height="80" rx="10" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <!-- DELTOIDES IZQUIERDO -->
+  <ellipse cx="36" cy="90" rx="24" ry="26" fill="rgba(249,115,22,.3)" stroke="#f97316" stroke-width="2"/>
+  <!-- DELTOIDES DERECHO -->
+  <ellipse cx="164" cy="90" rx="24" ry="26" fill="rgba(249,115,22,.3)" stroke="#f97316" stroke-width="2"/>
+  <!-- DELTOIDES PARTE SUPERIOR (trapezio hint) -->
+  <path d="M 62,70 L 138,70 L 144,82 L 100,88 L 56,82 Z"
+        fill="rgba(249,115,22,.15)" stroke="#f97316" stroke-width="1.2" opacity=".7"/>
+  <!-- label -->
+  <text x="100" y="222" text-anchor="middle" font-family="Barlow,sans-serif" font-size="18" font-weight="800" fill="#f97316" opacity=".85">HOMBROS</text>
+</svg>

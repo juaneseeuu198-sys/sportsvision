@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SportsVision" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">#0b0c18</item>
+        <item name="android:statusBarColor">#7b2ff7</item>
+        <item name="android:navigationBarColor">#0b0c18</item>
+    </style>
+</resources>

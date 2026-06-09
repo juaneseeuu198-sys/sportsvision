@@ -1,0 +1,132 @@
+# Portuguese translations for SportsVision
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pt\n"
+
+msgid "Home"
+msgstr "Início"
+
+msgid "Nueva Rutina"
+msgstr "Nova Rotina"
+
+msgid "Progreso"
+msgstr "Progresso"
+
+msgid "Plan Semanal"
+msgstr "Plano Semanal"
+
+msgid "Herramientas"
+msgstr "Ferramentas"
+
+msgid "Mis Dietas"
+msgstr "Minhas Dietas"
+
+msgid "Mi Perfil"
+msgstr "Meu Perfil"
+
+msgid "Cerrar Sesión"
+msgstr "Sair"
+
+msgid "Ser profesional"
+msgstr "Tornar-se Pro"
+
+msgid "Privacidad"
+msgstr "Privacidade"
+
+msgid "Finalizar"
+msgstr "Finalizar"
+
+msgid "Saltar"
+msgstr "Pular"
+
+msgid "Terminar"
+msgstr "Encerrar"
+
+msgid "SERIE"
+msgstr "SÉRIE"
+
+msgid "ANTERIOR"
+msgstr "ANTERIOR"
+
+msgid "Agregar serie"
+msgstr "Adicionar série"
+
+msgid "Siguiente ejercicio"
+msgstr "Próximo exercício"
+
+msgid "Finalizar entrenamiento"
+msgstr "Finalizar treino"
+
+msgid "Descanso"
+msgstr "Descanso"
+
+msgid "Prepárate para la siguiente serie"
+msgstr "Prepare-se para a próxima série"
+
+msgid "Continuar"
+msgstr "Continuar"
+
+msgid "Agregar ejercicio"
+msgstr "Adicionar exercício"
+
+msgid "Crear"
+msgstr "Criar"
+
+msgid "Buscar ejercicio..."
+msgstr "Buscar exercício..."
+
+msgid "Músculos"
+msgstr "Músculos"
+
+msgid "Equipo"
+msgstr "Equipamento"
+
+msgid "Recientes"
+msgstr "Recentes"
+
+msgid "Todos los ejercicios"
+msgstr "Todos os exercícios"
+
+msgid "Guardar rutina"
+msgstr "Salvar rotina"
+
+msgid "Limpiar"
+msgstr "Limpar"
+
+msgid "BIENVENIDO DE VUELTA"
+msgstr "BEM-VINDO DE VOLTA"
+
+msgid "¿Con qué iniciamos hoy?"
+msgstr "Com o que começamos hoje?"
+
+msgid "ENTRENAMIENTOS"
+msgstr "TREINOS"
+
+msgid "RUTINAS"
+msgstr "ROTINAS"
+
+msgid "SERIES COMPLETADAS"
+msgstr "SÉRIES CONCLUÍDAS"
+
+msgid "TUS RUTINAS"
+msgstr "SUAS ROTINAS"
+
+msgid "Iniciar"
+msgstr "Iniciar"
+
+msgid "Guardar"
+msgstr "Salvar"
+
+msgid "Cancelar"
+msgstr "Cancelar"
+
+msgid "Iniciar sesión"
+msgstr "Entrar"
+
+msgid "Registrarse"
+msgstr "Cadastrar-se"
+
+msgid "Volver"
+msgstr "Voltar"

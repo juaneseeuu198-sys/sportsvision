@@ -1,0 +1,258 @@
+﻿{% extends 'base/base.html' %}
+{% block title %}Calculadora de Calorías{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+
+    <div class="page-top-nav">
+      <a href="{% url 'herramientas' %}" class="page-back-btn">
+        <i class="bi bi-arrow-left"></i> Volver
+      </a>
+      <div class="page-breadcrumb">
+        <a href="{% url 'herramientas' %}"><i class="bi bi-wrench-adjustable-circle-fill"></i> Herramientas</a>
+        <span class="sep"><i class="bi bi-chevron-right"></i></span>
+        <span class="current">Calculadora de Calorías</span>
+      </div>
+    </div>
+
+    <h1 class="sv-page-title">Calculadora de Calorias</h1>
+
+    <div class="sv-panel mb-4">
+      <h4>Calculadora Mifflin-St Jeor</h4>
+      <p style="color:#aaa;font-size:14px;margin:8px 0;">La fórmula Mifflin-St Jeor calcula la Tasa Metabólica Basal (TMB), la cantidad de calorías que el cuerpo necesita en reposo. Considera peso, altura, edad y sexo.</p>
+      <ul style="color:#aaa;font-size:13px;padding-left:20px;">
+        <li>Hombres: TMB = (10 × peso) + (6.25 × altura) − (5 × edad) + 5</li>
+        <li>Mujeres: TMB = (10 × peso) + (6.25 × altura) − (5 × edad) − 161</li>
+      </ul>
+    </div>
+
+    <!-- Error de validación -->
+    <div id="form-error-msg" style="display:none;background:rgba(230,57,70,.1);border:1.5px solid rgba(230,57,70,.4);
+         border-radius:12px;padding:12px 18px;margin-bottom:16px;color:#f87171;font-weight:700;font-size:13px;">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <span id="form-error-text">Por favor completa todos los campos requeridos.</span>
+    </div>
+
+    <form method="post" id="calc-form" novalidate>
+      {% csrf_token %}
+
+      <!-- Género -->
+      <div class="sv-panel mb-3">
+        <label class="sv-label mb-3">Género <span style="color:#f87171;font-size:11px;">*</span></label>
+        <div class="gender-select">
+          <label class="gender-btn-label" for="id_genero_0">
+            <input type="radio" name="genero" value="M" id="id_genero_0" hidden class="gender-radio"
+                   {% if not resultado %}checked{% elif resultado.genero == 'M' %}checked{% endif %}>
+            <span class="gender-btn gender-btn-m"><i class="bi bi-gender-male me-1"></i>Masculino</span>
+          </label>
+          <label class="gender-btn-label" for="id_genero_1">
+            <input type="radio" name="genero" value="F" id="id_genero_1" hidden class="gender-radio"
+                   {% if resultado and resultado.genero == 'F' %}checked{% endif %}>
+            <span class="gender-btn gender-btn-f"><i class="bi bi-gender-female me-1"></i>Femenino</span>
+          </label>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-4">
+            <label class="sv-label">Edad <span style="color:#f87171;font-size:11px;">*</span></label>
+            <div class="input-unit-wrap">
+              <input type="number" name="edad" id="campo-edad" class="form-control sv-input"
+                     value="{{ resultado.edad|default:'' }}" min="10" max="120" placeholder="25">
+              <span class="input-unit-badge">Años</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="sv-label">Peso <span style="color:#f87171;font-size:11px;">*</span></label>
+            <div class="input-unit-wrap">
+              <input type="number" name="peso" id="campo-peso" class="form-control sv-input" step="0.1"
+                     value="{{ resultado.peso|default:'' }}" min="30" max="300" placeholder="70">
+              <span class="input-unit-badge">kg</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="sv-label">Altura <span style="color:#f87171;font-size:11px;">*</span></label>
+            <div class="input-unit-wrap">
+              <input type="number" name="altura" id="campo-altura" class="form-control sv-input"
+                     value="{{ resultado.altura|default:'' }}" min="100" max="250" placeholder="175">
+              <span class="input-unit-badge">cm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actividad -->
+      <div class="sv-panel mb-3">
+        <label class="sv-label mb-3">Nivel de Actividad diaria</label>
+        <div class="activity-list">
+          {% for val, label in form.fields.nivel_actividad.choices %}
+          <label class="activity-item" for="act_{{ val }}">
+            <input type="radio" name="nivel_actividad" value="{{ val }}" id="act_{{ val }}" hidden class="activity-radio"
+                   {% if resultado and resultado.nivel_actividad == val %}checked{% elif val == 'activo' and not resultado %}checked{% endif %}>
+            <div class="activity-icon">
+              {% if val == 'sedentario' %}😴
+              {% elif val == 'poca' %}🚶
+              {% elif val == 'activo' %}❤️
+              {% elif val == 'diario' %}🏃
+              {% else %}⚡{% endif %}
+            </div>
+            <div class="activity-text"><h5>{{ label }}</h5></div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Objetivo -->
+      <div class="sv-panel mb-3">
+        <label class="sv-label mb-3">Objetivo</label>
+        <div class="activity-list">
+          {% for val, label in form.fields.objetivo.choices %}
+          <label class="activity-item" for="obj_{{ val }}">
+            <input type="radio" name="objetivo" value="{{ val }}" id="obj_{{ val }}" hidden class="activity-radio"
+                   {% if resultado and resultado.objetivo == val %}checked{% elif val == 'mantener' and not resultado %}checked{% endif %}>
+            <div class="activity-icon">
+              {% if val == 'perder_rapido' %}📉
+              {% elif val == 'perder' %}↘️
+              {% elif val == 'mantener' %}⚖️
+              {% elif val == 'ganar' %}↗️
+              {% else %}📈{% endif %}
+            </div>
+            <div class="activity-text"><h5>{{ label }}</h5></div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn-calcular w-100 mb-4">Calcular</button>
+    </form>
+
+    <!-- Resultados -->
+    {% if resultado %}
+    <div class="sv-panel">
+      <h4 class="sv-panel-title">Resultados</h4>
+      <div class="results-grid mt-3">
+        <div class="result-card">
+          <div class="r-label">🔥 TMB <span class="info-badge">ℹ</span></div>
+          <div class="r-value">{{ resultado.tmb|floatformat:0 }}</div>
+          <div class="r-unit">kcal</div>
+        </div>
+        <div class="result-card">
+          <div class="r-label">⚡ GETD <span class="info-badge">ℹ</span></div>
+          <div class="r-value">{{ resultado.getd|floatformat:0 }}</div>
+          <div class="r-unit">kcal</div>
+        </div>
+      </div>
+
+      <h5 class="sv-panel-title mt-4">Consumo Recomendado</h5>
+      <div class="macros-grid mt-3">
+        <div class="macro-card">
+          <div class="m-label">🥩 Proteinas</div>
+          <div class="m-val">{{ resultado.proteinas_g }}g</div>
+          <div class="m-kcal">{{ resultado.proteinas_g|floatformat:0|add:0 }} kcal</div>
+        </div>
+        <div class="macro-card">
+          <div class="m-label">🍞 Carbohidatos</div>
+          <div class="m-val">{{ resultado.carbos_g }}g</div>
+          <div class="m-kcal">kcal</div>
+        </div>
+        <div class="macro-card">
+          <div class="m-label">💧 Grasas</div>
+          <div class="m-val">{{ resultado.grasas_g }}g</div>
+          <div class="m-kcal">kcal</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Guardar dieta -->
+    {% if resultado %}
+    <div class="sv-panel mt-3" style="border-color:rgba(107,114,128,.3);background:rgba(107,114,128,.05);">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <i class="bi bi-bookmark-heart-fill" style="font-size:28px;color:var(--sv-purple-light);flex-shrink:0;"></i>
+        <div style="flex:1;min-width:180px;">
+          <div style="font-weight:800;font-size:15px;margin-bottom:4px;">¿Guardar esta dieta?</div>
+          <div style="font-size:13px;color:var(--sv-muted);">Dale un nombre y guárdala en "Mis Dietas" para consultarla cuando quieras.</div>
+        </div>
+        <form method="post" action="{% url 'guardar_dieta' %}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          {% csrf_token %}
+          <input type="hidden" name="genero"          value="{{ resultado.genero }}">
+          <input type="hidden" name="edad"            value="{{ resultado.edad }}">
+          <input type="hidden" name="peso"            value="{{ resultado.peso }}">
+          <input type="hidden" name="altura"          value="{{ resultado.altura }}">
+          <input type="hidden" name="nivel_actividad" value="{{ resultado.nivel_actividad }}">
+          <input type="hidden" name="objetivo"        value="{{ resultado.objetivo }}">
+          <input type="text" name="nombre" class="sv-input" placeholder="Ej: Dieta de corte verano"
+                 style="width:220px;text-align:left;letter-spacing:0;text-transform:none;" maxlength="80">
+          <button type="submit" class="btn-sv-green" style="padding:12px 22px;border-radius:10px;font-size:14px;white-space:nowrap;">
+            <i class="bi bi-bookmark-fill me-1"></i> Guardar
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── Activar estilo de radio buttons ──────────────────
+  function activateRadioStyle(name) {
+    document.querySelectorAll(`[name="${name}"]`).forEach(r => {
+      r.addEventListener('change', () => {
+        document.querySelectorAll(`[name="${name}"]`).forEach(rb => {
+          const lbl = rb.nextElementSibling;
+          if (lbl) lbl.classList.remove('active');
+        });
+        const active = r.nextElementSibling;
+        if (active) active.classList.add('active');
+      });
+      if (r.checked) {
+        const lbl = r.nextElementSibling;
+        if (lbl) lbl.classList.add('active');
+      }
+    });
+  }
+  activateRadioStyle('genero');
+  activateRadioStyle('nivel_actividad');
+  activateRadioStyle('objetivo');
+
+  // ── Validación antes de enviar ────────────────────────
+  document.getElementById('calc-form').addEventListener('submit', function(e) {
+    const edad   = document.getElementById('campo-edad').value.trim();
+    const peso   = document.getElementById('campo-peso').value.trim();
+    const altura = document.getElementById('campo-altura').value.trim();
+    const errBox = document.getElementById('form-error-msg');
+    const errTxt = document.getElementById('form-error-text');
+
+    const vacíos = [];
+    if (!edad)   vacíos.push('Edad');
+    if (!peso)   vacíos.push('Peso');
+    if (!altura) vacíos.push('Altura');
+
+    if (vacíos.length > 0) {
+      e.preventDefault();
+      errTxt.textContent = 'Campos requeridos sin completar: ' + vacíos.join(', ') + '.';
+      errBox.style.display = 'block';
+      errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Resaltar campos vacíos
+      ['campo-edad','campo-peso','campo-altura'].forEach(id => {
+        const el = document.getElementById(id);
+        el.style.borderColor = el.value.trim() ? '' : '#f87171';
+      });
+    } else {
+      errBox.style.display = 'none';
+    }
+  });
+
+  // Limpiar error al escribir
+  ['campo-edad','campo-peso','campo-altura'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      this.style.borderColor = '';
+      const allFilled = ['campo-edad','campo-peso','campo-altura']
+        .every(i => document.getElementById(i).value.trim());
+      if (allFilled) document.getElementById('form-error-msg').style.display = 'none';
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,794 @@
+﻿{% extends 'base/base.html' %}
+{% block title %}Mi Perfil — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+  .perfil-header {
+    background: linear-gradient(135deg, rgba(107,114,128,0.2), rgba(67,97,238,0.15));
+    border: 1.5px solid rgba(107,114,128,0.3);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .perfil-avatar {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--sv-purple);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: rgba(107,114,128,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; color: var(--sv-purple-light);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .perfil-avatar:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 5px rgba(107,114,128,0.3);
+  }
+  .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+  /* Modal avatar */
+  .avatar-modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.82); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .avatar-modal-overlay.open { display: flex; }
+  .avatar-modal {
+    background: var(--sv-bg-card);
+    border: 1.5px solid rgba(107,114,128,.35);
+    border-radius: 24px;
+    width: 100%; max-width: 380px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.7);
+  }
+  .avatar-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--sv-border);
+  }
+  .avatar-modal-head span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: .5px; color: var(--sv-text);
+  }
+  .avatar-modal-close {
+    background: rgba(255,255,255,.08); border: none;
+    border-radius: 50%; width: 30px; height: 30px;
+    color: var(--sv-muted); font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .avatar-modal-close:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+  /* Imagen completa sin recorte */
+  .avatar-modal-img-wrap {
+    background: #0a0a14;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 280px; padding: 20px;
+  }
+  .avatar-modal-img-wrap img {
+    max-width: 100%; max-height: 320px;
+    object-fit: contain;
+    border-radius: 12px;
+  }
+  .avatar-modal-img-wrap .avatar-placeholder-big {
+    font-size: 100px; color: rgba(107,114,128,.4);
+  }
+
+  .avatar-modal-body { padding: 18px 20px 20px; }
+  .avatar-modal-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: .5px;
+    color: var(--sv-text); margin-bottom: 14px; text-align: center;
+  }
+  .avatar-modal-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-av {
+    flex: 1; min-width: 90px; padding: 10px 8px;
+    border-radius: 12px; border: none;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; text-decoration: none; transition: opacity .2s, background .2s;
+  }
+  .btn-av-edit  { background: var(--sv-purple); color: #fff; }
+  .btn-av-edit:hover { opacity: .85; color: #fff; }
+  .btn-av-dl    { background: rgba(0,212,170,.12); border: 1.5px solid rgba(0,212,170,.3); color: #00d4aa; }
+  .btn-av-dl:hover { background: rgba(0,212,170,.22); color: #00d4aa; }
+  .btn-av-del   { background: rgba(230,57,70,.1); border: 1.5px solid rgba(230,57,70,.3); color: #f87171; }
+  .btn-av-del:hover { background: rgba(230,57,70,.22); }
+
+  /* Cropper integrado */
+  .crop-overlay {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,.88); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .crop-overlay.open { display: flex; }
+  .crop-modal {
+    background: var(--sv-bg-card);
+    border: 1.5px solid rgba(107,114,128,.35);
+    border-radius: 24px; width: 100%; max-width: 460px;
+    overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.7);
+  }
+  .crop-modal-head {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--sv-border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .crop-modal-head h3 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+    letter-spacing: .5px; margin: 0; color: var(--sv-text);
+  }
+  .crop-canvas-wrap { height: 280px; background: #0a0a14; }
+  .crop-canvas-wrap img { display: block; max-width: 100%; }
+  .crop-controls { padding: 14px 20px 18px; }
+  .crop-zoom-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .crop-zoom-row i { color: var(--sv-muted); font-size: 13px; flex-shrink: 0; }
+  .crop-zoom-row input[type=range] { flex: 1; height: 4px; accent-color: var(--sv-purple); cursor: pointer; }
+  .crop-zoom-val { font-size: 12px; font-weight: 800; color: var(--sv-purple-light); min-width: 36px; text-align: right; }
+  .crop-hint { font-size: 11px; color: var(--sv-muted); text-align: center; margin-bottom: 12px; }
+  .crop-btn-row { display: flex; gap: 10px; }
+  .btn-crop-cancel {
+    flex: 1; padding: 11px; border-radius: 12px;
+    background: rgba(255,255,255,.06); border: 1.5px solid var(--sv-border);
+    color: var(--sv-muted); font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-crop-cancel:hover { background: rgba(255,255,255,.12); color: #fff; }
+  .btn-crop-apply {
+    flex: 2; padding: 11px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, var(--sv-purple), var(--sv-purple-light));
+    color: #fff; font-size: 13px; font-weight: 800; cursor: pointer;
+    transition: opacity .2s; box-shadow: 0 4px 16px rgba(107,114,128,.4);
+  }
+  .btn-crop-apply:hover { opacity: .88; }
+  .crop-preview-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid var(--sv-purple); }
+  .perfil-info { flex: 1; }
+  .perfil-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 38px; line-height: 1; margin-bottom: 4px; }
+  .perfil-username { color: var(--sv-purple-light); font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .perfil-meta { color: #888; font-size: 13px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--sv-bg-card);
+    border: 1.5px solid var(--sv-border);
+    border-radius: 16px;
+    padding: 22px 18px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--sv-purple); }
+  .stat-card .stat-icon { font-size: 28px; margin-bottom: 10px; }
+  .stat-card .stat-val  { font-family: 'Bebas Neue', sans-serif; font-size: 42px; line-height: 1; margin-bottom: 4px; }
+  .stat-card .stat-lbl  { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .datos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .dato-item {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--sv-border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .dato-item .dato-val { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--sv-purple-light); line-height: 1; }
+  .dato-item .dato-lbl { font-size: 12px; color: #888; font-weight: 700; margin-top: 4px; }
+  .dato-item .dato-unit { font-size: 13px; color: #aaa; }
+
+  .entreno-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--sv-border);
+  }
+  .entreno-item:last-child { border-bottom: none; }
+  .entreno-dot {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: rgba(107,114,128,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .entreno-info { flex: 1; }
+  .entreno-nombre { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .entreno-fecha  { font-size: 12px; color: #888; }
+  .entreno-dur    { font-size: 12px; font-weight: 700; color: var(--sv-green); }
+
+  .cal-meta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .cal-pill {
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+  }
+  .cp-p   { background: rgba(67,97,238,0.2); color: #4361ee; }
+  .cp-c   { background: rgba(244,162,97,0.2); color: var(--sv-gold); }
+  .cp-f   { background: rgba(230,57,70,0.2);  color: var(--sv-red); }
+
+  .pn-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 1px;
+    color: var(--sv-purple-light);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* IMC box */
+  .imc-box {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .imc-box-label { font-size: 11px; font-weight: 700; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .imc-box-val   { font-family: 'Bebas Neue', sans-serif; font-size: 52px; line-height: 1; margin-bottom: 2px; }
+  .imc-box-cat   { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+
+  .imc-bar-track {
+    position: relative;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #4361ee 0%, #00d4aa 46%, #f4a261 62%, #e63946 100%);
+    margin-bottom: 4px;
+  }
+  .imc-marker {
+    position: absolute;
+    top: -4px;
+    transform: translateX(-50%);
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #fff;
+    box-shadow: 0 0 6px rgba(0,0,0,0.5);
+  }
+  .imc-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #555;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid  { grid-template-columns: repeat(2, 1fr); }
+    .datos-grid  { grid-template-columns: repeat(2, 1fr); }
+    .perfil-header { flex-direction: column; text-align: center; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+
+  <!-- Mensajes -->
+  {% for msg in messages %}
+  <div class="alert alert-{{ msg.tags }} mb-3">{{ msg }}</div>
+  {% endfor %}
+
+  <!-- Header del perfil -->
+  <div class="perfil-header">
+    <div class="perfil-avatar" onclick="document.getElementById('avatar-modal').classList.add('open')">
+      {% if profile.avatar_data %}
+        <img src="{{ profile.avatar_data }}" alt="Avatar">
+      {% elif profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar">
+      {% else %}
+        <i class="bi bi-person-fill"></i>
+      {% endif %}
+    </div>
+    <div class="perfil-info">
+      <div class="perfil-nombre">
+        {% if user.first_name or user.last_name %}
+          {{ user.first_name }} {{ user.last_name }}
+        {% else %}
+          {{ user.username }}
+        {% endif %}
+      </div>
+      <div class="perfil-username">@{{ user.username }}</div>
+      <div class="perfil-meta">
+        <i class="bi bi-envelope-fill me-1"></i>{{ user.email|default:"Sin email" }}
+        &nbsp;·&nbsp;
+        <i class="bi bi-calendar3 me-1"></i>Miembro desde {{ profile.fecha_registro|date:"M Y" }}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="{% url 'editar_perfil' %}" class="page-back-btn" style="border-color:rgba(0,212,170,0.4);color:var(--sv-green);background:rgba(0,212,170,0.1);">
+        <i class="bi bi-pencil-fill"></i> Editar perfil
+      </a>
+      {% if user.is_superuser or profile.rol == 'admin_pro' %}
+        <a href="{% url 'admin_pro_dashboard' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.5);color:#7b9ffb;background:rgba(67,97,238,.15);">
+          <i class="bi bi-shield-fill-check"></i> Panel Admin Pro
+        </a>
+        <a href="{% url 'profesional_dashboard' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.3);color:#7b9ffb;background:rgba(67,97,238,.07);">
+          <i class="bi bi-patch-check-fill"></i> Panel Profesional
+        </a>
+      {% elif profile.rol == 'profesional' %}
+        <a href="{% url 'profesional_dashboard' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.4);color:#7b9ffb;background:rgba(67,97,238,.1);">
+          <i class="bi bi-patch-check-fill"></i> Panel Pro
+        </a>
+      {% else %}
+        <a href="{% url 'solicitar_profesional' %}" class="page-back-btn" style="border-color:rgba(67,97,238,.3);color:#7b9ffb;background:rgba(67,97,238,.07);">
+          <i class="bi bi-patch-check"></i> Ser profesional
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🏋️</div>
+      <div class="stat-val" style="color:var(--sv-purple-light);">{{ total_entrenamientos }}</div>
+      <div class="stat-lbl">Entrenamientos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📋</div>
+      <div class="stat-val" style="color:var(--sv-blue);">{{ total_rutinas }}</div>
+      <div class="stat-lbl">Rutinas creadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔁</div>
+      <div class="stat-val" style="color:var(--sv-gold);">{{ total_series }}</div>
+      <div class="stat-lbl">Series completadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-val" style="color:var(--sv-green);">{{ kg_totales }}</div>
+      <div class="stat-lbl">Kg levantados</div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Datos personales -->
+    <div class="col-md-5">
+      <div class="sv-panel h-100">
+        <div class="pn-section-title"><i class="bi bi-person-vcard-fill"></i> Datos personales</div>
+        <div class="datos-grid">
+          <div class="dato-item">
+            <div class="dato-val">{{ profile.edad|default:"—" }}</div>
+            <div class="dato-unit">años</div>
+            <div class="dato-lbl">Edad</div>
+          </div>
+          <div class="dato-item">
+            <div class="dato-val">{{ profile.peso|default:"—" }}</div>
+            <div class="dato-unit">kg</div>
+            <div class="dato-lbl">Peso</div>
+          </div>
+          <div class="dato-item">
+            <div class="dato-val">{{ profile.altura|default:"—" }}</div>
+            <div class="dato-unit">cm</div>
+            <div class="dato-lbl">Altura</div>
+          </div>
+        </div>
+
+        {% if imc %}
+        <div class="imc-box mt-4">
+          <div class="imc-box-label">Índice de Masa Corporal</div>
+          <div class="imc-box-val" style="color:{{ imc_color }};">{{ imc }}</div>
+          <div class="imc-box-cat" style="color:{{ imc_color }};">{{ imc_categoria }}</div>
+          <div class="imc-bar-track mt-2">
+            <div class="imc-bar-fill" style="left:{% widthratio imc 40 100 %}%;background:{{ imc_color }};"></div>
+            <span class="imc-marker" style="left:{% widthratio imc 40 100 %}%;"></span>
+          </div>
+          <div class="imc-bar-labels">
+            <span>Bajo</span><span>Normal</span><span>Sobre</span><span>Obesidad</span>
+          </div>
+        </div>
+        {% else %}
+        <div class="mt-4" style="background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;text-align:center;border:1.5px dashed rgba(255,255,255,0.1);">
+          <div style="color:#555;font-size:13px;">Agrega tu peso y altura para ver el IMC</div>
+          <a href="{% url 'editar_perfil' %}" style="color:var(--sv-purple-light);font-size:13px;font-weight:700;">Completar datos →</a>
+        </div>
+        {% endif %}
+
+        <a href="{% url 'editar_perfil' %}" class="btn-calcular w-100 mt-4" style="text-decoration:none;display:block;text-align:center;">
+          <i class="bi bi-pencil-fill me-2"></i>Actualizar datos
+        </a>
+      </div>
+    </div>
+
+    <!-- Actividad reciente -->
+    <div class="col-md-7">
+      <div class="sv-panel h-100">
+        <div class="pn-section-title"><i class="bi bi-activity"></i> Actividad reciente</div>
+        {% if entrenamientos_recientes %}
+          {% for e in entrenamientos_recientes %}
+          <div class="entreno-item">
+            <div class="entreno-dot">🏋️</div>
+            <div class="entreno-info">
+              <div class="entreno-nombre">{{ e.nombre }}</div>
+              <div class="entreno-fecha">
+                {{ e.terminado_en|date:"d M Y, H:i" }}
+              </div>
+            </div>
+            <div class="entreno-dur">
+              {% if e.duracion %}{{ e.duracion }}{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:32px 0;color:#555;">
+            <div style="font-size:48px;margin-bottom:12px;">💪</div>
+            <div style="font-weight:700;">Aún no hay entrenamientos registrados</div>
+            <div style="font-size:13px;color:#444;margin-top:6px;">¡Completa tu primer entrenamiento para ver tu historial!</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Meta calórica -->
+  {% if ultimo_calculo %}
+  <div class="sv-panel mt-4">
+    <div class="pn-section-title"><i class="bi bi-fire" style="color:var(--sv-orange);"></i> Meta calórica activa</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div>
+        <div style="color:#888;font-size:12px;font-weight:700;">CALORÍAS DIARIAS</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--sv-green);line-height:1;">{{ ultimo_calculo.getd|floatformat:0 }}</div>
+        <div style="color:#888;font-size:12px;">kcal / día · {{ ultimo_calculo.get_objetivo_display }}</div>
+      </div>
+      <div class="cal-meta-row">
+        <span class="cal-pill cp-p">🥩 {{ ultimo_calculo.proteinas_g }}g proteína</span>
+        <span class="cal-pill cp-c">🌾 {{ ultimo_calculo.carbos_g }}g carbos</span>
+        <span class="cal-pill cp-f">🥑 {{ ultimo_calculo.grasas_g }}g grasas</span>
+      </div>
+      <a href="{% url 'calculadora_calorias' %}" class="page-back-btn ms-auto">
+        <i class="bi bi-arrow-repeat"></i> Recalcular
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Historial de peso -->
+  {% if pesos %}
+  <div class="sv-panel mt-4">
+    <div class="pn-section-title"><i class="bi bi-graph-up-arrow" style="color:var(--sv-blue);"></i> Historial de peso</div>
+    <div style="display:flex;align-items:flex-end;gap:8px;height:80px;margin-top:8px;" id="peso-chart">
+      {% for r in pesos %}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="font-size:10px;color:#888;">{{ r.peso }}kg</div>
+        <div class="peso-bar" data-peso="{{ r.peso }}" style="width:100%;background:var(--sv-purple);border-radius:4px 4px 0 0;min-height:4px;"></div>
+        <div style="font-size:9px;color:#666;">{{ r.fecha|date:"d/m" }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <script>
+      (function(){
+        var bars = document.querySelectorAll('.peso-bar');
+        var vals = Array.from(bars).map(b => parseFloat(b.dataset.peso));
+        var mn = Math.min(...vals), mx = Math.max(...vals);
+        bars.forEach(b => {
+          var v = parseFloat(b.dataset.peso);
+          var pct = mx === mn ? 60 : 20 + ((v - mn) / (mx - mn)) * 50;
+          b.style.height = pct + 'px';
+        });
+      })();
+    </script>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Input oculto para seleccionar nueva foto -->
+<input type="file" id="avatar-file-input" accept="image/*"
+       style="visibility:hidden;position:absolute;width:0;height:0;">
+
+<!-- ══ Modal: ver imagen ══ -->
+<div class="avatar-modal-overlay" id="avatar-modal"
+     onclick="if(event.target===this) cerrarModalAvatar()">
+  <div class="avatar-modal">
+    <div class="avatar-modal-head">
+      <span><i class="bi bi-person-circle me-2"></i>Foto de perfil</span>
+      <button type="button" class="avatar-modal-close" onclick="cerrarModalAvatar()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="avatar-modal-img-wrap">
+      {% if profile.avatar_data %}
+        <img src="{{ profile.avatar_data }}" alt="Avatar" id="modal-avatar-img">
+      {% elif profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar" id="modal-avatar-img">
+      {% else %}
+        <div class="avatar-placeholder-big"><i class="bi bi-person-circle"></i></div>
+      {% endif %}
+    </div>
+
+    <div class="avatar-modal-body">
+      <div class="avatar-modal-name">{{ user.first_name|default:user.username }}</div>
+      <div class="avatar-modal-btns">
+        <!-- Editar: abre el cropper directamente -->
+        <button type="button" class="btn-av btn-av-edit" onclick="abrirCropDesdeModal()">
+          <i class="bi bi-pencil-fill"></i> Editar
+        </button>
+        {% if profile.avatar %}
+        <!-- Descargar -->
+        <a href="{{ profile.avatar.url }}" download class="btn-av btn-av-dl">
+          <i class="bi bi-download"></i> Descargar
+        </a>
+        <!-- Eliminar -->
+        <form method="post" action="{% url 'eliminar_avatar' %}" style="flex:1;min-width:90px;">
+          {% csrf_token %}
+          <button type="submit" class="btn-av btn-av-del w-100"
+                  onclick="return confirm('¿Eliminar la foto de perfil?')">
+            <i class="bi bi-trash3"></i> Eliminar
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Zona de cuenta ══ -->
+<div class="sv-panel mb-4" style="border:1.5px solid rgba(248,113,113,.2);background:rgba(248,113,113,.04);">
+  <div class="form-section-title" style="color:#f87171;border-bottom-color:rgba(248,113,113,.2);">
+    <i class="bi bi-shield-exclamation"></i> Gestión de cuenta
+  </div>
+
+  <!-- Desactivar cuenta -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+    <div>
+      <div style="font-weight:700;font-size:14px;color:rgba(255,255,255,.85);margin-bottom:4px;">Desactivar cuenta</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;">
+        Tu cuenta se pausará y no podrás iniciar sesión hasta que la reactives escribiéndonos.
+      </div>
+    </div>
+    <button type="button" onclick="document.getElementById('modal-desactivar').style.display='flex'"
+            style="flex-shrink:0;padding:9px 18px;border-radius:10px;border:1.5px solid rgba(251,146,60,.4);
+                   background:rgba(251,146,60,.08);color:#fb923c;font-size:13px;font-weight:700;cursor:pointer;
+                   white-space:nowrap;transition:all .2s;"
+            onmouseover="this.style.background='rgba(251,146,60,.18)'"
+            onmouseout="this.style.background='rgba(251,146,60,.08)'">
+      <i class="bi bi-pause-circle me-1"></i> Desactivar
+    </button>
+  </div>
+
+  <!-- Eliminar cuenta -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 0;">
+    <div>
+      <div style="font-weight:700;font-size:14px;color:#f87171;margin-bottom:4px;">Eliminar cuenta</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;">
+        Se borrarán permanentemente tu cuenta, perfil y todos tus datos. Esta acción no se puede deshacer.
+      </div>
+    </div>
+    <button type="button" onclick="document.getElementById('modal-eliminar').style.display='flex'"
+            style="flex-shrink:0;padding:9px 18px;border-radius:10px;border:1.5px solid rgba(248,113,113,.4);
+                   background:rgba(248,113,113,.08);color:#f87171;font-size:13px;font-weight:700;cursor:pointer;
+                   white-space:nowrap;transition:all .2s;"
+            onmouseover="this.style.background='rgba(248,113,113,.18)'"
+            onmouseout="this.style.background='rgba(248,113,113,.08)'">
+      <i class="bi bi-trash3 me-1"></i> Eliminar
+    </button>
+  </div>
+</div>
+
+<!-- Modal desactivar -->
+<div id="modal-desactivar" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--sv-bg-card);border:1.5px solid rgba(251,146,60,.3);
+              border-radius:20px;padding:32px;max-width:420px;width:100%;text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">⏸️</div>
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fb923c;margin-bottom:8px;">
+      ¿Desactivar tu cuenta?
+    </h3>
+    <p style="color:rgba(255,255,255,.5);font-size:13px;line-height:1.6;margin-bottom:24px;">
+      Tu cuenta quedará pausada. No podrás iniciar sesión hasta que nos escribas para reactivarla.
+      Tus datos se conservan.
+    </p>
+    <div style="display:flex;gap:12px;">
+      <button onclick="document.getElementById('modal-desactivar').style.display='none'"
+              style="flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);
+                     background:transparent;color:rgba(255,255,255,.6);font-weight:700;cursor:pointer;">
+        Cancelar
+      </button>
+      <form method="post" action="{% url 'desactivar_cuenta' %}" style="flex:1;">
+        {% csrf_token %}
+        <button type="submit"
+                style="width:100%;padding:12px;border-radius:12px;border:none;
+                       background:linear-gradient(135deg,#f97316,#ea580c);
+                       color:#fff;font-weight:800;cursor:pointer;">
+          Sí, desactivar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal eliminar -->
+<div id="modal-eliminar" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--sv-bg-card);border:1.5px solid rgba(248,113,113,.3);
+              border-radius:20px;padding:32px;max-width:420px;width:100%;text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">🗑️</div>
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#f87171;margin-bottom:8px;">
+      ¿Eliminar tu cuenta?
+    </h3>
+    <p style="color:rgba(255,255,255,.5);font-size:13px;line-height:1.6;margin-bottom:8px;">
+      Esta acción es <strong style="color:#f87171;">permanente e irreversible</strong>.
+      Se eliminarán tu cuenta, perfil, rutinas, entrenamientos y todos tus datos.
+    </p>
+    <p style="color:rgba(255,255,255,.35);font-size:12px;margin-bottom:20px;">
+      Escribe <strong style="color:#fff;">ELIMINAR</strong> para confirmar:
+    </p>
+    <input type="text" id="confirm-delete-input" placeholder="ELIMINAR"
+           style="width:100%;padding:10px 14px;border-radius:10px;margin-bottom:16px;
+                  background:rgba(255,255,255,.06);border:1.5px solid rgba(248,113,113,.3);
+                  color:#fff;font-size:14px;font-weight:700;text-align:center;letter-spacing:2px;">
+    <div style="display:flex;gap:12px;">
+      <button onclick="document.getElementById('modal-eliminar').style.display='none'"
+              style="flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);
+                     background:transparent;color:rgba(255,255,255,.6);font-weight:700;cursor:pointer;">
+        Cancelar
+      </button>
+      <form method="post" action="{% url 'eliminar_cuenta' %}" style="flex:1;" id="form-eliminar">
+        {% csrf_token %}
+        <button type="button" onclick="confirmarEliminar()"
+                style="width:100%;padding:12px;border-radius:12px;border:none;
+                       background:linear-gradient(135deg,#ef4444,#b91c1c);
+                       color:#fff;font-weight:800;cursor:pointer;">
+          Eliminar para siempre
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: recortar imagen ══ -->
+<div class="crop-overlay" id="crop-overlay">
+  <div class="crop-modal">
+    <div class="crop-modal-head">
+      <h3><i class="bi bi-crop me-2"></i>Ajustar foto</h3>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="text-align:center;">
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;color:var(--sv-muted);margin-bottom:4px;">Vista previa</div>
+          <div class="crop-preview-circle" id="crop-preview-circle"></div>
+        </div>
+        <button type="button" class="avatar-modal-close" onclick="cerrarCrop()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+    <div class="crop-canvas-wrap">
+      <img id="crop-image" src="" alt="Recortar">
+    </div>
+    <div class="crop-controls">
+      <div class="crop-zoom-row">
+        <i class="bi bi-zoom-out"></i>
+        <input type="range" id="zoom-slider" min="0" max="3" step="0.01" value="0">
+        <i class="bi bi-zoom-in"></i>
+        <span class="crop-zoom-val" id="zoom-val">1×</span>
+      </div>
+      <div class="crop-hint"><i class="bi bi-arrows-move me-1"></i>Arrastra para mover · Slider para zoom</div>
+      <div class="crop-btn-row">
+        <button type="button" class="btn-crop-cancel" onclick="cerrarCrop()">Cancelar</button>
+        <button type="button" class="btn-crop-apply" onclick="aplicarCrop()">
+          <i class="bi bi-check-lg me-1"></i> Aplicar y guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Formulario oculto para guardar la imagen recortada (base64 → BD) -->
+<form method="post" action="{% url 'editar_perfil' %}" id="form-avatar-crop"
+      enctype="multipart/form-data" style="display:none;">
+  {% csrf_token %}
+  <input type="hidden" name="avatar_cropped" id="avatar_cropped">
+</form>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script>
+var cropper = null;
+
+function cerrarModalAvatar() {
+  document.getElementById('avatar-modal').classList.remove('open');
+}
+
+function abrirCropDesdeModal() {
+  cerrarModalAvatar();
+  setTimeout(function() {
+    document.getElementById('avatar-file-input').click();
+  }, 300);
+}
+
+var esMobil = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+document.getElementById('avatar-file-input').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  this.value = '';
+  if (!file) return;
+  if (file.size > 7.5 * 1024 * 1024) { alert('La imagen no puede superar 7.5 MB.'); return; }
+
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var b64 = ev.target.result;
+
+    // GIF → guardar directo (no se puede recortar animación)
+    if (file.type === 'image/gif') {
+      document.getElementById('avatar_cropped').value = b64;
+      document.getElementById('form-avatar-crop').submit();
+      return;
+    }
+
+    // Cropper en todos los dispositivos (soporta touch)
+    var img = document.getElementById('crop-image');
+    img.src = b64;
+    document.getElementById('crop-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (cropper) { cropper.destroy(); cropper = null; }
+    cropper = new Cropper(img, {
+      aspectRatio: 1, viewMode: 1, dragMode: 'move',
+      autoCropArea: 1, cropBoxMovable: false, cropBoxResizable: false,
+      toggleDragModeOnDblclick: false, preview: '#crop-preview-circle',
+      ready: function() {
+        document.getElementById('zoom-slider').value = 0;
+        document.getElementById('zoom-val').textContent = '1×';
+      },
+    });
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('zoom-slider').addEventListener('input', function() {
+  if (!cropper) return;
+  var val = parseFloat(this.value);
+  cropper.zoomTo(Math.pow(2, val));
+  document.getElementById('zoom-val').textContent = Math.pow(2, val).toFixed(1) + '×';
+});
+
+function aplicarCrop() {
+  if (!cropper) return;
+  // Usar toDataURL (síncrono) → no necesita DataTransfer, funciona en todos los móviles
+  var canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+  var dataURL = canvas.toDataURL('image/jpeg', 0.92);
+  document.getElementById('avatar_cropped').value = dataURL;
+  cerrarCrop();
+  document.getElementById('form-avatar-crop').submit();
+}
+
+function cerrarCrop() {
+  document.getElementById('crop-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    cerrarCrop();
+    cerrarModalAvatar();
+    document.getElementById('modal-desactivar').style.display = 'none';
+    document.getElementById('modal-eliminar').style.display = 'none';
+  }
+});
+
+function confirmarEliminar() {
+  var val = document.getElementById('confirm-delete-input').value.trim();
+  if (val !== 'ELIMINAR') {
+    alert('Escribe exactamente ELIMINAR para confirmar.');
+    return;
+  }
+  document.getElementById('form-eliminar').submit();
+}
+</script>
+
+{% endblock %}

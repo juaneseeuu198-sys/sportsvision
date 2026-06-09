@@ -1,0 +1,1000 @@
+﻿{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Entrenamiento — {{ ejercicio_actual.ejercicio.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Reset de página ─────────────────────────────── */
+body.sv-body {
+  background-color: #07081a !important;
+  background-image:
+    linear-gradient(180deg, rgba(7,8,26,.72) 0%, rgba(7,8,26,.60) 40%, rgba(7,8,26,.78) 100%),
+    url('/static/images/fondo.jpg') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-attachment: fixed !important;
+}
+.sv-main { background: transparent !important; }
+.sv-main::before { display: none; }
+
+/* ── Top bar ─────────────────────────────────────── */
+.wk-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: #000;
+  border-bottom: 1px solid #1c1c1e;
+  position: sticky; top: 0; z-index: 35;
+}
+.wk-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #1c1c1e; border: none; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; flex-shrink: 0;
+  text-decoration: none;
+}
+.wk-timer-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.wk-timer-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #1c1c1e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: #8e8e93;
+}
+.wk-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; color: #fff; letter-spacing: 1px;
+}
+.wk-finish-btn {
+  background: #fff; color: #000;
+  font-size: 14px; font-weight: 800;
+  border: none; border-radius: 20px;
+  padding: 8px 20px; cursor: pointer;
+  transition: opacity .2s;
+}
+.wk-finish-btn:hover { opacity: .85; }
+
+/* ── Progress bar ─────────────────────────────────── */
+.wk-progress-bar { height: 2px; background: #1c1c1e; }
+.wk-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6b7280, #00d4aa);
+  transition: width .4s ease;
+}
+
+/* ── Exercise carousel ───────────────────────────── */
+.ex-carousel {
+  display: flex; gap: 12px; align-items: center;
+  padding: 14px 16px;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.ex-carousel::-webkit-scrollbar { display: none; }
+.ex-carousel-item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  scroll-snap-align: center; flex-shrink: 0;
+  cursor: pointer;
+}
+.ex-carousel-circle {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #1c1c1e; border: 2px solid #2c2c2e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; overflow: hidden;
+  transition: border-color .2s;
+}
+.ex-carousel-circle img { width: 100%; height: 100%; object-fit: cover; }
+.ex-carousel-item.current .ex-carousel-circle {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.15);
+}
+.ex-carousel-item.done .ex-carousel-circle {
+  border-color: #00d4aa;
+  opacity: .6;
+}
+.ex-carousel-label {
+  font-size: 9px; font-weight: 700; color: #8e8e93;
+  text-align: center; max-width: 56px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: .3px;
+}
+.ex-carousel-item.current .ex-carousel-label { color: #fff; }
+
+/* ── Background fijo con imagen del ejercicio ───── */
+.wk-bg {
+  position: fixed; inset: 0; z-index: -1;
+  background: #05060f;
+}
+/* Capa base oscura con degradado tipo dashboard */
+.wk-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #0d0f1e 0%, #080b18 50%, #0a0a14 100%);
+}
+.wk-bg-gradient {
+  position: absolute; inset: 0;
+  mix-blend-mode: screen;
+  opacity: .75;
+}
+/* Orbe secundario en esquina inferior derecha */
+.wk-bg-gradient::after {
+  content: '';
+  position: absolute;
+  bottom: -20%; right: -15%;
+  width: 70%; height: 65%;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: .6;
+}
+.wk-bg-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; opacity: .12;
+  filter: blur(30px) saturate(2);
+  mix-blend-mode: luminosity;
+}
+.wk-bg-icon {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 300px; opacity: .04;
+  filter: blur(8px);
+}
+
+/* ── Exercise image (flotante encima del card) ── */
+.ex-image-wrap {
+  width: 100%; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 200px; max-height: 260px;
+  overflow: hidden; position: relative;
+}
+.ex-image-wrap img {
+  width: 100%; height: 100%;
+  object-fit: contain; max-height: 260px;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,.6));
+}
+.ex-image-icon { font-size: 90px; line-height: 1; }
+.ex-image-overlay { display: none; }
+.ex-image-info { display: none; }
+.ex-name { display: none; }
+.ex-desc { display: none; }
+.ex-muscle-chip { display: none; }
+
+/* ── Card central de cristal ─────────────────────── */
+.wk-glass-card {
+  margin: 0 12px;
+  background: rgba(8, 10, 22, 0.72);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+/* ── Exercise name header (dentro del card) ─────── */
+.ex-glass-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.ex-glass-name {
+  font-size: 18px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 4px;
+}
+.ex-glass-desc {
+  font-size: 12px; color: rgba(255,255,255,.45); margin: 0;
+}
+.ex-glass-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.ex-glass-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 800; letter-spacing: .3px;
+}
+.ex-glass-chip.muscle {
+  background: rgba(0,212,170,.15); border: 1px solid rgba(0,212,170,.3); color: #00d4aa;
+}
+.ex-glass-chip.timer {
+  background: rgba(10,132,255,.15); border: 1px solid rgba(10,132,255,.3); color: #60a5fa;
+}
+
+/* ── Action buttons ──────────────────────────────── */
+.ex-actions {
+  display: flex; gap: 8px; padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.btn-action {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 20px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+  color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background .2s;
+  text-decoration: none;
+}
+.btn-action:hover { background: rgba(255,255,255,.14); color: #fff; }
+.btn-action.delete {
+  background: rgba(255,59,48,.12);
+  border-color: rgba(255,59,48,.25); color: #ff3b30;
+}
+.btn-action.delete:hover { background: rgba(255,59,48,.22); }
+
+/* ── Exercise info (hidden) ──────────────────────── */
+.ex-info { display: none; }
+.ex-timer-badge { display: none; }
+
+/* ── Sets table ──────────────────────────────────── */
+.sets-section { padding: 0 12px 16px; }
+.sets-card {
+  background: transparent;
+  border-radius: 0; overflow: hidden; margin-bottom: 0;
+}
+.sets-header {
+  display: grid;
+  grid-template-columns: 36px 1fr 80px 80px 40px;
+  gap: 8px; padding: 10px 16px 8px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.sets-header span {
+  font-size: 10px; font-weight: 800; color: rgba(255,255,255,.3);
+  text-transform: uppercase; letter-spacing: .5px; text-align: center;
+}
+.sets-header span:first-child { text-align: left; }
+
+/* Row de serie completada */
+.set-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 80px 80px 40px;
+  gap: 8px; align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.set-row:last-of-type { border-bottom: none; }
+.set-num {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: #1c1c1e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #8e8e93;
+}
+.set-prev {
+  font-size: 13px; color: #8e8e93; text-align: center;
+}
+.set-val {
+  background: #1c1c1e; border-radius: 10px;
+  padding: 8px 10px; text-align: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+}
+.set-check {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+}
+.set-check.done {
+  background: #0a84ff;
+  color: #fff; font-size: 14px;
+}
+.set-check.pending {
+  background: #2c2c2e;
+  color: #8e8e93; font-size: 12px;
+}
+
+/* Row de nueva serie (inputs) */
+.set-row-new {
+  display: grid;
+  grid-template-columns: 36px 1fr 80px 80px 40px;
+  gap: 8px; align-items: center;
+  padding: 10px 0;
+}
+.set-input {
+  background: rgba(255,255,255,.08) !important;
+  border: 1.5px solid rgba(255,255,255,.12) !important;
+  border-radius: 10px !important;
+  color: #fff !important;
+  font-size: 14px !important; font-weight: 700 !important;
+  text-align: center !important;
+  padding: 8px 6px !important;
+  width: 100% !important;
+}
+.set-input:focus {
+  border-color: #0a84ff !important;
+  outline: none !important;
+  background: rgba(10,132,255,.12) !important;
+}
+.btn-set-confirm {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,.1); border: none;
+  color: rgba(255,255,255,.5); font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; margin: 0 auto;
+  transition: background .2s, color .2s;
+}
+.btn-set-confirm:hover { background: #0a84ff; color: #fff; }
+
+/* ── Add set button ──────────────────────────────── */
+.btn-add-set {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 0 0 28px 28px;
+  color: rgba(255,255,255,.7); font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer; margin: 0;
+  transition: background .2s;
+}
+.btn-add-set:hover { background: rgba(255,255,255,.1); }
+.btn-add-set i { color: #0a84ff; }
+
+/* ── Nav: siguiente / terminar ───────────────────── */
+.btn-next {
+  width: 100%; margin: 0;
+  padding: 16px; border-radius: 18px; border: none;
+  background: #00d4aa; color: #000;
+  font-size: 16px; font-weight: 800;
+  cursor: pointer; transition: opacity .2s;
+  box-shadow: 0 4px 24px rgba(0,212,170,.35);
+}
+.btn-next:hover { opacity: .88; }
+.btn-next.finish {
+  background: linear-gradient(135deg, #6b7280, #00d4aa);
+  color: #fff;
+}
+
+/* ── Cardio block ────────────────────────────────── */
+.cardio-block {
+  margin: 0 16px 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(230,57,70,.35);
+  background: rgba(230,57,70,.06);
+}
+.cardio-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid rgba(230,57,70,.2);
+}
+.cardio-header i { color: #e63946; font-size: 18px; }
+.cardio-header span { font-family: 'Bebas Neue',sans-serif; font-size: 20px; letter-spacing: 1px; color: #e63946; }
+.cardio-header small { color: #8e8e93; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.cardio-timer-wrap { display:flex;flex-direction:column;align-items:center;padding:24px 20px 20px; }
+.cardio-ring-wrap { position:relative;width:160px;height:160px;margin-bottom:18px; }
+.cardio-ring { transform:rotate(-90deg); }
+.cardio-ring-bg   { fill:none;stroke:rgba(230,57,70,.15);stroke-width:10; }
+.cardio-ring-fill { fill:none;stroke:#e63946;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .5s linear; }
+.cardio-ring-center { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center; }
+.cardio-time-display { font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;color:#fff;letter-spacing:2px; }
+.cardio-time-display.running { color:#e63946; }
+.cardio-time-display.done    { color:#00d4aa; }
+.cardio-time-lbl { font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase; }
+.cardio-controls { display:flex;gap:10px;margin-bottom:16px; }
+.btn-cardio-start { flex:1;padding:14px;border-radius:12px;border:none;background:#e63946;color:#fff;font-size:15px;font-weight:800;cursor:pointer;transition:opacity .2s;box-shadow:0 4px 16px rgba(230,57,70,.4); }
+.btn-cardio-start:hover { opacity:.88; }
+.btn-cardio-reset { padding:14px 18px;border-radius:12px;background:rgba(230,57,70,.12);border:1.5px solid rgba(230,57,70,.3);color:#f87171;font-size:15px;cursor:pointer;transition:background .2s; }
+.btn-cardio-reset:hover { background:rgba(230,57,70,.22); }
+.btn-cardio-complete { width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#00d4aa,#4361ee);color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(0,212,170,.35);transition:opacity .2s; }
+.btn-cardio-complete:hover { opacity:.9; }
+.cardio-intensity-pills { display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;justify-content:center; }
+.cardio-pill { padding:5px 14px;border-radius:20px;font-size:11px;font-weight:800;cursor:pointer;border:1.5px solid #2c2c2e;background:transparent;color:#8e8e93;transition:all .2s; }
+.cardio-pill.active { background:rgba(230,57,70,.2);border-color:#e63946;color:#f87171; }
+
+/* ── Rest timer overlay ──────────────────────────── */
+.rest-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(0,0,0,.88);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.rest-card {
+  background: #111; border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 28px; padding: 36px 28px;
+  max-width: 360px; width: 100%; text-align: center;
+}
+.rest-ring-wrap {
+  position: relative; width: 160px; height: 160px;
+  margin: 0 auto 24px;
+}
+.rest-ring { transform: rotate(-90deg); }
+.rest-ring-bg   { fill: none; stroke: #1c1c1e; stroke-width: 10; }
+.rest-ring-fill { fill: none; stroke: #6b7280; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .9s linear; }
+.rest-ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.rest-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px; color: #fff; line-height: 1; letter-spacing: 2px;
+}
+.rest-lbl { font-size: 11px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 1px; }
+.rest-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.rest-sub   { font-size: 13px; color: #8e8e93; margin-bottom: 24px; }
+.rest-actions { display: flex; gap: 10px; }
+.btn-rest-extra {
+  flex: 1; padding: 13px;
+  background: rgba(255,255,255,.07);
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 14px; color: #fff;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: background .15s;
+}
+.btn-rest-extra:hover { background: rgba(255,255,255,.12); }
+.btn-rest-skip {
+  flex: 2; padding: 13px;
+  background: #00d4aa; border: none;
+  border-radius: 14px; color: #000;
+  font-size: 15px; font-weight: 800; cursor: pointer;
+  transition: opacity .2s;
+}
+.btn-rest-skip:hover { opacity: .88; }
+
+/* ── Grupo colores (para emoji emoji fallback) ─── */
+.grupo-pecho,.grupo-espalda,.grupo-hombros,.grupo-biceps,
+.grupo-triceps,.grupo-piernas,.grupo-gluteos,.grupo-abdomen,
+.grupo-core,.grupo-pantorrillas,.grupo-antebrazos,.grupo-cardio,.grupo-movilidad
+{ --grup-color:#fff; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+</style>
+{% endblock %}
+
+{% block content %}
+{% with slug=ejercicio_actual.ejercicio.grupo_muscular.slug|default:"core" %}
+
+{% if mostrar_overlay %}
+<div id="overlay-listo" style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:#111;border:2px solid rgba(0,212,170,.4);border-radius:28px;padding:40px 36px;max-width:440px;width:100%;text-align:center;box-shadow:0 0 60px rgba(0,212,170,.2);">
+    <div style="font-size:64px;margin-bottom:16px;">🏆</div>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin-bottom:8px;letter-spacing:1px;">¡Último ejercicio!</h2>
+    <p style="color:rgba(255,255,255,.55);font-size:14px;margin-bottom:28px;">
+      Completaste todos los ejercicios.<br>
+      Finalizando en <span id="cuenta-regresiva" style="color:#00d4aa;font-weight:800;font-size:18px;">5</span>s…
+    </p>
+    <form method="post" id="form-finalizar">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="terminar_entrenamiento">
+      <button type="submit" style="width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#00d4aa,#4361ee);color:#fff;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:12px;">
+        <i class="bi bi-trophy-fill me-2"></i> Ver resultados
+      </button>
+    </form>
+    <button onclick="document.getElementById('overlay-listo').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;font-weight:600;">
+      Seguir añadiendo series
+    </button>
+  </div>
+</div>
+{% endif %}
+
+{% if mostrar_descanso %}
+<div class="rest-overlay" id="rest-overlay">
+  <div class="rest-card">
+    <p class="rest-title">Descanso</p>
+    <p class="rest-sub">Prepárate para la siguiente serie</p>
+    <div class="rest-ring-wrap">
+      <svg class="rest-ring" width="160" height="160" viewBox="0 0 160 160">
+        <circle class="rest-ring-bg"   cx="80" cy="80" r="70"/>
+        <circle class="rest-ring-fill" cx="80" cy="80" r="70" id="rest-ring-fill"
+                stroke-dasharray="439.82" stroke-dashoffset="0"/>
+      </svg>
+      <div class="rest-ring-center">
+        <div class="rest-time" id="rest-time">1:30</div>
+        <div class="rest-lbl">descanso</div>
+      </div>
+    </div>
+    <div class="rest-actions">
+      <button type="button" class="btn-rest-extra" onclick="addRestTime(10)">+10s</button>
+      <button type="button" class="btn-rest-skip" onclick="skipRest()">
+        <i class="bi bi-skip-forward-fill me-1"></i> Continuar
+      </button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<div style="max-width:600px;margin:0 auto;min-height:100vh;">
+
+  <!-- TOP BAR -->
+  <div class="wk-topbar">
+    <a href="{% url 'plan_semanal' %}" class="wk-back-btn">
+      <i class="bi bi-chevron-down"></i>
+    </a>
+    <div class="wk-timer-wrap">
+      <div class="wk-timer-icon"><i class="bi bi-stopwatch-fill"></i></div>
+      <div class="wk-time" id="wk-timer">0:00</div>
+    </div>
+    <form method="post" style="margin:0;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="terminar_entrenamiento">
+      <button type="submit" class="wk-finish-btn">Finalizar</button>
+    </form>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="wk-progress-bar">
+    <div class="wk-progress-fill" style="width:{{ progreso_pct }}%;"></div>
+  </div>
+
+  <!-- EXERCISE CAROUSEL -->
+  <div class="ex-carousel">
+    {% for ej in ejercicios_list %}
+    {% with i=forloop.counter0 %}
+    <form method="post" style="margin:0;display:contents;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="ir_a_ejercicio">
+      <input type="hidden" name="idx" value="{{ i }}">
+      <button type="submit" class="ex-carousel-item {% if i < ejercicio_idx %}done{% elif i == ejercicio_idx %}current{% endif %}" style="background:none;border:none;padding:0;cursor:pointer;">
+        <div class="ex-carousel-circle">
+          {% if ej.ejercicio.imagen_static %}
+            <img src="{% static ej.ejercicio.imagen_static %}" alt="">
+          {% elif ej.ejercicio.imagen %}
+            <img src="{{ ej.ejercicio.imagen.url }}" alt="">
+          {% else %}
+            <img src="{% static 'img/muscles/' %}{{ ej.ejercicio.grupo_muscular.slug|default:'core' }}.svg"
+                 alt="{{ ej.ejercicio.grupo_muscular.nombre|default:'' }}"
+                 style="width:100%;height:100%;object-fit:contain;padding:6px;opacity:.75;"
+                 onerror="this.outerHTML='🏋️'">
+          {% endif %}
+        </div>
+        <span class="ex-carousel-label">{{ ej.ejercicio.nombre|truncatechars:8 }}</span>
+      </button>
+    </form>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+  <!-- EXERCISE IMAGE (flotante, encima del card) -->
+  <div class="ex-image-wrap" style="margin:8px 0 -12px;">
+    {% if ejercicio_actual.ejercicio.imagen_static %}
+      <img src="{% static ejercicio_actual.ejercicio.imagen_static %}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
+    {% elif ejercicio_actual.ejercicio.imagen %}
+      <img src="{{ ejercicio_actual.ejercicio.imagen.url }}" alt="{{ ejercicio_actual.ejercicio.nombre }}">
+    {% else %}
+      <div class="ex-image-icon">
+        <img src="{% static 'img/muscles/' %}{{ ejercicio_actual.ejercicio.grupo_muscular.slug|default:'core' }}.svg"
+             alt="{{ ejercicio_actual.ejercicio.grupo_muscular.nombre|default:'' }}"
+             style="width:100%;max-height:220px;object-fit:contain;opacity:.65;filter:drop-shadow(0 0 24px rgba(255,255,255,.08));"
+             onerror="this.outerHTML='<span style=\'font-size:72px\'>🏋️</span>'">
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- GLASS CARD -->
+  <div class="wk-glass-card">
+
+    <!-- Exercise name header -->
+    <div class="ex-glass-header">
+      <div class="ex-glass-chips">
+        {% if ejercicio_actual.ejercicio.grupo_muscular %}
+        <span class="ex-glass-chip muscle"><i class="bi bi-bullseye"></i> {{ ejercicio_actual.ejercicio.grupo_muscular.nombre }}</span>
+        {% endif %}
+        {% if ejercicio_actual.ejercicio.duracion_minutos %}
+        <span class="ex-glass-chip timer"><i class="bi bi-stopwatch-fill"></i> {{ ejercicio_actual.ejercicio.duracion_minutos }} min</span>
+        {% endif %}
+      </div>
+      <div class="ex-glass-name">{{ ejercicio_actual.ejercicio.nombre }}</div>
+      {% if ejercicio_actual.ejercicio.descripcion %}
+      <p class="ex-glass-desc">{{ ejercicio_actual.ejercicio.descripcion|truncatechars:100 }}</p>
+      {% endif %}
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="ex-actions">
+      <a href="{% url 'ejercicio_detalle' ejercicio_actual.ejercicio.id %}" target="_blank" class="btn-action">
+        <i class="bi bi-play-fill" style="color:#60a5fa;"></i> Guía
+      </a>
+      <form method="post" style="margin:0;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="siguiente_ejercicio">
+        <button type="submit" class="btn-action">
+          <i class="bi bi-arrow-repeat"></i> Saltar
+        </button>
+      </form>
+      <form method="post" style="margin:0;margin-left:auto;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="terminar_entrenamiento">
+        <button type="submit" class="btn-action delete">
+          <i class="bi bi-x-circle"></i> Terminar
+        </button>
+      </form>
+    </div>
+
+  <!-- EXERCISE INFO -->
+  <div class="ex-info">
+    <div class="ex-info-top">
+      <div class="ex-name">{{ ejercicio_actual.ejercicio.nombre }}</div>
+      {% if ejercicio_actual.ejercicio.duracion_minutos %}
+      <div class="ex-timer-badge">
+        <i class="bi bi-stopwatch-fill"></i>
+        {{ ejercicio_actual.ejercicio.duracion_minutos }}min
+      </div>
+      {% endif %}
+    </div>
+    {% if ejercicio_actual.ejercicio.descripcion %}
+    <p class="ex-desc">{{ ejercicio_actual.ejercicio.descripcion|truncatechars:120 }}</p>
+    {% endif %}
+  </div>
+
+  {% if ejercicio_actual.ejercicio.duracion_minutos %}
+  <!-- ══ CARDIO ══ -->
+  {% if not series %}
+  <div class="cardio-block" id="cardio-block" style="margin-top:16px;">
+    <div class="cardio-header">
+      <i class="bi bi-heart-pulse-fill"></i>
+      <span>Cardio</span>
+      <small style="margin-left:auto;">{{ ejercicio_actual.ejercicio.duracion_minutos }} min</small>
+    </div>
+    <div class="cardio-timer-wrap">
+      <div class="cardio-ring-wrap">
+        <svg class="cardio-ring" width="160" height="160" viewBox="0 0 160 160">
+          <circle class="cardio-ring-bg" cx="80" cy="80" r="70"/>
+          <circle class="cardio-ring-fill" id="cardio-ring-fill" cx="80" cy="80" r="70"
+                  stroke-dasharray="439.82" stroke-dashoffset="0"/>
+        </svg>
+        <div class="cardio-ring-center">
+          <div class="cardio-time-display" id="cardio-display">{{ ejercicio_actual.ejercicio.duracion_minutos }}:00</div>
+          <div class="cardio-time-lbl" id="cardio-lbl">preparado</div>
+        </div>
+      </div>
+      <div class="cardio-intensity-pills">
+        <button type="button" class="cardio-pill" onclick="setIntensidad(this, 0.5)">½ tiempo</button>
+        <button type="button" class="cardio-pill active" onclick="setIntensidad(this, 1)">Completo</button>
+        <button type="button" class="cardio-pill" onclick="setIntensidad(this, 1.5)">+50%</button>
+      </div>
+      <div class="cardio-controls">
+        <button type="button" class="btn-cardio-start" id="btn-cardio-start" onclick="toggleTimer()">
+          <i class="bi bi-play-fill me-1"></i> Iniciar
+        </button>
+        <button type="button" class="btn-cardio-reset" onclick="resetTimer()">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </button>
+      </div>
+      <form method="post" id="cardio-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="guardar_serie">
+        <input type="hidden" name="tiempo_minutos" id="cardio-form-min" value="{{ ejercicio_actual.ejercicio.duracion_minutos }}">
+        <input type="hidden" name="tiempo_segundos" id="cardio-form-seg" value="0">
+        <input type="hidden" name="repeticiones" value="">
+        <input type="hidden" name="peso" value="">
+        <button type="submit" class="btn-cardio-complete" id="btn-cardio-complete">
+          <i class="bi bi-check-circle-fill me-1"></i> Marcar completado
+        </button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div style="margin:16px 16px 8px;padding:16px;border-radius:14px;background:rgba(0,212,170,.08);border:1.5px solid rgba(0,212,170,.25);text-align:center;">
+    <i class="bi bi-check-circle-fill" style="color:#00d4aa;font-size:22px;display:block;margin-bottom:6px;"></i>
+    <div style="font-size:13px;font-weight:800;color:#00d4aa;">¡Cardio completado! {{ series.0.tiempo_minutos|default:ejercicio_actual.ejercicio.duracion_minutos }} min</div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- ══ FUERZA: TABLA DE SERIES ══ -->
+  <div class="sets-section" style="margin-top:8px;">
+    <div class="sets-card">
+      <div class="sets-header">
+        <span>SERIE</span>
+        <span>ANTERIOR</span>
+        <span>KG</span>
+        <span>REPS</span>
+        <span></span>
+      </div>
+
+      <!-- Series completadas (editables) -->
+      {% for serie in series %}
+      <form method="post" class="set-row">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="actualizar_serie">
+        <input type="hidden" name="serie_id" value="{{ serie.id }}">
+        <div class="set-num" style="background:rgba(10,132,255,.15);color:#0a84ff;">{{ serie.numero_serie }}</div>
+        <div class="set-prev">—</div>
+        <input type="number" name="peso" value="{{ serie.peso|default:'' }}"
+               class="set-input" placeholder="—" min="0" step="0.5">
+        <input type="number" name="repeticiones" value="{{ serie.repeticiones|default:'' }}"
+               class="set-input" placeholder="—" min="0" step="1">
+        <button type="submit" class="set-check done" style="border:none;cursor:pointer;">
+          <i class="bi bi-check-lg"></i>
+        </button>
+      </form>
+      {% endfor %}
+
+      <!-- Nueva serie -->
+      <form method="post" id="serieForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="guardar_serie">
+        <div class="set-row-new" style="padding:10px 14px;background:rgba(10,132,255,.05);">
+          <div class="set-num" style="background:#2c2c2e;color:#0a84ff;font-weight:900;">{{ series|length|add:1 }}</div>
+          <div class="set-prev" style="color:#4b5563;">—</div>
+          <div>
+            <input type="number" name="peso" class="set-input"
+                   placeholder="—" min="0" step="0.5"
+                   value="{{ serie_en_progreso.peso|default:'' }}">
+          </div>
+          <div>
+            <input type="number" name="repeticiones" class="set-input"
+                   placeholder="—" min="0" step="1"
+                   value="{{ serie_en_progreso.repeticiones|default:'' }}">
+          </div>
+          <button type="submit" class="btn-set-confirm" title="Confirmar serie">
+            <i class="bi bi-check-lg"></i>
+          </button>
+        </div>
+      </form>
+    </div><!-- /sets-card -->
+
+    <!-- Add set -->
+    <button type="button" class="btn-add-set" onclick="document.getElementById('serieForm').submit()">
+      <i class="bi bi-plus-lg"></i> Agregar serie
+    </button>
+
+  </div><!-- /wk-glass-card -->
+  {% endif %}
+
+  <!-- SIGUIENTE / TERMINAR -->
+  {% if es_ultimo %}
+  <form method="post" style="margin:0;padding:12px 12px 20px;">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="terminar_entrenamiento">
+    <button type="submit" class="btn-next finish">
+      <i class="bi bi-trophy-fill me-2"></i> Finalizar entrenamiento
+    </button>
+  </form>
+  {% else %}
+  <form method="post" style="margin:0;padding:12px 12px 20px;">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="siguiente_ejercicio">
+    <button type="submit" class="btn-next">
+      Siguiente ejercicio <i class="bi bi-arrow-right ms-1"></i>
+    </button>
+  </form>
+  {% endif %}
+
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── Autoguardado AJAX — KG y REPS se guardan en la BD automáticamente ───
+  (function() {
+    var EJ_ID        = '{{ ejercicio_actual.ejercicio.id }}';
+    var WK_ID        = '{{ entrenamiento.id }}';
+    var CSRF         = '{{ csrf_token }}';
+    var NUMERO_SERIE = {{ series|length|add:1 }};
+    var URL          = '/rutinas/entrenamiento/' + WK_ID + '/autoguardar/';
+    var timer        = null;
+    var guardando    = false;
+
+    // Indicador visual pequeño
+    var indicator = document.createElement('span');
+    indicator.id  = 'sv-autosave-indicator';
+    indicator.style.cssText = 'font-size:11px;color:#6b7280;margin-left:8px;transition:color .3s;';
+    indicator.textContent = '';
+    var serieForm = document.getElementById('serieForm');
+    if (serieForm) {
+      var btnConfirm = serieForm.querySelector('.btn-set-confirm');
+      if (btnConfirm) btnConfirm.parentNode.insertBefore(indicator, btnConfirm.nextSibling);
+    }
+
+    function mostrarEstado(msg, color) {
+      indicator.textContent = msg;
+      indicator.style.color = color;
+    }
+
+    function autoguardar() {
+      var pesoInput = document.querySelector('#serieForm [name="peso"]');
+      var repsInput = document.querySelector('#serieForm [name="repeticiones"]');
+      if (!pesoInput && !repsInput) return;
+
+      var peso = pesoInput ? pesoInput.value.trim() : '';
+      var reps = repsInput ? repsInput.value.trim() : '';
+
+      // No guardar si ambos están vacíos
+      if (peso === '' && reps === '') return;
+
+      guardando = true;
+      mostrarEstado('Guardando…', '#6b7280');
+
+      fetch(URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': CSRF,
+        },
+        body: JSON.stringify({
+          ejercicio_id: EJ_ID,
+          numero_serie: NUMERO_SERIE,
+          peso: peso,
+          repeticiones: reps,
+        })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        guardando = false;
+        if (data.ok) {
+          mostrarEstado('✓ Guardado', '#00d4aa');
+          setTimeout(function() { indicator.textContent = ''; }, 2000);
+        } else {
+          mostrarEstado('Error al guardar', '#e63946');
+        }
+      })
+      .catch(function() {
+        guardando = false;
+        mostrarEstado('Sin conexión', '#f97316');
+      });
+    }
+
+    // Disparar autoguardado 800ms después de que el usuario deje de escribir
+    function onInput() {
+      clearTimeout(timer);
+      mostrarEstado('…', '#6b7280');
+      timer = setTimeout(autoguardar, 800);
+    }
+
+    document.querySelectorAll('#serieForm [name="peso"], #serieForm [name="repeticiones"]').forEach(function(el) {
+      el.addEventListener('input', onInput);
+    });
+
+    // Al confirmar la serie con el botón, no hace falta autoguardar de nuevo
+    if (serieForm) {
+      serieForm.addEventListener('submit', function() {
+        clearTimeout(timer);
+      });
+    }
+  })();
+
+  // Live timer
+  var elapsed = 0;
+  var timerEl = document.getElementById('wk-timer');
+  setInterval(function() {
+    elapsed++;
+    var m = Math.floor(elapsed / 60), s = elapsed % 60;
+    timerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+  }, 1000);
+
+  // Estilizar inputs de la tabla
+  document.querySelectorAll('#serieForm input[type="number"], #serieForm input[type="text"]').forEach(function(el) {
+    el.classList.add('set-input');
+    el.removeAttribute('style');
+  });
+
+  // Toggle extra fields
+  function toggleExtra(groupId, btnId) {
+    var g = document.getElementById(groupId);
+    var b = document.getElementById(btnId);
+    if (!g) return;
+    var showing = g.style.display !== 'none';
+    g.style.display = showing ? 'none' : 'block';
+    b.classList.toggle('active', !showing);
+  }
+
+  // ── Cardio Timer ─────────────────────────────────
+  {% if ejercicio_actual.ejercicio.duracion_minutos and not series %}
+  (function() {
+    var TOTAL_SEG  = {{ ejercicio_actual.ejercicio.duracion_minutos }} * 60;
+    var remaining  = TOTAL_SEG;
+    var running    = false;
+    var interval   = null;
+    var circumference = 2 * Math.PI * 70;
+
+    var display  = document.getElementById('cardio-display');
+    var lbl      = document.getElementById('cardio-lbl');
+    var ring     = document.getElementById('cardio-ring-fill');
+    var startBtn = document.getElementById('btn-cardio-start');
+    var formMin  = document.getElementById('cardio-form-min');
+    var formSeg  = document.getElementById('cardio-form-seg');
+
+    ring.style.strokeDasharray  = circumference;
+    ring.style.strokeDashoffset = 0;
+
+    function fmt(sec) {
+      var m = Math.floor(sec / 60), s = sec % 60;
+      return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+    function updateRing() {
+      var pct = remaining / TOTAL_SEG;
+      ring.style.strokeDashoffset = circumference * (1 - pct);
+      if (remaining <= 10) { ring.style.stroke = '#00d4aa'; display.classList.add('done'); }
+    }
+    function tick() {
+      if (remaining <= 0) {
+        clearInterval(interval); running = false;
+        display.textContent = '00:00'; display.classList.add('done');
+        lbl.textContent = '¡completado!';
+        startBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Finalizado';
+        startBtn.disabled = true;
+        formMin.value = {{ ejercicio_actual.ejercicio.duracion_minutos }};
+        formSeg.value = 0;
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        return;
+      }
+      remaining--; display.textContent = fmt(remaining); updateRing();
+    }
+    window.toggleTimer = function() {
+      if (running) {
+        clearInterval(interval); running = false;
+        startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Reanudar';
+        lbl.textContent = 'pausado'; display.classList.remove('running');
+      } else {
+        running = true; interval = setInterval(tick, 1000);
+        startBtn.innerHTML = '<i class="bi bi-pause-fill me-1"></i> Pausar';
+        lbl.textContent = 'en progreso'; display.classList.add('running'); display.classList.remove('done');
+      }
+    };
+    window.resetTimer = function() {
+      clearInterval(interval); running = false; remaining = TOTAL_SEG;
+      display.textContent = fmt(remaining); display.classList.remove('running','done');
+      ring.style.stroke = '#e63946'; ring.style.strokeDashoffset = 0;
+      lbl.textContent = 'preparado';
+      startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Iniciar'; startBtn.disabled = false;
+    };
+    window.setIntensidad = function(btn, factor) {
+      document.querySelectorAll('.cardio-pill').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      clearInterval(interval); running = false;
+      TOTAL_SEG = Math.round({{ ejercicio_actual.ejercicio.duracion_minutos }} * 60 * factor);
+      remaining = TOTAL_SEG; display.textContent = fmt(remaining);
+      display.classList.remove('running','done'); ring.style.stroke = '#e63946';
+      ring.style.strokeDashoffset = 0; lbl.textContent = 'preparado';
+      startBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Iniciar'; startBtn.disabled = false;
+      formMin.value = Math.floor(TOTAL_SEG / 60);
+    };
+    document.getElementById('cardio-form').addEventListener('submit', function() {
+      var el = TOTAL_SEG - remaining;
+      formMin.value = el === 0 ? {{ ejercicio_actual.ejercicio.duracion_minutos }} : Math.floor(el/60);
+      formSeg.value = el === 0 ? 0 : el % 60;
+    });
+  })();
+  {% endif %}
+
+  // Cuenta regresiva del overlay
+  {% if mostrar_overlay %}
+  (function() {
+    var n = 5;
+    var el = document.getElementById('cuenta-regresiva');
+    var interval = setInterval(function() {
+      n--; if (el) el.textContent = n;
+      if (n <= 0) { clearInterval(interval); document.getElementById('form-finalizar').submit(); }
+    }, 1000);
+    var closeBtn = document.querySelector('[onclick*="overlay-listo"]');
+    if (closeBtn) closeBtn.addEventListener('click', function() { clearInterval(interval); });
+  })();
+  {% endif %}
+
+  // ── Rest timer ──────────────────────────────────────
+  {% if mostrar_descanso %}
+  (function() {
+    var INITIAL  = 90;
+    var remaining = INITIAL;
+    var circ     = 2 * Math.PI * 70;   // 439.82
+    var ring     = document.getElementById('rest-ring-fill');
+    var timeEl   = document.getElementById('rest-time');
+    var interval = null;
+
+    ring.style.strokeDasharray  = circ;
+    ring.style.strokeDashoffset = 0;
+
+    function fmt(sec) {
+      var m = Math.floor(sec / 60), s = sec % 60;
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+    function tick() {
+      remaining--;
+      timeEl.textContent = fmt(Math.max(remaining, 0));
+      ring.style.strokeDashoffset = circ * (1 - remaining / INITIAL);
+      if (remaining <= 0) { clearInterval(interval); skipRest(); }
+    }
+    interval = setInterval(tick, 1000);
+
+    window.addRestTime = function(secs) {
+      remaining += secs;
+      INITIAL   += secs;
+      timeEl.textContent = fmt(remaining);
+    };
+    window.skipRest = function() {
+      clearInterval(interval);
+      document.getElementById('rest-overlay').style.display = 'none';
+    };
+
+    if (navigator.vibrate) navigator.vibrate(200);
+  })();
+  {% else %}
+  window.addRestTime = function() {};
+  window.skipRest    = function() {};
+  {% endif %}
+</script>
+{% endblock %}

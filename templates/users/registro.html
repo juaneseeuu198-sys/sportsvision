@@ -1,0 +1,735 @@
+﻿{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}SportsVision — Crear Cuenta{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Pasos ──────────────────────────────────── */
+.reg-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 28px;
+}
+.reg-step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.2);
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: rgba(255,255,255,.3);
+  transition: all .3s;
+  position: relative; z-index: 1;
+}
+.reg-step-dot.active {
+  border-color: var(--sv-purple);
+  background: var(--sv-purple);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(107,114,128,.5);
+}
+.reg-step-dot.done {
+  border-color: var(--sv-green);
+  background: var(--sv-green);
+  color: #fff;
+}
+.reg-step-line {
+  width: 60px; height: 2px;
+  background: rgba(255,255,255,.12);
+  transition: background .3s;
+}
+.reg-step-line.done { background: var(--sv-green); }
+
+/* ── Paneles ─────────────────────────────────── */
+.reg-panel { display: none; }
+.reg-panel.active { display: block; }
+
+/* ── Labels de sección ───────────────────────── */
+.reg-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.reg-section-label::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: rgba(255,255,255,.08);
+}
+
+/* ── Input con unidad ────────────────────────── */
+.input-unit-wrap { position: relative; }
+.input-unit-wrap .sv-input {
+  padding-right: 52px;
+  text-align: left !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+/* Paso 2: nombre y género no van en mayúsculas */
+#panel2 .sv-input {
+  text-align: left !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.input-unit-badge {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,.3);
+  pointer-events: none;
+}
+
+/* ── Género pills ────────────────────────────── */
+.genero-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.genero-label {
+  display: block;
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+  font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  transition: all .2s;
+}
+.genero-label:hover { border-color: rgba(255,255,255,.3); color: #fff; }
+
+/* Masculino — azul */
+#gen_M:checked + .genero-label {
+  border-color: #4361ee;
+  background: rgba(67,97,238,.25);
+  color: #7b9ffb;
+  box-shadow: 0 0 0 3px rgba(67,97,238,.2);
+}
+/* Femenino — rosado */
+#gen_F:checked + .genero-label {
+  border-color: #ec4899;
+  background: rgba(236,72,153,.2);
+  color: #f9a8d4;
+  box-shadow: 0 0 0 3px rgba(236,72,153,.2);
+}
+/* Otro — morado */
+#gen_O:checked + .genero-label {
+  border-color: var(--sv-purple);
+  background: rgba(107,114,128,.2);
+  color: #d1d5db;
+  box-shadow: 0 0 0 3px rgba(107,114,128,.15);
+}
+
+/* ── Objetivo cards ──────────────────────────── */
+.objetivo-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.objetivo-radio { display: none; }
+.objetivo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+}
+.objetivo-card:hover { border-color: rgba(107,114,128,.4); background: rgba(107,114,128,.07); }
+.objetivo-radio:checked + .objetivo-card {
+  border-color: var(--sv-purple);
+  background: rgba(107,114,128,.18);
+  box-shadow: 0 0 0 3px rgba(107,114,128,.15);
+}
+.objetivo-icon { font-size: 22px; line-height: 1; }
+.objetivo-title { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.85); letter-spacing: .3px; }
+.objetivo-desc  { font-size: 10px; color: rgba(255,255,255,.35); line-height: 1.3; }
+.objetivo-radio:checked + .objetivo-card .objetivo-title { color: #d1d5db; }
+.objetivo-radio:checked + .objetivo-card .objetivo-desc  { color: rgba(192,132,252,.6); }
+
+/* ── Limitaciones checkboxes ─────────────────── */
+.limitacion-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.limitacion-check { display: none; }
+.limitacion-label {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+  font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  transition: all .2s;
+  line-height: 1.3;
+}
+.limitacion-label:hover { border-color: rgba(251,146,60,.4); color: rgba(255,255,255,.8); }
+.limitacion-check:checked + .limitacion-label {
+  border-color: #f97316;
+  background: rgba(249,115,22,.15);
+  color: #fdba74;
+  box-shadow: 0 0 0 2px rgba(249,115,22,.2);
+}
+.limitacion-check:checked + .limitacion-label .lim-icon { color: #f97316; }
+.lim-icon { font-size: 16px; flex-shrink: 0; color: rgba(255,255,255,.3); }
+.ninguna-check { display: none; }
+.ninguna-label {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(0,212,170,.25);
+  background: rgba(0,212,170,.06);
+  font-size: 12px; font-weight: 700;
+  color: rgba(0,212,170,.7);
+  cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 12px;
+}
+.ninguna-label:hover { background: rgba(0,212,170,.12); color: #00d4aa; }
+.ninguna-check:checked + .ninguna-label {
+  background: rgba(0,212,170,.2);
+  border-color: #00d4aa;
+  color: #00d4aa;
+  box-shadow: 0 0 0 2px rgba(0,212,170,.2);
+}
+
+/* ── Animación entre pasos ───────────────────── */
+.reg-panel { animation: fadeSlide .3s ease; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Botones ─────────────────────────────────── */
+.reg-btn-row {
+  display: flex; gap: 10px; margin-top: 24px;
+}
+.btn-reg-back {
+  width: 44px; height: 44px; flex-shrink: 0;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,.15);
+  background: transparent;
+  color: rgba(255,255,255,.6);
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-reg-back:hover { border-color: rgba(255,255,255,.4); color: #fff; }
+
+/* ── Error inline ────────────────────────────── */
+.field-error { font-size: 12px; color: #f87171; margin-top: 4px; }
+</style>
+{% endblock %}
+
+{% block public_content %}
+<div class="auth-form-page">
+
+  <img src="{% static 'images/registro_bg.jpg' %}" alt=""
+       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0.45;">
+
+  <div class="auth-form-box" style="max-width:460px;position:relative;z-index:2;padding:36px 32px;background:rgba(8,10,22,0.88);backdrop-filter:blur(12px);border-radius:24px;border:1.5px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.7);">
+
+    <h1 class="auth-form-title" style="font-size:52px;line-height:1;margin-bottom:8px;">CREAR<br>CUENTA</h1>
+
+    <!-- Email verificado -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;
+                background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.25);
+                border-radius:12px;padding:8px 16px;margin-bottom:20px;">
+      <i class="bi bi-patch-check-fill" style="color:#00d4aa;font-size:14px;"></i>
+      <span style="color:#00d4aa;font-size:13px;font-weight:700;">{{ email_verificado }}</span>
+      <span style="color:rgba(0,212,170,.5);font-size:11px;">· verificado</span>
+    </div>
+
+    <!-- Indicador de pasos (paso 3 de 3) -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:24px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:#00d4aa;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:12px;font-weight:800;color:#0b0c18;">
+        <i class="bi bi-check-lg"></i></div>
+      <div style="width:40px;height:2px;background:#00d4aa;"></div>
+      <div style="width:28px;height:28px;border-radius:50%;background:#00d4aa;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:12px;font-weight:800;color:#0b0c18;">
+        <i class="bi bi-check-lg"></i></div>
+      <div style="width:40px;height:2px;background:#6b7280;"></div>
+      <div style="width:28px;height:28px;border-radius:50%;background:#6b7280;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:12px;font-weight:800;color:#fff;
+                  box-shadow:0 0 12px rgba(107,114,128,.5);">3</div>
+    </div>
+
+    <!-- Pasos internos del formulario -->
+    <div class="reg-steps" style="display:none;">
+      <div class="reg-step-dot active" id="dot1">1</div>
+      <div class="reg-step-line" id="line1"></div>
+      <div class="reg-step-dot" id="dot2">2</div>
+      <div class="reg-step-line" id="line2"></div>
+      <div class="reg-step-dot" id="dot3">3</div>
+      <div class="reg-step-line" id="line3"></div>
+      <div class="reg-step-dot" id="dot4">4</div>
+    </div>
+
+    <form method="post" id="reg-form" novalidate>
+      {% csrf_token %}
+
+      <!-- ═══════ PASO 1: Tu cuenta ═══════ -->
+      <div class="reg-panel active" id="panel1">
+        <p class="reg-section-label"><i class="bi bi-shield-lock-fill"></i> Tu cuenta</p>
+
+        <div class="mb-3">
+          <label class="sv-label">Nombre de usuario</label>
+          <input type="text" name="username" id="id_username"
+                 class="form-control sv-input" placeholder="Ej: juanfit99" required
+                 autocomplete="username"
+                 value="{{ form.username.value|default:'' }}">
+          {% if form.username.errors %}
+            <div class="field-error">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Email ya verificado — solo se envía oculto -->
+        <input type="hidden" name="email" value="{{ email_verificado }}">
+
+        <div class="mb-3">
+          <label class="sv-label">Contraseña</label>
+          <input type="password" name="password1" id="id_password1"
+                 class="form-control sv-input" placeholder="Mínimo 8 caracteres" required
+                 autocomplete="new-password">
+          {% if form.password1.errors %}
+            <div class="field-error">{{ form.password1.errors.0 }}</div>
+          {% endif %}
+          <small style="color:rgba(255,255,255,.3);font-size:11px;margin-top:4px;display:block;">
+            Mínimo 8 caracteres, no puede ser solo números.
+          </small>
+        </div>
+
+        <div class="mb-3">
+          <label class="sv-label">Confirmar contraseña</label>
+          <input type="password" name="password2" id="id_password2"
+                 class="form-control sv-input" placeholder="Repite tu contraseña" required
+                 autocomplete="new-password">
+          <div id="pass-mismatch" style="display:none;font-size:12px;color:#f87171;margin-top:6px;">
+            <i class="bi bi-exclamation-circle-fill me-1"></i>Las contraseñas no coinciden.
+          </div>
+          {% if form.password2.errors %}
+            <div class="field-error">{{ form.password2.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2 mb-3" style="font-size:13px;">
+          {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        <button type="button" class="btn-sv-outline w-100 py-3" id="btn-next">
+          Siguiente <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </div>
+
+      <!-- ═══════ PASO 2: Tu perfil ═══════ -->
+      <div class="reg-panel" id="panel2">
+        <p class="reg-section-label"><i class="bi bi-person-fill"></i> Cuéntanos sobre ti</p>
+
+        <div class="mb-4">
+          <label class="sv-label" style="font-size:15px;">
+            ¿Cómo te gustaría que te llamemos?
+          </label>
+          <input type="text" name="first_name" id="id_first_name"
+                 class="form-control sv-input" placeholder="Tu nombre o apodo" required
+                 value="{{ form.first_name.value|default:'' }}">
+          <small style="color:rgba(255,255,255,.3);font-size:11px;margin-top:4px;display:block;">
+            Así aparecerá en tu bienvenida y perfil.
+          </small>
+          {% if form.first_name.errors %}
+            <div class="field-error">{{ form.first_name.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="sv-label">Género <span style="color:rgba(255,255,255,.3);">(opcional)</span></label>
+          <div class="genero-group">
+            {% for val, label in form.genero.field.choices %}
+            {% if val %}
+            <div>
+              <input type="radio" name="genero" value="{{ val }}" id="gen_{{ val }}"
+                     class="genero-radio" style="display:none;"
+                     {% if form.genero.value == val %}checked{% endif %}>
+              <label for="gen_{{ val }}" class="genero-label">
+                {% if val == 'M' %}<i class="bi bi-gender-male d-block mb-1"></i>{% endif %}
+                {% if val == 'F' %}<i class="bi bi-gender-female d-block mb-1"></i>{% endif %}
+                {% if val == 'O' %}<i class="bi bi-gender-ambiguous d-block mb-1"></i>{% endif %}
+                {{ label }}
+              </label>
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-4">
+            <label class="sv-label">Edad</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="edad" class="form-control sv-input"
+                     placeholder="25" min="10" max="100"
+                     value="{{ form.edad.value|default:'' }}">
+              <span class="input-unit-badge">años</span>
+            </div>
+          </div>
+          <div class="col-4">
+            <label class="sv-label">Peso</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="peso" class="form-control sv-input"
+                     placeholder="70" min="20" max="300" step="0.1"
+                     value="{{ form.peso.value|default:'' }}">
+              <span class="input-unit-badge">kg</span>
+            </div>
+          </div>
+          <div class="col-4">
+            <label class="sv-label">Altura</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="altura" class="form-control sv-input"
+                     placeholder="175" min="100" max="250"
+                     value="{{ form.altura.value|default:'' }}">
+              <span class="input-unit-badge">cm</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="reg-btn-row">
+          <button type="button" class="btn-reg-back" id="btn-back">
+            <i class="bi bi-arrow-left"></i>
+          </button>
+          <button type="button" class="btn-sv-outline py-3" style="flex:1;" id="btn-next2">
+            Siguiente <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════ PASO 3: Tu objetivo ═══════ -->
+      <div class="reg-panel" id="panel3">
+        <p class="reg-section-label"><i class="bi bi-bullseye"></i> Tu objetivo</p>
+        <p style="color:rgba(255,255,255,.45);font-size:13px;margin-bottom:20px;text-align:center;">
+          Esto nos ayuda a personalizar tu experiencia. Puedes cambiarlo después.
+        </p>
+
+        <div class="objetivo-group">
+          <div>
+            <input type="radio" name="objetivo" value="bajar_peso" id="obj_bajar" class="objetivo-radio" {% if form.objetivo.value == 'bajar_peso' %}checked{% endif %}>
+            <label for="obj_bajar" class="objetivo-card">
+              <span class="objetivo-icon">🔥</span>
+              <span class="objetivo-title">Bajar de peso</span>
+              <span class="objetivo-desc">Quemar grasa y reducir peso</span>
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="objetivo" value="mantener_peso" id="obj_mantener" class="objetivo-radio" {% if form.objetivo.value == 'mantener_peso' %}checked{% endif %}>
+            <label for="obj_mantener" class="objetivo-card">
+              <span class="objetivo-icon">⚖️</span>
+              <span class="objetivo-title">Mantener peso</span>
+              <span class="objetivo-desc">Estilo de vida saludable</span>
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="objetivo" value="ganar_musculo" id="obj_musculo" class="objetivo-radio" {% if form.objetivo.value == 'ganar_musculo' %}checked{% endif %}>
+            <label for="obj_musculo" class="objetivo-card">
+              <span class="objetivo-icon">💪</span>
+              <span class="objetivo-title">Ganar músculo</span>
+              <span class="objetivo-desc">Aumentar masa muscular</span>
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="objetivo" value="mejorar_resistencia" id="obj_resistencia" class="objetivo-radio" {% if form.objetivo.value == 'mejorar_resistencia' %}checked{% endif %}>
+            <label for="obj_resistencia" class="objetivo-card">
+              <span class="objetivo-icon">🏃</span>
+              <span class="objetivo-title">Resistencia</span>
+              <span class="objetivo-desc">Cardio y stamina</span>
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="objetivo" value="mejorar_flexibilidad" id="obj_flex" class="objetivo-radio" {% if form.objetivo.value == 'mejorar_flexibilidad' %}checked{% endif %}>
+            <label for="obj_flex" class="objetivo-card">
+              <span class="objetivo-icon">🧘</span>
+              <span class="objetivo-title">Flexibilidad</span>
+              <span class="objetivo-desc">Movilidad y stretching</span>
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="objetivo" value="rendimiento" id="obj_rendimiento" class="objetivo-radio" {% if form.objetivo.value == 'rendimiento' %}checked{% endif %}>
+            <label for="obj_rendimiento" class="objetivo-card">
+              <span class="objetivo-icon">🏆</span>
+              <span class="objetivo-title">Rendimiento</span>
+              <span class="objetivo-desc">Deporte competitivo</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="reg-btn-row" style="margin-top:20px;">
+          <button type="button" class="btn-reg-back" id="btn-back2">
+            <i class="bi bi-arrow-left"></i>
+          </button>
+          <button type="button" class="btn-sv-outline py-3" style="flex:1;" id="btn-next3">
+            Siguiente <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════ PASO 4: Tu salud ═══════ -->
+      <div class="reg-panel" id="panel4">
+        <p class="reg-section-label"><i class="bi bi-heart-pulse-fill"></i> Tu salud</p>
+        <p style="color:rgba(255,255,255,.45);font-size:13px;margin-bottom:6px;text-align:center;">
+          ¿Tienes alguna condición física o lesión que debamos tener en cuenta?
+        </p>
+        <p style="color:rgba(255,255,255,.25);font-size:11px;margin-bottom:18px;text-align:center;">
+          Esta información es opcional y nos ayuda a personalizar tu plan de entrenamiento.
+        </p>
+
+        <!-- Opción: ninguna condición -->
+        <input type="checkbox" id="lim_ninguna" class="ninguna-check">
+        <label for="lim_ninguna" class="ninguna-label" id="lim-ninguna-label">
+          <i class="bi bi-check-circle-fill"></i> No tengo ninguna limitación
+        </label>
+
+        <!-- Grid de condiciones -->
+        <div class="limitacion-group" id="limitacion-group">
+          <div>
+            <input type="checkbox" name="limitaciones" value="asma" id="lim_asma" class="limitacion-check">
+            <label for="lim_asma" class="limitacion-label">
+              <i class="bi bi-wind lim-icon"></i> Asma / Resp.
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="cardiaco" id="lim_cardiaco" class="limitacion-check">
+            <label for="lim_cardiaco" class="limitacion-label">
+              <i class="bi bi-heart lim-icon"></i> Problemas cardíacos
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="hipertension" id="lim_hiper" class="limitacion-check">
+            <label for="lim_hiper" class="limitacion-label">
+              <i class="bi bi-activity lim-icon"></i> Hipertensión
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="diabetes" id="lim_diab" class="limitacion-check">
+            <label for="lim_diab" class="limitacion-label">
+              <i class="bi bi-droplet lim-icon"></i> Diabetes
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="lesion_muscular" id="lim_musc" class="limitacion-check">
+            <label for="lim_musc" class="limitacion-label">
+              <i class="bi bi-lightning lim-icon"></i> Lesión muscular
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="lesion_rodilla" id="lim_rod" class="limitacion-check">
+            <label for="lim_rod" class="limitacion-label">
+              <i class="bi bi-person-walking lim-icon"></i> Lesión de rodilla
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="lesion_espalda" id="lim_esp" class="limitacion-check">
+            <label for="lim_esp" class="limitacion-label">
+              <i class="bi bi-person lim-icon"></i> Lesión de espalda
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="lesion_hombro" id="lim_homb" class="limitacion-check">
+            <label for="lim_homb" class="limitacion-label">
+              <i class="bi bi-arrows lim-icon"></i> Lesión de hombro
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="articulacion" id="lim_art" class="limitacion-check">
+            <label for="lim_art" class="limitacion-label">
+              <i class="bi bi-bounding-box lim-icon"></i> Articulación en riesgo
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="movilidad_reducida" id="lim_mov" class="limitacion-check">
+            <label for="lim_mov" class="limitacion-label">
+              <i class="bi bi-wheelchair lim-icon"></i> Movilidad reducida
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="embarazo" id="lim_emb" class="limitacion-check">
+            <label for="lim_emb" class="limitacion-label">
+              <i class="bi bi-gender-female lim-icon"></i> Embarazo / postparto
+            </label>
+          </div>
+          <div>
+            <input type="checkbox" name="limitaciones" value="otra" id="lim_otra" class="limitacion-check">
+            <label for="lim_otra" class="limitacion-label">
+              <i class="bi bi-three-dots lim-icon"></i> Otra condición
+            </label>
+          </div>
+        </div>
+
+        <!-- Términos y Condiciones -->
+        <div style="background:rgba(107,114,128,.07);border:1.5px solid rgba(107,114,128,.2);
+                    border-radius:16px;padding:16px 18px;margin-top:20px;">
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+            <input type="checkbox" name="acepto_terminos" id="acepto_terminos"
+                   style="width:18px;height:18px;margin-top:2px;accent-color:#6b7280;flex-shrink:0;">
+            <span style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.6;">
+              He leído y acepto los
+              <a href="{% url 'terminos_condiciones' %}" target="_blank"
+                 style="color:#9ca3af;font-weight:700;">Términos y Condiciones</a>
+              de SportsVision, incluyendo la política de privacidad y el tratamiento de mis datos personales.
+            </span>
+          </label>
+          {% if form.acepto_terminos.errors %}
+            <p style="color:#f87171;font-size:12px;margin:8px 0 0;">
+              {{ form.acepto_terminos.errors.0 }}
+            </p>
+          {% endif %}
+        </div>
+
+        <div class="reg-btn-row" style="margin-top:16px;">
+          <button type="button" class="btn-reg-back" id="btn-back3">
+            <i class="bi bi-arrow-left"></i>
+          </button>
+          <button type="submit" class="btn-sv-outline py-3" style="flex:1;" id="btn-crear">
+            <i class="bi bi-check-lg me-1"></i> Crear cuenta
+          </button>
+        </div>
+      </div>
+
+    </form>
+
+    <p class="mt-3 text-center" style="color:rgba(255,255,255,.4);font-size:13px;">
+      ¿Ya tienes cuenta?
+      <a href="{% url 'login' %}" style="color:var(--sv-purple-light);">Inicia sesión</a>
+      &nbsp;·&nbsp;
+      <a href="{% url 'iniciar_registro' %}" style="color:rgba(255,255,255,.3);font-size:12px;">
+        ← Cambiar correo
+      </a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const panels = [null,
+    document.getElementById('panel1'),
+    document.getElementById('panel2'),
+    document.getElementById('panel3'),
+    document.getElementById('panel4'),
+  ];
+  const dots  = [null,
+    document.getElementById('dot1'),
+    document.getElementById('dot2'),
+    document.getElementById('dot3'),
+    document.getElementById('dot4'),
+  ];
+  const lines = [null,
+    document.getElementById('line1'),
+    document.getElementById('line2'),
+    document.getElementById('line3'),
+  ];
+
+  const CHECK = '<i class="bi bi-check-lg" style="font-size:12px;"></i>';
+
+  function goToStep(n) {
+    for (let i = 1; i <= 4; i++) {
+      panels[i].classList.toggle('active', i === n);
+      dots[i].classList.remove('active', 'done');
+      if (i < n)       { dots[i].classList.add('done'); dots[i].innerHTML = CHECK; }
+      else if (i === n){ dots[i].classList.add('active'); dots[i].innerHTML = String(i); }
+      else             { dots[i].innerHTML = String(i); }
+    }
+    for (let i = 1; i <= 3; i++) {
+      lines[i].classList.toggle('done', i < n);
+    }
+  }
+
+  {% if form.errors and not form.username.errors and not form.email.errors and not form.password1.errors and not form.password2.errors %}
+  goToStep(2);
+  {% else %}
+  goToStep(1);
+  {% endif %}
+
+  // Contraseñas
+  const p1Input     = document.getElementById('id_password1');
+  const p2Input     = document.getElementById('id_password2');
+  const mismatchMsg = document.getElementById('pass-mismatch');
+
+  function checkPasswords() {
+    if (!p2Input.value) { mismatchMsg.style.display = 'none'; p2Input.style.borderColor = ''; return true; }
+    const match = p1Input.value === p2Input.value;
+    mismatchMsg.style.display = match ? 'none' : 'block';
+    p2Input.style.borderColor = match ? '#00d4aa' : '#f87171';
+    return match;
+  }
+  p2Input.addEventListener('input', checkPasswords);
+  p1Input.addEventListener('input', () => { if (p2Input.value) checkPasswords(); });
+
+  // Paso 1 → 2
+  document.getElementById('btn-next').addEventListener('click', () => {
+    const fields = ['id_username', 'id_email', 'id_password1', 'id_password2'];
+    let valid = true;
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.value.trim()) { el.style.borderColor = '#f87171'; valid = false; }
+      else if (el) el.style.borderColor = '';
+    });
+    if (!checkPasswords()) valid = false;
+    if (valid) goToStep(2);
+  });
+
+  // Paso 2 → 3
+  document.getElementById('btn-next2').addEventListener('click', () => goToStep(3));
+
+  // Paso 3 → 4
+  document.getElementById('btn-next3').addEventListener('click', () => goToStep(4));
+
+  // Atrás
+  document.getElementById('btn-back').addEventListener('click',  () => goToStep(1));
+  document.getElementById('btn-back2').addEventListener('click', () => goToStep(2));
+  document.getElementById('btn-back3').addEventListener('click', () => goToStep(3));
+
+  // Lógica "Ninguna limitación": desmarca todo lo demás y viceversa
+  const ningunaCheck   = document.getElementById('lim_ninguna');
+  const limChecks      = document.querySelectorAll('.limitacion-check');
+  const limGroup       = document.getElementById('limitacion-group');
+
+  ningunaCheck.addEventListener('change', () => {
+    if (ningunaCheck.checked) {
+      limChecks.forEach(c => { c.checked = false; });
+      limGroup.style.opacity = '.4';
+      limGroup.style.pointerEvents = 'none';
+    } else {
+      limGroup.style.opacity = '';
+      limGroup.style.pointerEvents = '';
+    }
+  });
+
+  limChecks.forEach(c => {
+    c.addEventListener('change', () => {
+      if (c.checked) {
+        ningunaCheck.checked = false;
+        limGroup.style.opacity = '';
+        limGroup.style.pointerEvents = '';
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

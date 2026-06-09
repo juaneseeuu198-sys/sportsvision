@@ -1,0 +1,259 @@
+{% extends 'base/base.html' %}
+{% block title %}Privacidad — SportsVision{% endblock %}
+
+{% block extra_css %}
+<style>
+.privacy-hero {
+  background: rgba(249,115,22,.07); border: 1.5px solid rgba(249,115,22,.25);
+  border-left: 4px solid #f97316; border-radius: 16px; padding: 18px 22px;
+  margin-bottom: 24px;
+}
+.privacy-hero-title { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--sv-text); margin-bottom:6px; }
+.privacy-hero-sub   { font-size:12px; color:var(--sv-muted); line-height:1.7; }
+
+.conectar-box {
+  background: var(--sv-bg-card); border: 1.5px solid var(--sv-border);
+  border-radius: 16px; padding: 22px; margin-bottom: 24px;
+}
+.conectar-title { font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--sv-purple-light); margin-bottom:14px; }
+
+.perms-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+.perm-check-item {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 12px; border-radius:10px;
+  background:rgba(255,255,255,.04); border:1.5px solid var(--sv-border);
+  cursor:pointer; transition:border-color .2s, background .2s;
+}
+.perm-check-item:has(input:checked) {
+  border-color:rgba(67,97,238,.4); background:rgba(67,97,238,.08);
+}
+.perm-check-item input { margin-top:2px; accent-color:#4361ee; }
+.perm-check-label { font-size:12px; font-weight:700; color:var(--sv-text); }
+.perm-check-desc  { font-size:10px; color:var(--sv-muted); line-height:1.5; margin-top:2px; }
+.perm-check-item.salud { border-color:rgba(249,115,22,.25); }
+.perm-check-item.salud:has(input:checked) { border-color:#f97316; background:rgba(249,115,22,.08); }
+.perm-check-item.salud input { accent-color:#f97316; }
+
+.relacion-card {
+  background: var(--sv-bg-card); border: 1.5px solid var(--sv-border);
+  border-radius: 16px; padding: 20px; margin-bottom: 14px;
+}
+.relacion-card.activa   { border-color: rgba(0,212,170,.3); }
+.relacion-card.revocada { opacity: .6; }
+.relacion-pro-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.relacion-pro-avatar {
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(67,97,238,.2); border:2px solid rgba(67,97,238,.4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; color:#7b9ffb; overflow:hidden; flex-shrink:0;
+}
+.relacion-pro-avatar img { width:100%; height:100%; object-fit:cover; }
+.relacion-nombre { font-size:14px; font-weight:800; color:var(--sv-text); }
+.relacion-esp    { font-size:12px; color:var(--sv-muted); }
+.estado-badge {
+  padding:3px 10px; border-radius:20px; font-size:10px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.5px; margin-left:auto;
+}
+.estado-activa   { background:rgba(0,212,170,.15); color:#00d4aa; border:1px solid rgba(0,212,170,.3); }
+.estado-revocada { background:rgba(230,57,70,.12); color:#f87171; border:1px solid rgba(230,57,70,.25); }
+
+.section-label {
+  font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase;
+  color:var(--sv-muted); margin-bottom:12px; display:flex; align-items:center; gap:8px;
+}
+
+@media(max-width:600px){ .perms-grid{grid-template-columns:1fr;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content" style="max-width:720px;">
+
+  <div class="page-top-nav">
+    <a href="{% url 'perfil' %}" class="page-back-btn"><i class="bi bi-arrow-left"></i> Mi Perfil</a>
+  </div>
+
+  <h1 class="sv-page-title" style="text-align:left;font-size:44px;">Privacidad</h1>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div class="alert mb-3" style="border-radius:12px;font-size:13px;background:rgba(0,212,170,.1);border-color:#00d4aa;color:#00d4aa;">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ msg }}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Aviso general -->
+  <div class="privacy-hero">
+    <div class="privacy-hero-title"><i class="bi bi-shield-lock-fill me-2"></i>Tus datos, tu control</div>
+    <div class="privacy-hero-sub">
+      Tú decides qué información comparte con cada profesional. Puedes cambiar los permisos
+      o revocar el acceso en cualquier momento. Los datos de salud (condiciones médicas)
+      requieren tu autorización explícita y nunca se comparten sin ella.
+    </div>
+  </div>
+
+  <!-- Conectar con un profesional -->
+  <div class="conectar-box">
+    <div class="conectar-title"><i class="bi bi-link-45deg me-2"></i>Conectar con un profesional</div>
+    <p style="font-size:13px;color:var(--sv-muted);margin-bottom:14px;">
+      Ingresa el código de 6 caracteres que te dio tu entrenador o nutricionista.
+    </p>
+    <form method="post" action="{% url 'conectar_profesional' %}">
+      {% csrf_token %}
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <input type="text" name="codigo" maxlength="10"
+               class="sv-input" placeholder="Ej: A3F7K2"
+               style="flex:1;text-transform:uppercase;letter-spacing:3px;font-size:16px;font-weight:800;"
+               required>
+      </div>
+
+      <div style="font-size:12px;font-weight:800;color:var(--sv-text);margin-bottom:8px;">
+        Selecciona qué datos puede ver tu profesional:
+      </div>
+      <div class="perms-grid">
+        <label class="perm-check-item">
+          <input type="checkbox" name="ver_entrenamientos" checked>
+          <div>
+            <div class="perm-check-label"><i class="bi bi-trophy-fill me-1" style="color:#4361ee;"></i>Entrenamientos</div>
+            <div class="perm-check-desc">Historial de sesiones, ejercicios, series y pesos</div>
+          </div>
+        </label>
+        <label class="perm-check-item">
+          <input type="checkbox" name="ver_mediciones">
+          <div>
+            <div class="perm-check-label"><i class="bi bi-rulers me-1" style="color:#4361ee;"></i>Mediciones</div>
+            <div class="perm-check-desc">Peso, grasa corporal, medidas de pecho, cintura, etc.</div>
+          </div>
+        </label>
+        <label class="perm-check-item">
+          <input type="checkbox" name="ver_nutricion">
+          <div>
+            <div class="perm-check-label"><i class="bi bi-journal-medical me-1" style="color:#4361ee;"></i>Nutrición</div>
+            <div class="perm-check-desc">Plan nutricional activo y distribución de macros</div>
+          </div>
+        </label>
+        <label class="perm-check-item salud">
+          <input type="checkbox" name="ver_salud">
+          <div>
+            <div class="perm-check-label"><i class="bi bi-heart-pulse-fill me-1" style="color:#f97316;"></i>Condiciones de salud</div>
+            <div class="perm-check-desc" style="color:#f97316;opacity:.8;">Dato sensible: lesiones, asma, diabetes, etc. Solo si es necesario.</div>
+          </div>
+        </label>
+      </div>
+
+      <div style="font-size:11px;color:var(--sv-muted);margin-bottom:14px;">
+        <i class="bi bi-info-circle me-1"></i>
+        Los <strong>datos básicos</strong> (nombre, objetivo, nivel, edad, peso y altura) siempre se incluyen como parte de la conexión.
+      </div>
+
+      <button type="submit" class="btn-calcular w-100" style="font-size:14px;padding:14px;">
+        <i class="bi bi-link-45deg me-2"></i>Conectar con el profesional
+      </button>
+    </form>
+  </div>
+
+  <!-- Conexiones activas -->
+  {% if relaciones %}
+  <div class="section-label"><i class="bi bi-people-fill" style="color:#4361ee;"></i> Mis profesionales</div>
+
+  {% for rel in relaciones %}
+  {% if rel.estado != 'rechazada' %}
+  <div class="relacion-card {{ rel.estado }}">
+    <div class="relacion-pro-row">
+      <div class="relacion-pro-avatar">
+        {% if rel.profesional.profile.avatar %}
+          <img src="{{ rel.profesional.profile.avatar.url }}" alt="">
+        {% else %}
+          <i class="bi bi-person-badge-fill"></i>
+        {% endif %}
+      </div>
+      <div style="flex:1;">
+        <div class="relacion-nombre">{{ rel.profesional.first_name|default:rel.profesional.username }}</div>
+        <div class="relacion-esp">
+          {{ rel.profesional.profile.especialidad|default:"Profesional" }}
+          · Conectado {{ rel.fecha_solicitud|date:"d M Y" }}
+        </div>
+      </div>
+      <span class="estado-badge estado-{{ rel.estado }}">{{ rel.get_estado_display }}</span>
+    </div>
+
+    {% if rel.estado == 'activa' %}
+    <!-- Permisos actuales + editor -->
+    <form method="post" action="{% url 'actualizar_permisos' rel.id %}">
+      {% csrf_token %}
+      <div style="font-size:11px;font-weight:800;color:var(--sv-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+        Datos que puede ver:
+      </div>
+      <div class="perms-grid">
+        <label class="perm-check-item">
+          <input type="checkbox" disabled checked style="opacity:.5;">
+          <div>
+            <div class="perm-check-label">Datos básicos</div>
+            <div class="perm-check-desc">Siempre activo en la conexión</div>
+          </div>
+        </label>
+        <label class="perm-check-item">
+          <input type="checkbox" name="ver_entrenamientos" {% if rel.ver_entrenamientos %}checked{% endif %}>
+          <div>
+            <div class="perm-check-label">Entrenamientos</div>
+            <div class="perm-check-desc">Historial de sesiones y ejercicios</div>
+          </div>
+        </label>
+        <label class="perm-check-item">
+          <input type="checkbox" name="ver_mediciones" {% if rel.ver_mediciones %}checked{% endif %}>
+          <div>
+            <div class="perm-check-label">Mediciones</div>
+            <div class="perm-check-desc">Peso, grasa y medidas corporales</div>
+          </div>
+        </label>
+        <label class="perm-check-item">
+          <input type="checkbox" name="ver_nutricion" {% if rel.ver_nutricion %}checked{% endif %}>
+          <div>
+            <div class="perm-check-label">Nutrición</div>
+            <div class="perm-check-desc">Plan y distribución de macros</div>
+          </div>
+        </label>
+        <label class="perm-check-item salud">
+          <input type="checkbox" name="ver_salud" {% if rel.ver_salud %}checked{% endif %}>
+          <div>
+            <div class="perm-check-label" style="color:#f97316;">Condiciones de salud</div>
+            <div class="perm-check-desc" style="color:#f97316;opacity:.8;">Dato sensible</div>
+          </div>
+        </label>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button type="submit" class="btn-sv-green" style="flex:1;padding:10px;border-radius:10px;font-size:12px;font-weight:700;border:none;cursor:pointer;">
+          <i class="bi bi-check-lg me-1"></i>Guardar permisos
+        </button>
+        <button type="button"
+          onclick="if(confirm('¿Revocar el acceso de este profesional?')) document.getElementById('form-revocar-{{ rel.id }}').submit();"
+          style="padding:10px 16px;border-radius:10px;background:rgba(230,57,70,.1);border:1.5px solid rgba(230,57,70,.3);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;">
+          <i class="bi bi-x-circle me-1"></i>Revocar acceso
+        </button>
+      </div>
+    </form>
+    <form id="form-revocar-{{ rel.id }}" method="post" action="{% url 'revocar_profesional' rel.id %}" style="display:none;">
+      {% csrf_token %}
+    </form>
+    {% endif %}
+
+    {% if rel.estado == 'revocada' %}
+    <div style="font-size:12px;color:var(--sv-muted);">
+      <i class="bi bi-slash-circle me-1"></i>Acceso revocado. Este profesional ya no puede ver tus datos.
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  {% else %}
+  <div style="text-align:center;padding:32px;background:var(--sv-bg-card);border:1.5px dashed var(--sv-border);border-radius:16px;">
+    <i class="bi bi-shield-check" style="font-size:40px;color:var(--sv-muted);opacity:.4;display:block;margin-bottom:12px;"></i>
+    <div style="font-size:14px;font-weight:700;color:var(--sv-muted);">No tienes profesionales conectados</div>
+    <div style="font-size:12px;color:var(--sv-muted);margin-top:6px;">Ingresa el código de tu entrenador para conectarte.</div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

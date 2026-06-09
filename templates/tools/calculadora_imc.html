@@ -1,0 +1,108 @@
+{% extends 'base/base.html' %}
+{% block title %}Calculadora de IMC{% endblock %}
+
+{% block content %}
+<div class="sv-page-content fitness-content">
+
+    <div class="page-top-nav">
+      <a href="{% url 'herramientas' %}" class="page-back-btn">
+        <i class="bi bi-arrow-left"></i> Volver
+      </a>
+      <div class="page-breadcrumb">
+        <a href="{% url 'herramientas' %}"><i class="bi bi-wrench-adjustable-circle-fill"></i> Herramientas</a>
+        <span class="sep"><i class="bi bi-chevron-right"></i></span>
+        <span class="current">Calculadora de IMC</span>
+      </div>
+    </div>
+
+    <h1 class="sv-page-title">Calculadora de IMC</h1>
+    <p class="text-center mb-4" style="color:#888;max-width:700px;margin:0 auto 24px;">
+      Calcula tu Índice de Masa Corporal usando la fórmula estándar de la OMS. Obtén resultados instantáneos con categoría de salud y recomendaciones personalizadas.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="sv-panel mb-4">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="sv-label">Altura</label>
+            <div class="input-unit-wrap">
+              {{ form.altura }}
+              <span class="input-unit-badge">cm</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="sv-label">Peso</label>
+            <div class="input-unit-wrap">
+              {{ form.peso }}
+              <span class="input-unit-badge">kg</span>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn-calcular w-100 mt-4">Calcular IMC</button>
+      </div>
+    </form>
+
+    {% if resultado %}
+    <div class="imc-circle-wrap">
+      <div class="imc-circle imc-{{ resultado.color }}">
+        <div class="imc-circle-val">{{ resultado.imc }}</div>
+        <div class="imc-circle-label">Tu IMC</div>
+      </div>
+    </div>
+
+    <div class="imc-summary-grid mt-4">
+      <div class="imc-summary-card">
+        <div class="s-label">Calculadora de IMC</div>
+        <div class="s-val text-{{ resultado.color }}">{{ resultado.categoria }}</div>
+      </div>
+      <div class="imc-summary-card">
+        <div class="s-label">Riesgo de Salud</div>
+        <div class="s-val text-{{ resultado.color }}">{{ resultado.riesgo }}</div>
+      </div>
+      <div class="imc-summary-card">
+        <div class="s-label">Peso Ideal</div>
+        <div class="s-val text-success">{{ resultado.peso_min }} - {{ resultado.peso_max }} KG</div>
+      </div>
+      <div class="imc-summary-card">
+        <div class="s-label">Subir o bajar de peso</div>
+        <div class="s-val text-{{ resultado.color }}">{{ resultado.cambiar }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="sv-panel mt-4">
+      <h5 class="sv-panel-title">Rango de IMC</h5>
+      <div class="imc-table mt-3">
+        <div class="imc-row"><span class="c-red">Delgadez Severa</span><span>&lt;16</span></div>
+        <div class="imc-row"><span class="c-red">Delgadez Moderada</span><span>16-16.9</span></div>
+        <div class="imc-row"><span class="c-orange">Delgadez Leve</span><span>17-18.4</span></div>
+        <div class="imc-row"><span class="c-green">Peso Normal</span><span>18.5-24.9</span></div>
+        <div class="imc-row"><span class="c-yellow">Sobre peso</span><span>25-29.9</span></div>
+        <div class="imc-row"><span class="c-orange">Obesidad Clase 1</span><span>30-34.9</span></div>
+        <div class="imc-row"><span class="c-red">Obesidad Clase 2</span><span>35-39.9</span></div>
+        <div class="imc-row"><span class="c-red">Obesidad Clase 3</span><span>≥40</span></div>
+      </div>
+
+      <div class="limitation-box mt-4">
+        <h6 class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Limitaciones del IMC</h6>
+        <p style="color:#ef4444;font-size:13px;line-height:1.6;">
+          El IMC no distingue entre masa muscular y masa de grasa. Las personas con gran musculatura pueden tener un IMC alto pero ser saludables. También depende de la edad, sexo, etnia y composición corporal. Es recomendable buscar atención de profesionales de la salud.
+        </p>
+      </div>
+    </div>
+
+    <div class="imc-formula-box mt-4 text-center">
+      <h5 class="sv-panel-title">Formula de IMC</h5>
+      <div class="formula-display mt-3">
+        <span class="formula-eq">IMC =</span>
+        <div class="formula-fraction">
+          <span>Peso (kg)</span>
+          <div class="fraction-line"></div>
+          <span>Altura(m) × Altura(m)</span>
+        </div>
+      </div>
+    </div>
+
+</div>
+{% endblock %}
