@@ -576,8 +576,9 @@ def finalizar_entrenamiento(request, entrenamiento_id):
 
     series = list(
         SerieEntrenamiento.objects.filter(
-            entrenamiento=entrenamiento
-        ).select_related('ejercicio__grupo_muscular')
+            entrenamiento=entrenamiento,
+            completada=True,
+        ).select_related('ejercicio__grupo_muscular').order_by('ejercicio_id', 'numero_serie')
     )
     total_reps = sum(s.repeticiones or 0 for s in series)
     ejercicios_count = len({s.ejercicio_id for s in series})
@@ -585,7 +586,7 @@ def finalizar_entrenamiento(request, entrenamiento_id):
     muscle_slugs = ','.join(dict.fromkeys(
         s.ejercicio.grupo_muscular.slug
         for s in series
-        if s.ejercicio.grupo_muscular_id
+        if s.ejercicio.grupo_muscular and s.ejercicio.grupo_muscular.slug
     ))
 
     return render(request, 'routines/entrenamiento_finalizado.html', {
