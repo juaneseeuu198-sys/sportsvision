@@ -288,12 +288,16 @@ def gcal_sync_all(request):
         usuario=request.user, gcal_event_id=''
     )
     creados = 0
+    ultimo_error = ''
     for anotacion in pendientes:
         nombre_rutina = planes.get(DIAS_KEY[anotacion.fecha.weekday()]) if anotacion.tipo == 'planeado' else None
-        event_id = _gcal_create(access_token, anotacion.fecha, anotacion.tipo, nombre_rutina)
+        event_id, err = _gcal_create(access_token, anotacion.fecha, anotacion.tipo, nombre_rutina)
         if event_id:
             anotacion.gcal_event_id = event_id
             anotacion.save(update_fields=['gcal_event_id'])
             creados += 1
+        elif err:
+            ultimo_error = err
+            break  # detener en el primer error para diagnóstico
 
-    return JsonResponse({'ok': True, 'creados': creados})
+    return JsonResponse({'ok': True, 'creados': creados, 'error': ultimo_error})
