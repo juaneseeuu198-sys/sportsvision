@@ -51,7 +51,7 @@ def _gcal_token(user):
 
 
 def _gcal_create(access_token, fecha, tipo, nombre_rutina=None):
-    """Crea un evento de día completo en Google Calendar. Devuelve el event_id o ''."""
+    """Crea un evento de día completo en Google Calendar. Devuelve (event_id, error_msg)."""
     color_id, default_title = _TIPO_COLORES.get(tipo, ('1', 'SportsVision'))
     title = default_title
     if tipo == 'planeado' and nombre_rutina:
@@ -71,9 +71,12 @@ def _gcal_create(access_token, fecha, tipo, nombre_rutina=None):
             },
             timeout=10,
         )
-        return resp.json().get('id', '')
-    except Exception:
-        return ''
+        data = resp.json()
+        if resp.status_code == 200 or resp.status_code == 201:
+            return data.get('id', ''), ''
+        return '', str(data)
+    except Exception as e:
+        return '', str(e)
 
 
 def _gcal_delete(access_token, event_id):
