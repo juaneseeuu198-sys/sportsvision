@@ -2,12 +2,93 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
-from datetime import date
+from datetime import date, timedelta
+
+from django.conf import settings
+import requests as http_requests
 
 from apps.routines.models import Entrenamiento, PlanDia
 from apps.tools.models import CalculoCaloria
 from .models import RegistroPeso, AnotacionCalendario, MedicionCorporal
 
+
+# ─── Google Calendar helpers ───────────────────────────────────────────────────
+
+_GCAL_EVENTS_URL  = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+_GCAL_TOKEN_URL   = 'https://oauth2.googleapis.com/token'
+
+_TIPO_COLORES = {
+    'descanso': ('5', '😴 Descanso — SportsVision'),      # banana
+    'planeado': ('9', '📋 Entrenamiento — SportsVision'),  # blueberry
+}
+
+
+def _gcal_token(user):
+    """Devuelve un access_token válido refrescando si es necesario. None si no conectado."""
+    try:
+        gcal = user.gcal_token
+    except Exception:
+        return None
+
+    if timezone.now() >= gcal.token_expiry - timedelta(minutes=5):
+        try:
+            resp = http_requests.post(_GCAL_TOKEN_URL, data={
+                'client_id':     settings.GOOGLE_CLIENT_ID,
+                'client_secret': settings.GOOGLE_CLIENT_SECRET,
+                'refresh_token': gcal.refresh_token,
+                'grant_type':    'refresh_token',
+            }, timeout=10)
+            data = resp.json()
+            gcal.access_token = data['access_token']
+            gcal.token_expiry = timezone.now() + timedelta(seconds=data.get('expires_in', 3600))
+            gcal.save(update_fields=['access_token', 'token_expiry'])
+        except Exception:
+            return None
+
+    return gcal.access_token
+
+
+def _gcal_create(access_token, fecha, tipo, nombre_rutina=None):
+    """Crea un evento de día completo en Google Calendar. Devuelve el event_id o ''."""
+    color_id, default_title = _TIPO_COLORES.get(tipo, ('1', 'SportsVision'))
+    title = default_title
+    if tipo == 'planeado' and nombre_rutina:
+        title = f'📋 {nombre_rutina} — SportsVision'
+
+    end_date = (fecha + timedelta(days=1)).isoformat()
+    try:
+        resp = http_requests.post(
+            _GCAL_EVENTS_URL,
+            headers={'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'},
+            json={
+                'summary':     title,
+                'start':       {'date': fecha.isoformat()},
+                'end':         {'date': end_date},
+                'colorId':     color_id,
+                'description': 'Marcado desde SportsVision',
+            },
+            timeout=10,
+        )
+        return resp.json().get('id', '')
+    except Exception:
+        return ''
+
+
+def _gcal_delete(access_token, event_id):
+    """Elimina un evento de Google Calendar por ID."""
+    if not event_id:
+        return
+    try:
+        http_requests.delete(
+            f'{_GCAL_EVENTS_URL}/{event_id}',
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=10,
+        )
+    except Exception:
+        pass
+
+
+# ─── Vistas ────────────────────────────────────────────────────────────────────
 
 @login_required
 def calendario_progreso(request):
@@ -62,7 +143,7 @@ def calendario_progreso(request):
     # Plan semanal → mapeo weekday (0=lun..6=dom) → info rutina
     DIAS_KEY = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
     planes_dia = PlanDia.objects.filter(usuario=request.user).select_related('rutina')
-    plan_por_weekday = {}  # {0: {nombre, descanso, rutina_obj}, ...}
+    plan_por_weekday = {}
     for p in planes_dia:
         idx = DIAS_KEY.index(p.dia)
         plan_por_weekday[idx] = {
@@ -93,18 +174,19 @@ def calendario_progreso(request):
             iniciado_en__day=dia_sel,
         ).prefetch_related('series__ejercicio')
 
-        # Obtener el plan para ese día de la semana
-        weekday = date(year, month, dia_sel).weekday()  # 0=lun..6=dom
+        weekday = date(year, month, dia_sel).weekday()
         plan_dia_sel = plan_por_weekday.get(weekday)
 
     # Para cada día del calendario, calcular el weekday
     cal_data = cal_module.monthcalendar(year, month)
-    # Enriquecer cada celda con el día de la semana y el plan
-    celdas_plan = {}  # {day_num: {plan_rutina, plan_descanso}}
+    celdas_plan = {}
     for week in cal_data:
         for weekday_idx, day in enumerate(week):
             if day > 0:
                 celdas_plan[day] = plan_por_weekday.get(weekday_idx, {})
+
+    # Estado de conexión con Google Calendar
+    gcal_conectado = hasattr(request.user, 'gcal_token')
 
     return render(request, 'progress/calendario.html', {
         'calendario':             cal_data,
@@ -120,12 +202,13 @@ def calendario_progreso(request):
         'dia_sel':                dia_sel,
         'entrenamientos_dia':     entrenamientos_dia,
         'plan_dia_sel':           plan_dia_sel,
+        'gcal_conectado':         gcal_conectado,
     })
 
 
 @login_required
 def anotar_dia(request):
-    """Guarda o elimina una anotación (descanso/planeado) para un día."""
+    """Guarda o elimina una anotación (descanso/planeado) para un día y sincroniza con Google Calendar."""
     if request.method != 'POST':
         return JsonResponse({'error': 'method'}, status=405)
 
@@ -140,16 +223,40 @@ def anotar_dia(request):
         day   = int(data.get('day'))
     except (TypeError, ValueError):
         return JsonResponse({'error': 'invalid date'}, status=400)
-    tipo  = data.get('tipo', '')  # 'descanso' | 'planeado' | '' (borrar)
+    tipo = data.get('tipo', '')  # 'descanso' | 'planeado' | '' (borrar)
 
     fecha = date(year, month, day)
+    access_token = _gcal_token(request.user)
 
     if tipo in ('descanso', 'planeado'):
+        existing = AnotacionCalendario.objects.filter(usuario=request.user, fecha=fecha).first()
+
+        # Borrar evento anterior en Google Calendar si existía
+        if access_token and existing and existing.gcal_event_id:
+            _gcal_delete(access_token, existing.gcal_event_id)
+
+        # Nombre de la rutina para días de trabajo
+        nombre_rutina = None
+        if tipo == 'planeado':
+            DIAS_KEY = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
+            plan = PlanDia.objects.filter(
+                usuario=request.user, dia=DIAS_KEY[fecha.weekday()]
+            ).select_related('rutina').first()
+            if plan and plan.rutina and not plan.descanso:
+                nombre_rutina = plan.rutina.nombre
+
+        gcal_event_id = ''
+        if access_token:
+            gcal_event_id = _gcal_create(access_token, fecha, tipo, nombre_rutina)
+
         AnotacionCalendario.objects.update_or_create(
             usuario=request.user, fecha=fecha,
-            defaults={'tipo': tipo}
+            defaults={'tipo': tipo, 'gcal_event_id': gcal_event_id}
         )
     else:
+        existing = AnotacionCalendario.objects.filter(usuario=request.user, fecha=fecha).first()
+        if access_token and existing and existing.gcal_event_id:
+            _gcal_delete(access_token, existing.gcal_event_id)
         AnotacionCalendario.objects.filter(usuario=request.user, fecha=fecha).delete()
 
-    return JsonResponse({'ok': True, 'tipo': tipo})
+    return JsonResponse({'ok': True, 'tipo': tipo, 'gcal': bool(access_token)})
