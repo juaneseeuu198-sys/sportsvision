@@ -5,6 +5,8 @@ from django.utils import timezone
 from datetime import date, timedelta
 
 from django.conf import settings
+from django.db.models import F, Sum, FloatField, ExpressionWrapper, Value, Count, Q
+from django.db.models.functions import Coalesce
 import requests as http_requests
 
 from apps.routines.models import Entrenamiento, PlanDia
