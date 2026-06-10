@@ -1371,7 +1371,7 @@ def google_calendar_callback(request):
         messages.error(request, 'Google no devolvió autorización.')
         return redirect('calendario_progreso')
 
-    redirect_uri = settings.FRONTEND_URL.rstrip('/') + '/usuarios/auth/google/calendar/callback/'
+    redirect_uri = request.build_absolute_uri(reverse('google_calendar_callback'))
     try:
         token_resp = http_requests.post(_GOOGLE_TOKEN_URL, data={
             'code':          code,
