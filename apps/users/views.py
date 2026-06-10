@@ -1066,6 +1066,7 @@ def eliminar_cuenta(request):
 _GOOGLE_AUTH_URL     = 'https://accounts.google.com/o/oauth2/v2/auth'
 _GOOGLE_TOKEN_URL    = 'https://oauth2.googleapis.com/token'
 _GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
+_GCAL_SCOPE          = 'https://www.googleapis.com/auth/calendar.events'
 
 
 def google_login(request):
