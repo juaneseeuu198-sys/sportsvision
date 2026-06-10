@@ -336,6 +336,25 @@ html.light-mode .plan-chip.chip-descanso { background: rgba(52,211,153,.1); colo
       Borrar
     </button>
     <span class="mode-hint">← Selecciona un modo y haz clic en los días</span>
+
+    <!-- Google Calendar -->
+    {% if gcal_conectado %}
+    <form method="post" action="{% url 'google_calendar_disconnect' %}" style="margin-left:auto;">
+      {% csrf_token %}
+      <button type="submit" class="mode-btn" style="border-color:rgba(234,67,53,.4);color:#ea4335;gap:6px;"
+              title="Desconectar Google Calendar">
+        <img src="https://www.gstatic.com/images/branding/product/1x/calendar_16dp.png" alt="" width="14" height="14">
+        Conectado <i class="bi bi-x-circle" style="font-size:11px;"></i>
+      </button>
+    </form>
+    {% else %}
+    <a href="{% url 'google_calendar_connect' %}" class="mode-btn"
+       style="margin-left:auto;border-color:rgba(66,133,244,.35);color:#4285f4;gap:6px;text-decoration:none;"
+       title="Sincronizar con Google Calendar">
+      <img src="https://www.gstatic.com/images/branding/product/1x/calendar_16dp.png" alt="" width="14" height="14">
+      Google Calendar
+    </a>
+    {% endif %}
   </div>
 
   <!-- Legend -->
