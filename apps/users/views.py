@@ -1344,7 +1344,7 @@ def google_calendar_connect(request):
 
     state = secrets.token_urlsafe(32)
     request.session['gcal_state'] = state
-    redirect_uri = settings.FRONTEND_URL.rstrip('/') + '/usuarios/auth/google/calendar/callback/'
+    redirect_uri = request.build_absolute_uri(reverse('google_calendar_callback'))
 
     params = urllib.parse.urlencode({
         'client_id':     settings.GOOGLE_CLIENT_ID,
