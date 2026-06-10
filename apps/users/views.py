@@ -55,6 +55,7 @@ def _enviar_otp_registro(email, codigo):
     resp.raise_for_status()
 
 
+@ensure_csrf_cookie
 def iniciar_registro(request):
     """Paso 1 — El usuario ingresa su email y recibe un código OTP."""
     if request.user.is_authenticated:
