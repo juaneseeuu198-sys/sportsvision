@@ -541,7 +541,7 @@ def revisar_solicitud(request, solicitud_id):
 
             messages.success(request,
                 f'✅ {solicitud.usuario.username} ahora es profesional. '
-                f'Código generado: {solicitud.usuario.profile.codigo_pro}')
+                f'Código generado: {profile.codigo_pro}')
 
         elif accion == 'rechazar':
             solicitud.estado       = 'rechazada'
