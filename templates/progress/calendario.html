@@ -642,12 +642,14 @@ html.light-mode .plan-chip.chip-descanso { background: rgba(52,211,153,.1); colo
       })
       .then(r => r.json())
       .then(data => {
-        if (data.ok) {
+        if (data.ok && !data.error) {
           label.textContent = `✓ ${data.creados} eventos creados`;
           btnSync.style.borderColor = 'rgba(52,211,153,.5)';
           btnSync.style.color = '#34d399';
         } else {
-          label.textContent = 'Error al sincronizar';
+          label.textContent = 'Error — ver consola';
+          console.error('GCal sync error:', data.error);
+          alert('Error Google Calendar:\n' + (data.error || 'desconocido'));
           btnSync.disabled = false;
         }
       })
