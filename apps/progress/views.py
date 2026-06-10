@@ -50,12 +50,20 @@ def _gcal_token(user):
     return gcal.access_token
 
 
-def _gcal_create(access_token, fecha, tipo, nombre_rutina=None):
+def _gcal_create(access_token, fecha, tipo, nombre_rutina=None, ejercicios=None):
     """Crea un evento de día completo en Google Calendar. Devuelve (event_id, error_msg)."""
     color_id, default_title = _TIPO_COLORES.get(tipo, ('1', 'SportsVision'))
     title = default_title
     if tipo == 'planeado' and nombre_rutina:
         title = f'📋 {nombre_rutina} — SportsVision'
+
+    if tipo == 'descanso':
+        description = '😴 Día de descanso\n\nSportsVision'
+    elif ejercicios:
+        lineas = '\n'.join(f'• {e}' for e in ejercicios)
+        description = f'Ejercicios:\n{lineas}\n\nSportsVision'
+    else:
+        description = 'Día de entrenamiento\n\nSportsVision'
 
     end_date = (fecha + timedelta(days=1)).isoformat()
     try:
@@ -67,7 +75,7 @@ def _gcal_create(access_token, fecha, tipo, nombre_rutina=None):
                 'start':       {'date': fecha.isoformat()},
                 'end':         {'date': end_date},
                 'colorId':     color_id,
-                'description': 'Marcado desde SportsVision',
+                'description': description,
             },
             timeout=10,
         )
