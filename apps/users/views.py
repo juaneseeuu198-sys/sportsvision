@@ -1331,3 +1331,83 @@ def completar_perfil_google(request):
     })
 
 
+# ─── Google Calendar OAuth ─────────────────────────────────────────────────────
+
+@login_required
+def google_calendar_connect(request):
+    """Inicia el flujo OAuth para conectar Google Calendar."""
+    if not settings.GOOGLE_CLIENT_ID:
+        messages.error(request, 'La integración con Google no está configurada.')
+        return redirect('calendario_progreso')
+
+    state = secrets.token_urlsafe(32)
+    request.session['gcal_state'] = state
+    redirect_uri = settings.FRONTEND_URL.rstrip('/') + '/usuarios/auth/google/calendar/callback/'
+
+    params = urllib.parse.urlencode({
+        'client_id':     settings.GOOGLE_CLIENT_ID,
+        'redirect_uri':  redirect_uri,
+        'response_type': 'code',
+        'scope':         _GCAL_SCOPE,
+        'access_type':   'offline',
+        'prompt':        'consent',
+        'state':         state,
+    })
+    return redirect(f'{_GOOGLE_AUTH_URL}?{params}')
+
+
+@login_required
+def google_calendar_callback(request):
+    """Recibe el código de autorización de Google Calendar y guarda el token."""
+    state = request.GET.get('state', '')
+    if state != request.session.pop('gcal_state', ''):
+        messages.error(request, 'Error de seguridad. Intenta de nuevo.')
+        return redirect('calendario_progreso')
+
+    code = request.GET.get('code')
+    if not code:
+        messages.error(request, 'Google no devolvió autorización.')
+        return redirect('calendario_progreso')
+
+    redirect_uri = settings.FRONTEND_URL.rstrip('/') + '/usuarios/auth/google/calendar/callback/'
+    try:
+        token_resp = http_requests.post(_GOOGLE_TOKEN_URL, data={
+            'code':          code,
+            'client_id':     settings.GOOGLE_CLIENT_ID,
+            'client_secret': settings.GOOGLE_CLIENT_SECRET,
+            'redirect_uri':  redirect_uri,
+            'grant_type':    'authorization_code',
+        }, timeout=15)
+        token_data = token_resp.json()
+        access_token  = token_data.get('access_token', '')
+        refresh_token = token_data.get('refresh_token', '')
+        expires_in    = token_data.get('expires_in', 3600)
+        if not access_token:
+            raise ValueError('Sin access_token')
+    except Exception:
+        messages.error(request, 'Error al conectar con Google Calendar. Intenta de nuevo.')
+        return redirect('calendario_progreso')
+
+    from .models import GoogleCalendarToken
+    GoogleCalendarToken.objects.update_or_create(
+        user=request.user,
+        defaults={
+            'access_token':  access_token,
+            'refresh_token': refresh_token,
+            'token_expiry':  timezone.now() + timedelta(seconds=expires_in),
+        }
+    )
+    messages.success(request, 'Google Calendar conectado. Tus anotaciones se sincronizarán automáticamente.')
+    return redirect('calendario_progreso')
+
+
+@login_required
+def google_calendar_disconnect(request):
+    """Desconecta Google Calendar eliminando el token guardado."""
+    if request.method == 'POST':
+        from .models import GoogleCalendarToken
+        GoogleCalendarToken.objects.filter(user=request.user).delete()
+        messages.success(request, 'Google Calendar desconectado.')
+    return redirect('calendario_progreso')
+
+
