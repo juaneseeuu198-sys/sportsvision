@@ -252,7 +252,7 @@ def anotar_dia(request):
 
         gcal_event_id = ''
         if access_token:
-            gcal_event_id = _gcal_create(access_token, fecha, tipo, nombre_rutina)
+            gcal_event_id, _ = _gcal_create(access_token, fecha, tipo, nombre_rutina)
 
         AnotacionCalendario.objects.update_or_create(
             usuario=request.user, fecha=fecha,
