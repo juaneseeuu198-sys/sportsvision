@@ -41,9 +41,13 @@ urlpatterns = [
     path('terminos/', views.terminos_condiciones, name='terminos_condiciones'),
     path('cuenta/desactivar/', views.desactivar_cuenta, name='desactivar_cuenta'),
     path('cuenta/eliminar/',   views.eliminar_cuenta,   name='eliminar_cuenta'),
-    # Google OAuth
+    # Google OAuth — login
     path('auth/google/',                  views.google_login,             name='google_login'),
     path('auth/google/callback/',         views.google_callback,          name='google_callback'),
     path('auth/google/completar-perfil/', views.completar_perfil_google,  name='completar_perfil_google'),
     path('auth/mobile/',                  views.mobile_login,             name='mobile_login'),
+    # Google Calendar OAuth
+    path('auth/google/calendar/',          views.google_calendar_connect,    name='google_calendar_connect'),
+    path('auth/google/calendar/callback/', views.google_calendar_callback,   name='google_calendar_callback'),
+    path('auth/google/calendar/disconnect/', views.google_calendar_disconnect, name='google_calendar_disconnect'),
 ]
