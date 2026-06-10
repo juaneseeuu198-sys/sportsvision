@@ -627,6 +627,36 @@ html.light-mode .plan-chip.chip-descanso { background: rgba(52,211,153,.1); colo
     const day = parseInt(cell.dataset.day, 10);
     if (day > 0) applyCell(cell, day);
   });
+
+  // Sincronizar todo con Google Calendar
+  const btnSync = document.getElementById('btnSyncGcal');
+  if (btnSync) {
+    btnSync.addEventListener('click', function() {
+      const label = document.getElementById('syncGcalLabel');
+      btnSync.disabled = true;
+      label.textContent = 'Sincronizando...';
+      fetch('{% url "gcal_sync_all" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({}),
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          label.textContent = `✓ ${data.creados} eventos creados`;
+          btnSync.style.borderColor = 'rgba(52,211,153,.5)';
+          btnSync.style.color = '#34d399';
+        } else {
+          label.textContent = 'Error al sincronizar';
+          btnSync.disabled = false;
+        }
+      })
+      .catch(() => {
+        label.textContent = 'Error al sincronizar';
+        btnSync.disabled = false;
+      });
+    });
+  }
 })();
 </script>
 {% endblock %}
