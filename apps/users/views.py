@@ -618,17 +618,21 @@ def admin_ver_usuario(request, user_id):
         usuario=cliente
     ).order_by('-calculado_en')
 
-    # Totales globales
-    from django.db.models import F, Sum, FloatField, ExpressionWrapper
-    all_series_qs = SerieEntrenamiento.objects.filter(
+    # Totales globales — una sola query; NULL repeticiones cuenta como 1 rep
+    totals = SerieEntrenamiento.objects.filter(
         entrenamiento__usuario=cliente, completada=True
-    )
-    total_series = all_series_qs.count()
-    kg_total = all_series_qs.filter(
-        peso__isnull=False, repeticiones__isnull=False
     ).aggregate(
-        total=Sum(ExpressionWrapper(F('peso') * F('repeticiones'), output_field=FloatField()))
-    )['total'] or 0
+        total_series=Count('id'),
+        kg_total=Sum(
+            ExpressionWrapper(
+                F('peso') * Coalesce(F('repeticiones'), Value(1)),
+                output_field=FloatField()
+            ),
+            filter=Q(peso__isnull=False)
+        )
+    )
+    total_series = totals['total_series'] or 0
+    kg_total = totals['kg_total'] or 0
 
     LABELS_LIM = {
         'asma': 'Asma / Respiratorio', 'cardiaco': 'Problemas cardíacos',
