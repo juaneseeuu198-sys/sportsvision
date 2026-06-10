@@ -269,7 +269,7 @@ def anotar_dia(request):
 
 @login_required
 def gcal_sync_all(request):
-    """Sube todas las anotaciones existentes sin evento a Google Calendar."""
+    """Sube el Plan Semanal a Google Calendar para los próximos 90 días."""
     if request.method != 'POST':
         return JsonResponse({'error': 'method'}, status=405)
 
@@ -278,26 +278,38 @@ def gcal_sync_all(request):
         return JsonResponse({'error': 'no_gcal'}, status=403)
 
     DIAS_KEY = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
-    planes = {
-        p.dia: p.rutina.nombre
-        for p in PlanDia.objects.filter(usuario=request.user).select_related('rutina')
-        if p.rutina and not p.descanso
-    }
+    planes_dia = PlanDia.objects.filter(usuario=request.user).select_related('rutina')
+    plan_por_weekday = {}
+    for p in planes_dia:
+        idx = DIAS_KEY.index(p.dia)
+        plan_por_weekday[idx] = p
 
-    pendientes = AnotacionCalendario.objects.filter(
-        usuario=request.user, gcal_event_id=''
-    )
+    if not plan_por_weekday:
+        return JsonResponse({'ok': True, 'creados': 0, 'error': 'No tienes un Plan Semanal configurado. Ve a Rutinas → Plan Semanal primero.'})
+
+    hoy = date.today()
+    fin  = hoy + timedelta(days=90)
     creados = 0
     ultimo_error = ''
-    for anotacion in pendientes:
-        nombre_rutina = planes.get(DIAS_KEY[anotacion.fecha.weekday()]) if anotacion.tipo == 'planeado' else None
-        event_id, err = _gcal_create(access_token, anotacion.fecha, anotacion.tipo, nombre_rutina)
-        if event_id:
-            anotacion.gcal_event_id = event_id
-            anotacion.save(update_fields=['gcal_event_id'])
-            creados += 1
-        elif err:
-            ultimo_error = err
-            break  # detener en el primer error para diagnóstico
+
+    current = hoy
+    while current <= fin:
+        plan = plan_por_weekday.get(current.weekday())
+        if plan:
+            if plan.descanso:
+                tipo, nombre = 'descanso', None
+            elif plan.rutina:
+                tipo, nombre = 'planeado', plan.rutina.nombre
+            else:
+                current += timedelta(days=1)
+                continue
+
+            event_id, err = _gcal_create(access_token, current, tipo, nombre)
+            if event_id:
+                creados += 1
+            elif err:
+                ultimo_error = err
+                break
+        current += timedelta(days=1)
 
     return JsonResponse({'ok': True, 'creados': creados, 'error': ultimo_error})
