@@ -267,7 +267,6 @@ def perfil(request):
     from apps.routines.models import Rutina, Entrenamiento, SerieEntrenamiento
     from apps.progress.models import RegistroPeso
     from apps.tools.models import CalculoCaloria
-    from django.db.models import F, Sum, FloatField, ExpressionWrapper
 
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
