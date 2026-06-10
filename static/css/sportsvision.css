@@ -1656,11 +1656,218 @@ body.page-pro {
   background: rgba(107,114,128,0.38);
   color: #fff;
 }
-  background: #1a1a2e;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+
+/* ============================================
+   LIGHT MODE — aplica cuando <html> tiene
+   la clase "light-mode"
+   ============================================ */
+
+html.light-mode {
+  --sv-bg:           #eef2f7;
+  --sv-bg-card:      #ffffff;
+  --sv-bg-panel:     #f0f4f8;
+  --sv-sidebar-bg:   #ffffff;
+  --sv-text:         #1a202c;
+  --sv-muted:        #4a5568;
+  --sv-border:       rgba(0,0,0,0.10);
 }
-  box-shadow: 0 6px 28px rgba(0,0,0,0.3);
+
+/* Main */
+html.light-mode body.sv-body {
+  background: #eef2f7;
+  color: #1a202c;
 }
+html.light-mode body.page-home,
+html.light-mode body.page-perfil,
+html.light-mode body.page-rutinas,
+html.light-mode body.page-plan,
+html.light-mode body.page-progreso,
+html.light-mode body.page-tools,
+html.light-mode body.page-ejercicios,
+html.light-mode body.page-pro {
+  background-color: #eef2f7;
+  background-image:
+    linear-gradient(180deg, rgba(238,242,247,.9) 0%, rgba(238,242,247,.8) 40%, rgba(238,242,247,.92) 100%),
+    url('/static/images/fondo.jpg');
+}
+
+/* Sidebar */
+html.light-mode .sv-sidebar { background: #ffffff; box-shadow: 2px 0 16px rgba(0,0,0,.08); }
+html.light-mode .sidebar-nav a:hover,
+html.light-mode .sidebar-nav a.active    { color: #1a202c; background: rgba(0,0,0,.05); }
+html.light-mode .sidebar-bottom          { border-top-color: rgba(0,0,0,.08); }
+html.light-mode .sidebar-bottom a:not(.sidebar-logout):hover,
+html.light-mode .sidebar-bottom a:not(.sidebar-logout).active { color: #1a202c; background: rgba(0,0,0,.05); }
+
+/* Topbar mobile */
+html.light-mode .sv-topbar { background: rgba(255,255,255,.94); border-bottom-color: rgba(0,0,0,.1); }
+html.light-mode .btn-menu  { color: #1a202c; }
+html.light-mode .btn-sidebar-open { background: #ffffff; border-color: rgba(0,0,0,.1); color: #1a202c; }
+html.light-mode .btn-sidebar-arrow { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.1); color: #1a202c; }
+
+/* Typography — override hardcoded whites */
+html.light-mode .sv-panel-title,
+html.light-mode .sv-page-title,
+html.light-mode .sv-welcome   { color: #1a202c; }
+html.light-mode .sv-subtitle  { color: #4a5568; }
+
+/* Cards & panels */
+html.light-mode .rutina-name  { color: #1a202c; }
+html.light-mode .rutina-info  { color: #4a5568; }
+html.light-mode .tool-card    { color: #1a202c; border-color: rgba(0,0,0,.1); }
+html.light-mode .tool-card:hover { color: #1a202c; }
+html.light-mode .tool-card h3 { color: #1a202c; }
+html.light-mode .tool-card p  { color: #4a5568; }
+
+/* Inputs */
+html.light-mode .sv-input {
+  background: rgba(0,0,0,.04) !important;
+  border: 1.5px solid rgba(0,0,0,.18) !important;
+  color: #1a202c !important;
+}
+html.light-mode .sv-input:focus {
+  border-color: #4361ee !important;
+  background: rgba(0,0,0,.06) !important;
+  box-shadow: 0 0 0 3px rgba(67,97,238,.15) !important;
+}
+html.light-mode .sv-input::placeholder { color: rgba(0,0,0,.35) !important; }
+html.light-mode .input-unit-wrap { border-color: rgba(0,0,0,.18); background: rgba(0,0,0,.04); }
+html.light-mode .input-unit-badge { color: #4a5568; border-left-color: rgba(0,0,0,.1); }
+
+/* Buttons */
+html.light-mode .btn-sv-outline { border-color: #1a202c; color: #1a202c; }
+html.light-mode .btn-sv-outline:hover { background: #1a202c; color: #fff; }
+html.light-mode .page-back-btn { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.15); color: #4a5568; }
+html.light-mode .page-back-btn:hover { background: rgba(0,0,0,.1); color: #1a202c; border-color: rgba(0,0,0,.2); }
+html.light-mode .page-breadcrumb .sep { color: #a0aec0; }
+html.light-mode .page-breadcrumb .current { color: #4a5568; }
+html.light-mode .page-breadcrumb a:hover { color: #1a202c; }
+
+/* Workout set buttons */
+html.light-mode .set-field-header { border-color: rgba(0,0,0,.15); color: #4a5568; }
+html.light-mode .btn-add-attr { color: #1a202c; }
+
+/* Set badges */
+html.light-mode .stat-label,
+html.light-mode .r-label,
+html.light-mode .m-label,
+html.light-mode .s-label { color: #4a5568; }
+html.light-mode .stat-value,
+html.light-mode .r-value,
+html.light-mode .m-val,
+html.light-mode .s-val  { color: #1a202c; }
+html.light-mode .r-unit,
+html.light-mode .m-kcal { color: #4a5568; }
+html.light-mode .info-badge { background: #e2e8f0; color: #4a5568; }
+
+/* Entrenamiento activo */
+html.light-mode .workout-header { border-bottom-color: rgba(0,0,0,.1); }
+html.light-mode .workout-started { color: #047857; }
+html.light-mode .timeline-dot   { border-color: #cbd5e0; }
+html.light-mode .ex-instructions-link { color: #4a5568; }
+html.light-mode .ex-instructions-link:hover { color: #4361ee; }
+
+/* Finish screen */
+html.light-mode .finish-box { background: rgba(255,255,255,.97); border-color: rgba(0,0,0,.1); }
+html.light-mode .finish-stat-card  { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
+html.light-mode .finish-summary-panel { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.07); }
+html.light-mode .finish-ex-card   { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.06); }
+html.light-mode .finish-ex-name   { color: #4361ee; }
+html.light-mode .finish-subtitle  { color: #4a5568; }
+html.light-mode .finish-set-pill  { background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.12); }
+
+/* Plan semanal */
+html.light-mode .step-circle   { border-color: #cbd5e0; color: #4a5568; }
+html.light-mode .step-label    { color: #4a5568; }
+html.light-mode .step-sublabel { color: #718096; }
+html.light-mode .step-line     { background: #cbd5e0; }
+
+/* Tools */
+html.light-mode .gender-btn,
+html.light-mode .level-btn  { border-color: rgba(0,0,0,.15); color: #4a5568; }
+html.light-mode .activity-item { border-color: rgba(0,0,0,.1); }
+html.light-mode .activity-text h5 { color: #1a202c; }
+html.light-mode .activity-text p  { color: #4a5568; }
+html.light-mode .sv-range   { background: #cbd5e0; }
+html.light-mode .sv-progress { background: #cbd5e0; }
+html.light-mode .imc-summary-card { border-color: rgba(0,0,0,.1); }
+html.light-mode .imc-row { border-bottom-color: rgba(0,0,0,.06); color: #1a202c; }
+html.light-mode .fraction-line { background: #1a202c; }
+
+/* Progress / calendar */
+html.light-mode .calendar-grid   { border-color: rgba(0,0,0,.1); }
+html.light-mode .cal-days-header { background: rgba(0,0,0,.04); }
+html.light-mode .cal-day-name    { border-right-color: rgba(0,0,0,.06); }
+html.light-mode .cal-cell        { border-right-color: rgba(0,0,0,.05); border-bottom-color: rgba(0,0,0,.05); }
+html.light-mode .cal-cell:hover  { background: rgba(0,0,0,.03); }
+html.light-mode .no-workout-msg  { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.1); color: #4a5568; }
+html.light-mode .day-workout-card { background: rgba(0,0,0,.04); }
+html.light-mode .day-serie { color: #4a5568; }
+html.light-mode .muscle-tag { color: #4361ee; }
+
+/* Equipment / muscle selector */
+html.light-mode .equip-card  { background: #f0f4f8; }
+html.light-mode .equip-label { color: #1a202c; }
+html.light-mode .muscle-btn  { border-color: rgba(0,0,0,.15); color: #1a202c; }
+html.light-mode .exercise-row { border-color: rgba(0,0,0,.08); }
+html.light-mode .ex-muscle-tag { color: #4361ee; }
+
+/* Ejercicios catálogo */
+html.light-mode .sv-ex-card  { background: #ffffff; border-color: rgba(0,0,0,.1); color: #1a202c; }
+html.light-mode .sv-ex-card:hover { border-color: rgba(0,212,170,.4); }
+html.light-mode .sv-ex-title { color: #1a202c; }
+html.light-mode .sv-ex-desc  { color: rgba(0,0,0,.6); }
+html.light-mode .sv-ex-media { background: #f0f4f8; border-bottom-color: rgba(0,0,0,.07); }
+html.light-mode .sv-ex-footer { background: rgba(0,0,0,.03); border-top-color: rgba(0,0,0,.07); }
+html.light-mode .sv-select { background: #ffffff; color: #1a202c; border-color: rgba(0,0,0,.12); }
+
+/* Decoración de fondo — casi invisible en modo claro */
+html.light-mode .fitness-bg-deco i { opacity: .015; }
+
+/* Alerts */
+html.light-mode .alert-success { background: rgba(0,212,170,.08); color: #065f46; border-color: #059669; }
+html.light-mode .alert-danger  { background: rgba(230,57,70,.08);  color: #b91c1c; border-color: #dc2626; }
+html.light-mode .alert-warning { background: rgba(245,158,11,.08); color: #92400e; border-color: #d97706; }
+
+/* Manual de usuario */
+html.light-mode .manual-head      { border-bottom-color: rgba(0,0,0,.1); }
+html.light-mode .manual-close     { background: rgba(0,0,0,.06); }
+html.light-mode .manual-close:hover { background: rgba(0,0,0,.12); color: #1a202c; }
+html.light-mode .manual-search-wrap { border-bottom-color: rgba(0,0,0,.1); }
+html.light-mode .manual-search    { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.1); color: #1a202c; }
+html.light-mode .manual-search::placeholder { color: #4a5568; }
+html.light-mode .manual-item      { background: rgba(0,0,0,.02); border-color: rgba(0,0,0,.08); }
+html.light-mode .manual-item:hover { background: rgba(67,97,238,.07); }
+html.light-mode .manual-item-desc strong { color: #1a202c; }
+html.light-mode .manual-item-desc em     { color: #4361ee; }
+
+/* FitBot widget — usa !important para vencer inline styles */
+html.light-mode .fitbot-widget           { background: #ffffff !important; border-color: rgba(67,97,238,.3) !important; }
+html.light-mode .fitbot-widget-header    { border-bottom-color: rgba(0,0,0,.1) !important; }
+html.light-mode .fitbot-widget-title     { color: #1a202c !important; }
+html.light-mode #fitbotClose             { background: rgba(0,0,0,.06) !important; color: #4a5568 !important; }
+html.light-mode #fitbotMessages          { background: #ffffff; }
+html.light-mode .fmsg.bot .fmsg-bubble  {
+  background: rgba(0,0,0,.05) !important;
+  border-color: rgba(0,0,0,.1) !important;
+  color: #1a202c !important;
+}
+html.light-mode .fitbot-widget-input     { border-top-color: rgba(0,0,0,.1) !important; }
+html.light-mode #fitbotInput             {
+  background: rgba(0,0,0,.05) !important;
+  border-color: rgba(0,0,0,.12) !important;
+  color: #1a202c !important;
+}
+html.light-mode #fitbotInput::placeholder { color: #4a5568 !important; }
+
+/* Page navigation */
+html.light-mode .gen-summary span { color: #4361ee; }
+
+/* Theme FAB y ayuda en modo claro */
+html.light-mode .theme-fab { background: rgba(0,0,0,.08); border-color: rgba(0,0,0,.15); color: #4a5568; }
+html.light-mode .theme-fab:hover { background: rgba(0,0,0,.15); color: #1a202c; }
+html.light-mode .help-fab  { background: rgba(67,97,238,.1); border-color: rgba(67,97,238,.25); color: #4361ee; }
+html.light-mode .fitbot-fab { background: rgba(67,97,238,.1); border-color: rgba(67,97,238,.25); color: #4361ee; }
 
 /* ══ FitBot FAB ══════════════════════════════════════════════════════════════ */
 .fitbot-fab {

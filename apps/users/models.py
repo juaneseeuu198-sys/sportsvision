@@ -62,7 +62,7 @@ class UserProfile(models.Model):
     def generar_codigo(self):
         """Genera un código único de 6 caracteres para el profesional."""
         self.codigo_pro = uuid.uuid4().hex[:6].upper()
-        self.save(update_fields=['codigo_pro', 'rol', 'especialidad'])
+        self.save(update_fields=['codigo_pro'])
 
     class Meta:
         verbose_name = "Perfil de usuario"

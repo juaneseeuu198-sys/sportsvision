@@ -54,7 +54,6 @@ def _enviar_otp_registro(email, codigo):
     resp.raise_for_status()
 
 
-@csrf_exempt
 def iniciar_registro(request):
     """Paso 1 — El usuario ingresa su email y recibe un código OTP."""
     if request.user.is_authenticated:
@@ -71,7 +70,7 @@ def iniciar_registro(request):
         else:
             # Invalidar códigos anteriores para este email
             EmailPreVerification.objects.filter(email=email, is_used=False).update(is_used=True)
-            codigo = str(random.randint(100000, 999999))
+            codigo = str(secrets.randbelow(900000) + 100000)
             EmailPreVerification.objects.create(email=email, codigo=codigo)
             try:
                 _enviar_otp_registro(email, codigo)
@@ -83,7 +82,6 @@ def iniciar_registro(request):
     return render(request, 'users/inicio_registro.html', {'error': error})
 
 
-@csrf_exempt
 def confirmar_email_registro(request):
     """Paso 2 — El usuario ingresa el código OTP recibido por correo."""
     if request.user.is_authenticated:
@@ -99,7 +97,7 @@ def confirmar_email_registro(request):
 
         if accion == 'reenviar':
             EmailPreVerification.objects.filter(email=email, is_used=False).update(is_used=True)
-            codigo = str(random.randint(100000, 999999))
+            codigo = str(secrets.randbelow(900000) + 100000)
             EmailPreVerification.objects.create(email=email, codigo=codigo)
             try:
                 _enviar_otp_registro(email, codigo)
@@ -132,7 +130,6 @@ def confirmar_email_registro(request):
     })
 
 
-@csrf_exempt
 def registro(request):
     """Paso 3 — Completar los datos de la cuenta (email ya verificado)."""
     if request.user.is_authenticated:
@@ -194,7 +191,6 @@ def bienvenido(request):
     return render(request, 'users/bienvenido.html')
 
 
-@csrf_exempt
 def login_view(request):
     """Inicio de sesión — acepta usuario o correo."""
     if request.user.is_authenticated:
@@ -268,6 +264,7 @@ def perfil(request):
     from apps.routines.models import Rutina, Entrenamiento, SerieEntrenamiento
     from apps.progress.models import RegistroPeso
     from apps.tools.models import CalculoCaloria
+    from django.db.models import F, Sum, FloatField, ExpressionWrapper
 
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
@@ -279,15 +276,15 @@ def perfil(request):
         entrenamiento__usuario=request.user, completada=True
     ).count()
 
-    # Kilos totales levantados
-    series_con_peso = SerieEntrenamiento.objects.filter(
+    # Kilos totales levantados — calculado en la BD
+    kg_totales = SerieEntrenamiento.objects.filter(
         entrenamiento__usuario=request.user,
         completada=True,
         peso__isnull=False,
-    )
-    kg_totales = sum(
-        (s.peso or 0) * (s.repeticiones or 1) for s in series_con_peso
-    )
+        repeticiones__isnull=False,
+    ).aggregate(
+        total=Sum(ExpressionWrapper(F('peso') * F('repeticiones'), output_field=FloatField()))
+    )['total'] or 0
 
     entrenamientos_recientes = Entrenamiento.objects.filter(
         usuario=request.user, completado=True
@@ -536,9 +533,8 @@ def revisar_solicitud(request, solicitud_id):
             profile.rol          = 'profesional'
             profile.especialidad = solicitud.especialidad
             if not profile.codigo_pro:
-                profile.generar_codigo()
-            else:
-                profile.save(update_fields=['rol', 'especialidad'])
+                profile.codigo_pro = uuid.uuid4().hex[:6].upper()
+            profile.save(update_fields=['rol', 'especialidad', 'codigo_pro'])
 
             messages.success(request,
                 f'✅ {solicitud.usuario.username} ahora es profesional. '
@@ -619,11 +615,16 @@ def admin_ver_usuario(request, user_id):
     ).order_by('-calculado_en')
 
     # Totales globales
-    all_series = SerieEntrenamiento.objects.filter(
+    from django.db.models import F, Sum, FloatField, ExpressionWrapper
+    all_series_qs = SerieEntrenamiento.objects.filter(
         entrenamiento__usuario=cliente, completada=True
     )
-    total_series = all_series.count()
-    kg_total = sum((s.peso or 0) * (s.repeticiones or 0) for s in all_series)
+    total_series = all_series_qs.count()
+    kg_total = all_series_qs.filter(
+        peso__isnull=False, repeticiones__isnull=False
+    ).aggregate(
+        total=Sum(ExpressionWrapper(F('peso') * F('repeticiones'), output_field=FloatField()))
+    )['total'] or 0
 
     LABELS_LIM = {
         'asma': 'Asma / Respiratorio', 'cardiaco': 'Problemas cardíacos',
@@ -926,7 +927,6 @@ def profesional_cliente(request, user_id):
     return render(request, 'users/profesional_cliente.html', ctx)
 
 
-@csrf_exempt
 @login_required
 def regenerar_codigo(request):
     """Regenera el código de invitación del profesional."""
