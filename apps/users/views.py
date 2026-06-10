@@ -828,6 +828,7 @@ def activar_profesional(request):
 
 
 @login_required
+@ensure_csrf_cookie
 def profesional_dashboard(request):
     """Panel principal del profesional — lista de clientes vinculados."""
     if not _es_profesional(request.user):
