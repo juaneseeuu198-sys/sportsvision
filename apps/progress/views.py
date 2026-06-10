@@ -291,7 +291,7 @@ def gcal_sync_all(request):
         return JsonResponse({'error': 'no_gcal'}, status=403)
 
     DIAS_KEY = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
-    planes_dia = PlanDia.objects.filter(usuario=request.user).select_related('rutina')
+    planes_dia = PlanDia.objects.filter(usuario=request.user).select_related('rutina').prefetch_related('rutina__ejercicios_rutina__ejercicio')
     plan_por_weekday = {}
     for p in planes_dia:
         idx = DIAS_KEY.index(p.dia)
@@ -310,14 +310,19 @@ def gcal_sync_all(request):
         plan = plan_por_weekday.get(current.weekday())
         if plan:
             if plan.descanso:
-                tipo, nombre = 'descanso', None
+                tipo, nombre, ejercicios = 'descanso', None, None
             elif plan.rutina:
-                tipo, nombre = 'planeado', plan.rutina.nombre
+                tipo = 'planeado'
+                nombre = plan.rutina.nombre
+                ejercicios = [
+                    f'{er.ejercicio.nombre} — {er.series_sugeridas}×{er.repeticiones_sugeridas}'
+                    for er in plan.rutina.ejercicios_rutina.all()
+                ]
             else:
                 current += timedelta(days=1)
                 continue
 
-            event_id, err = _gcal_create(access_token, current, tipo, nombre)
+            event_id, err = _gcal_create(access_token, current, tipo, nombre, ejercicios)
             if event_id:
                 creados += 1
             elif err:
