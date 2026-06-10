@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.db.models import F, Sum, FloatField, ExpressionWrapper, Coalesce, Value, Count, Q
+from django.db.models import F, Sum, FloatField, ExpressionWrapper, Value, Count, Q
+from django.db.models.functions import Coalesce
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
