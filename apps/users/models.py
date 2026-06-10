@@ -169,6 +169,21 @@ class MobileLoginToken(models.Model):
         return f"MobileToken de {self.user.username}"
 
 
+class GoogleCalendarToken(models.Model):
+    """Almacena el token OAuth de Google Calendar por usuario."""
+    user          = models.OneToOneField(User, on_delete=models.CASCADE, related_name='gcal_token')
+    access_token  = models.TextField()
+    refresh_token = models.TextField()
+    token_expiry  = models.DateTimeField()
+    connected_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Token Google Calendar"
+
+    def __str__(self):
+        return f"GCal token de {self.user.username}"
+
+
 class EmailPreVerification(models.Model):
     """Verifica el email ANTES de crear la cuenta (paso 1 del registro)."""
     email      = models.EmailField()
