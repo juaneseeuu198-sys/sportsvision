@@ -248,19 +248,24 @@ def anotar_dia(request):
         if access_token and existing and existing.gcal_event_id:
             _gcal_delete(access_token, existing.gcal_event_id)
 
-        # Nombre de la rutina para días de trabajo
+        # Nombre de la rutina y lista de ejercicios para días de trabajo
         nombre_rutina = None
+        ejercicios_lista = None
         if tipo == 'planeado':
             DIAS_KEY = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
             plan = PlanDia.objects.filter(
                 usuario=request.user, dia=DIAS_KEY[fecha.weekday()]
-            ).select_related('rutina').first()
+            ).select_related('rutina').prefetch_related('rutina__ejercicios_rutina__ejercicio').first()
             if plan and plan.rutina and not plan.descanso:
                 nombre_rutina = plan.rutina.nombre
+                ejercicios_lista = [
+                    f'{er.ejercicio.nombre} — {er.series_sugeridas}×{er.repeticiones_sugeridas}'
+                    for er in plan.rutina.ejercicios_rutina.all()
+                ]
 
         gcal_event_id = ''
         if access_token:
-            gcal_event_id, _ = _gcal_create(access_token, fecha, tipo, nombre_rutina)
+            gcal_event_id, _ = _gcal_create(access_token, fecha, tipo, nombre_rutina, ejercicios_lista)
 
         AnotacionCalendario.objects.update_or_create(
             usuario=request.user, fecha=fecha,
