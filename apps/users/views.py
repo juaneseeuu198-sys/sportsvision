@@ -278,14 +278,16 @@ def perfil(request):
         entrenamiento__usuario=request.user, completada=True
     ).count()
 
-    # Kilos totales levantados — calculado en la BD
+    # Kilos totales levantados — NULL repeticiones cuenta como 1 rep (series isométricas/temporizadas)
     kg_totales = SerieEntrenamiento.objects.filter(
         entrenamiento__usuario=request.user,
         completada=True,
         peso__isnull=False,
-        repeticiones__isnull=False,
     ).aggregate(
-        total=Sum(ExpressionWrapper(F('peso') * F('repeticiones'), output_field=FloatField()))
+        total=Sum(ExpressionWrapper(
+            F('peso') * Coalesce(F('repeticiones'), Value(1)),
+            output_field=FloatField()
+        ))
     )['total'] or 0
 
     entrenamientos_recientes = Entrenamiento.objects.filter(
