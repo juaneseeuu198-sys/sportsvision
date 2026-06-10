@@ -262,3 +262,35 @@ def anotar_dia(request):
         AnotacionCalendario.objects.filter(usuario=request.user, fecha=fecha).delete()
 
     return JsonResponse({'ok': True, 'tipo': tipo, 'gcal': bool(access_token)})
+
+
+@login_required
+def gcal_sync_all(request):
+    """Sube todas las anotaciones existentes sin evento a Google Calendar."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'method'}, status=405)
+
+    access_token = _gcal_token(request.user)
+    if not access_token:
+        return JsonResponse({'error': 'no_gcal'}, status=403)
+
+    DIAS_KEY = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
+    planes = {
+        p.dia: p.rutina.nombre
+        for p in PlanDia.objects.filter(usuario=request.user).select_related('rutina')
+        if p.rutina and not p.descanso
+    }
+
+    pendientes = AnotacionCalendario.objects.filter(
+        usuario=request.user, gcal_event_id=''
+    )
+    creados = 0
+    for anotacion in pendientes:
+        nombre_rutina = planes.get(DIAS_KEY[anotacion.fecha.weekday()]) if anotacion.tipo == 'planeado' else None
+        event_id = _gcal_create(access_token, anotacion.fecha, anotacion.tipo, nombre_rutina)
+        if event_id:
+            anotacion.gcal_event_id = event_id
+            anotacion.save(update_fields=['gcal_event_id'])
+            creados += 1
+
+    return JsonResponse({'ok': True, 'creados': creados})
