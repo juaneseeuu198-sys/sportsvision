@@ -25,9 +25,11 @@ class AnotacionCalendario(models.Model):
         ('planeado', 'Día planeado'),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='anotaciones_calendario')
-    fecha   = models.DateField()
-    tipo    = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    usuario       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='anotaciones_calendario')
+    fecha         = models.DateField()
+    tipo          = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    gcal_event_id = models.CharField(max_length=200, blank=True, default='',
+                                     help_text="ID del evento en Google Calendar")
 
     class Meta:
         unique_together = ['usuario', 'fecha']
