@@ -84,6 +84,7 @@ def iniciar_registro(request):
     return render(request, 'users/inicio_registro.html', {'error': error})
 
 
+@ensure_csrf_cookie
 def confirmar_email_registro(request):
     """Paso 2 — El usuario ingresa el código OTP recibido por correo."""
     if request.user.is_authenticated:
